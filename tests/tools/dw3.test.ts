@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Image } from '../../tools/sprites/slice';
-import { flipH, gridOf, scaleNearest } from '../../tools/sprites/dw3';
+import { gridOf, scaleNearest } from '../../tools/sprites/dw3';
 
 const r = (x: number, y: number, w = 20, h = 25) => ({ x, y, w, h });
 
@@ -16,9 +16,8 @@ describe('gridOf', () => {
   });
 });
 
-describe('flipH / scaleNearest', () => {
+describe('scaleNearest', () => {
   const img: Image = { w: 2, h: 1, data: new Uint8Array([1, 1, 1, 255, 2, 2, 2, 255]) };
-  it('espelha na horizontal', () => expect([...flipH(img).data]).toEqual([2, 2, 2, 255, 1, 1, 1, 255]));
   it('amplia 2x sem misturar cores', () => {
     const s = scaleNearest(img, 2);
     expect([s.w, s.h]).toEqual([4, 2]);

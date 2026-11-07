@@ -2,12 +2,17 @@ import * as THREE from 'three';
 
 /** walk1..walk24 (de lado), walkupN / walkdownN (costas / frente), walkdiagupN / walkdiagdownN (diagonais): ciclos de caminhada */
 export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'idleup' | 'idledown' | 'idlediagup' | 'idlediagdown'
-  | `walk${number}` | `walkup${number}` | `walkdown${number}` | `walkdiagup${number}` | `walkdiagdown${number}` | `hurt${number}` | `death${number}`;
+  | `walk${number}` | `walkup${number}` | `walkdown${number}` | `walkdiagup${number}` | `walkdiagdown${number}`
+  | `run${number}` | `runup${number}` | `rundown${number}` | `rundiagup${number}` | `rundiagdown${number}` | `hurt${number}` | `death${number}`;
 export type Facing = 'side' | 'up' | 'down' | 'diagup' | 'diagdown';
 const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'idleup', 'idledown', 'idlediagup', 'idlediagdown'];
 const isRole = (f: unknown): f is Role => typeof f === 'string'
-  && (POSE_ROLES.includes(f) || /^walk(up|down|diagup|diagdown)?([1-9]|1\d|2[0-4])$/.test(f) || /^(hurt|death)([1-9]|[1-5]\d|6[0-4])$/.test(f));
-const WALK_RE: Record<Facing, RegExp> = { side: /^walk\d+$/, up: /^walkup\d+$/, down: /^walkdown\d+$/, diagup: /^walkdiagup\d+$/, diagdown: /^walkdiagdown\d+$/ };
+  && (POSE_ROLES.includes(f) || /^(walk|run)(up|down|diagup|diagdown)?([1-9]|1\d|2[0-4])$/.test(f) || /^(hurt|death)([1-9]|[1-5]\d|6[0-4])$/.test(f));
+/** quadros de um ciclo (walk/run) numa direção, na ordem do manifesto */
+const cycle = (frames: Role[], kind: 'walk' | 'run', facing: Facing) => {
+  const re = new RegExp(`^${kind}${facing === 'side' ? '' : facing}\\d+$`);
+  return frames.filter(f => re.test(f));
+};
 /** costas e frente são simétricas: só lado e diagonais espelham com a direção horizontal */
 export function mirrorsWithDir(f: Facing): boolean { return f !== 'up' && f !== 'down'; }
 /** scale: multiplica o tamanho no mundo (folhas ampliadas na ferramenta, ex.: DW3 2× → 0.8) */
@@ -36,14 +41,16 @@ export function idleFrame(time: number, phase = 0): Role { return IDLE_CYCLE[Mat
 
 const WALK_FPS = 12;
 /**
- * Com caminhada desenhada: andando → ciclo da direção (12 quadros/s; sem quadros verticais usa os de lado),
+ * Com caminhada desenhada: andando → ciclo da direção (12 quadros/s; sem quadros verticais usa os de lado);
+ * running → ciclo de corrida (runN) da direção, se existir,
  * parado → pose fixa da direção (idleup/idledown, senão idle1). Sem caminhada desenhada → ciclo de idle.
  */
-export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[], facing: Facing = 'side'): Role {
-  const side = frames.filter(f => WALK_RE.side.test(f));
-  const dir = facing === 'side' ? side : frames.filter(f => WALK_RE[facing].test(f));
-  const walk = dir.length ? dir : side;
-  if (moving && walk.length) return walk[Math.floor((time + phase) * WALK_FPS) % walk.length];
+export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[], facing: Facing = 'side', running = false): Role {
+  const pick = (kind: 'walk' | 'run') => { const d = cycle(frames, kind, facing); return d.length ? d : cycle(frames, kind, 'side'); };
+  const walk = pick('walk');
+  const run = running ? pick('run') : [];
+  const seq = run.length ? run : walk;
+  if (moving && seq.length) return seq[Math.floor((time + phase) * WALK_FPS) % seq.length];
   if (facing !== 'side' && frames.includes(`idle${facing}`)) return `idle${facing}`;
   if (walk.length) return 'idle1'; // parado com caminhada desenhada: pose fixa, a respiração vem do motion
   return idleFrame(time, phase);

@@ -96,6 +96,7 @@ Cada Digimon é uma **tira horizontal** de quadros em `public/sprites/<id>.png`.
 | `walk1..N` | caminhada de lado (até 24 quadros) |
 | `walkup1..N` / `walkdown1..N` | caminhada de costas / de frente |
 | `walkdiagup1..N` / `walkdiagdown1..N` | caminhada nas diagonais (com o lado e o espelhamento, são 8 direções) |
+| `run…` (mesmos sufixos) | corrida: usada quando a velocidade chega ao dobro da inicial |
 | `idle1`, `idleup`, `idledown`, `idlediagup`, `idlediagdown` | parado, em cada direção |
 | `hurt1..N` | dano (toca uma vez a cada golpe, com intervalo mínimo) |
 | `death1..N` | morte (toca uma vez e segura o último quadro) |
@@ -104,7 +105,7 @@ Quem não tem quadros de caminhada desenhados ganha uma animação procedural: p
 
 ### Digimon World 3 (formas Child)
 
-Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1): 5 direções × 4 quadros de caminhada, espelhados para a esquerda e ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
+Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1): 5 direções com caminhada (4 quadros) e corrida (5 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
 
 ### Folhas geradas por IA (evoluções)
 

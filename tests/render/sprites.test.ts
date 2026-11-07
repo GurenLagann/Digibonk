@@ -109,3 +109,11 @@ test('manifest keeps an optional per-sprite scale (default 1)', () => {
   expect(m?.sprites.a.scale).toBe(0.8);
   expect(m?.sprites.b.scale).toBe(1);
 });
+test('running uses runN frames of the facing, walking keeps walkN', () => {
+  const frames = ['walk1', 'walk2', 'run1', 'run2', 'run3', 'runup1', 'walkup1', 'idle1'] as Role[];
+  expect(moveFrame(2 / 12 + 0.001, 0, true, frames, 'side', true)).toBe('run3');
+  expect(moveFrame(0.001, 0, true, frames, 'up', true)).toBe('runup1');
+  expect(moveFrame(1 / 12 + 0.001, 0, true, frames, 'side', false)).toBe('walk2');
+  expect(moveFrame(0.001, 0, true, ['walk1', 'idle1'] as Role[], 'side', true)).toBe('walk1'); // sem corrida: caminhada
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['run5', 'rundiagup2', 'runup3', 'rundown1', 'rundiagdown4'] } } })).not.toBeNull();
+});

@@ -1,4 +1,4 @@
-import { createRun, stepRun, doEvolve, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, playerSpeed, type RunState } from '../../src/sim/run';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
@@ -91,4 +91,11 @@ test('facing has diagonals (8 directions, mirrored by dirX)', () => {
   stepRun(r, { mx: -0.7, mz: 0.7 }, 1 / 60); expect(r.facing).toBe('diagdown');
   stepRun(r, { mx: 0.2, mz: -1 }, 1 / 60); expect(r.facing).toBe('up');
   stepRun(r, { mx: 1, mz: 0.2 }, 1 / 60); expect(r.facing).toBe('side');
+});
+
+test('playerSpeed follows spd and the run remembers its base speed', () => {
+  const r = createRun(opts());
+  expect(r.baseSpeed).toBeCloseTo(playerSpeed(r.prog));
+  r.prog.bonus.spd += 1000;
+  expect(playerSpeed(r.prog)).toBeGreaterThan(2 * r.baseSpeed);
 });

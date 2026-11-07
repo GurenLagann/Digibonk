@@ -14,13 +14,6 @@ export function gridOf(rects: Rect[]): Rect[][] {
   return rows.sort((a, b) => a.cy - b.cy).map(rw => rw.items.sort((a, b) => a.x - b.x));
 }
 
-export function flipH(img: Image): Image {
-  const data = new Uint8Array(img.data.length);
-  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++)
-    data.set(img.data.subarray((y * img.w + x) * 4, (y * img.w + x) * 4 + 4), (y * img.w + (img.w - 1 - x)) * 4);
-  return { w: img.w, h: img.h, data };
-}
-
 /** ampliação inteira sem interpolação (pixel art continua nítida) */
 export function scaleNearest(img: Image, k: number): Image {
   const w = img.w * k, h = img.h * k, data = new Uint8Array(w * h * 4);

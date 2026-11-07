@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { FORMS } from '../data/forms';
 import { T } from '../data/tuning';
-import type { RunState } from '../sim/run';
+import { playerSpeed, type RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
 import { motionPose } from './motion';
 import { deathFrame, facingFlip, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
@@ -136,7 +136,7 @@ export class Billboards {
     const sideOnly = death !== null || (hurtRole !== null && hurtRole !== 'hurt');
     if (this.playerTex) {
       // ataque não troca a pose: o golpe sai sem o sprite virar
-      const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing);
+      const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing, playerSpeed(run.prog) >= 2 * run.baseSpeed);
       this.setFrame(this.playerTex, this.playerFrames, role);
     }
     const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(run.facing) || sideOnly) ? facingFlip(run.dirX) : 1;
