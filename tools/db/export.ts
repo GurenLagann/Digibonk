@@ -74,8 +74,12 @@ export function exportGameData(db: Db) {
   }]));
 
   const bossMoves = group('SELECT digimon_id, move_id FROM boss_moves ORDER BY digimon_id, ord', 'digimon_id', 'move_id');
-  const enemies = (role: string) => all(`SELECT e.*, d.name, d.color, d.attribute, d.element FROM enemies e JOIN digimon d ON d.id = e.digimon_id
-    WHERE e.role = ? ORDER BY e.ord`, role);
+  // LEFT JOIN: um inimigo sem Digimon vira erro com o id, e não some (mesmo com as chaves estrangeiras desligadas)
+  const enemies = (role: string) => all(`SELECT e.*, d.id AS found, d.name, d.color, d.attribute, d.element FROM enemies e
+    LEFT JOIN digimon d ON d.id = e.digimon_id WHERE e.role = ? ORDER BY e.ord`, role).map(e => {
+    if (e.found === null) throw new Error(`inimigo ${e.digimon_id} (${role}): Digimon inexistente na tabela digimon`);
+    return e;
+  });
   const enemy = (e: Row) => ({ id: e.digimon_id, name: e.name, attribute: e.attribute, element: e.element, hp: e.hp, dmg: e.dmg,
     speed: e.speed, xp: e.xp, size: e.size, color: e.color, minPhase: e.min_phase });
   const ENEMIES = enemies('enemy').map(enemy);

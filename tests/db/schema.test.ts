@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { openDb } from '../../tools/db/db';
 import { migrate } from '../../tools/db/migrate';
 
@@ -18,4 +19,11 @@ test('foreign keys and checks protect the data', () => {
   expect(() => db.exec("INSERT INTO digimon (id, name, stage, attribute, element, hp, atk, def, spd, brain, size, color) VALUES ('x', 'X', 'child', 'nope', 'nope', 1, 1, 1, 1, 1, 1, 0)")).toThrow();
   db.exec("INSERT INTO elements VALUES ('fire', 'Fogo')");
   expect(() => db.exec("INSERT INTO moves (id, name, element, pattern, damage, cooldown, reach, max_level, dmg_per_level, cd_per_level, color, ord) VALUES ('m', 'M', 'fire', 'laser', 1, 1, 1, 5, 1.25, 0.92, 0, 0)")).toThrow();
+});
+
+test('migrations use DOUBLE PRECISION, not REAL (REAL is 4 bytes in PostgreSQL)', () => {
+  for (const f of readdirSync('db/migrations').filter(n => n.endsWith('.sql'))) {
+    const sql = readFileSync(`db/migrations/${f}`, 'utf8').replace(/--.*$/gm, '');
+    expect(sql, f).not.toMatch(/\bREAL\b/);
+  }
 });

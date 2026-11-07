@@ -46,3 +46,11 @@ test('type charts come from the matchup tables (missing pair = 1)', () => {
   expect(g.ELEMENT_CHART.fire.plant).toBe(1.5);
   expect(g.ELEMENT_CHART.neutral.fire).toBe(1);
 });
+
+test('an enemy pointing at a missing Digimon fails the export with its id (even with foreign keys off)', () => {
+  const d = openDb(':memory:');
+  migrate(d, 'db/migrations'); seed(d, 'db/seeds');
+  d.exec('PRAGMA foreign_keys = OFF;');
+  d.exec("INSERT INTO enemies (digimon_id, role, hp, dmg, speed, xp, size, min_phase, ord) VALUES ('numemon', 'enemy', 1, 1, 1, 1, 1, 1, 99)");
+  expect(() => exportGameData(d)).toThrow(/numemon/);
+});

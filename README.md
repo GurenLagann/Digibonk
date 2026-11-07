@@ -98,7 +98,7 @@ src/data/generated/gamedata.ts   gerado a partir do banco, vai para o git; o jog
 
 **Para mudar um dado** (status, golpe, carta...): edite o `.sql` em `db/seeds/` e rode `npm run db:build`.
 
-**Para mudar o esquema:** crie uma migration nova com o próximo número (ex.: `002_loja.sql`) usando só `TEXT`, `INTEGER` e `REAL` e chaves explícitas. Nunca edite uma migration que já foi aplicada em outro lugar.
+**Para mudar o esquema:** crie uma migration nova com o próximo número (ex.: `002_loja.sql`) usando só `TEXT`, `INTEGER` e `DOUBLE PRECISION` (não `REAL`, que tem 4 bytes no PostgreSQL) e chaves explícitas. Nunca edite uma migration que já foi aplicada em outro lugar.
 
 Requer **Node 22**, que traz o `node:sqlite` embutido, sem dependência extra.
 

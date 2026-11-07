@@ -18,7 +18,7 @@ export function showCardChoice(root: HTMLElement, run: RunState) {
   }
   return showChoice(root, {
     title: card.name, subtitle: `${describeCard(id)} — seus 3 espaços de carta estão cheios. Trocar qual?`,
-    options: run.prog.passives.map((c, i) => ({ tag: `Carta ${i + 1}`, title: c ? CARDS[c].name : 'Vazio', body: c ? describeCard(c) : '', onPick: () => resolveCard(run, { passiveSlot: i }) })),
+    options: run.prog.passives.map((c, i) => ({ tag: `Carta ${i + 1}`, title: c ? CARDS[c].name : 'Vazio', body: c ? describeCard(c, run.prog.cardLevels[c] ?? 1) : '', onPick: () => resolveCard(run, { passiveSlot: i }) })),
     extra: { title: 'Descartar a nova', onPick: () => resolveCard(run, { passiveSlot: null }) },
   });
 }

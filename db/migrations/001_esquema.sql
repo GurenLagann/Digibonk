@@ -1,5 +1,5 @@
 -- Esquema dos dados do jogo. SQL portátil (SQLite agora, PostgreSQL no servidor):
--- só TEXT/INTEGER/REAL, chaves explícitas, booleanos como INTEGER 0/1.
+-- só TEXT/INTEGER/DOUBLE PRECISION (REAL tem 4 bytes no PostgreSQL), chaves explícitas, booleanos como INTEGER 0/1.
 
 -- Tipagem -----------------------------------------------------------------
 CREATE TABLE attributes (
@@ -16,21 +16,21 @@ CREATE TABLE elements (
 CREATE TABLE attribute_matchups (
   attacker   TEXT NOT NULL REFERENCES attributes(id),
   defender   TEXT NOT NULL REFERENCES attributes(id),
-  multiplier REAL NOT NULL CHECK (multiplier > 0),
+  multiplier DOUBLE PRECISION NOT NULL CHECK (multiplier > 0),
   PRIMARY KEY (attacker, defender)
 );
 
 CREATE TABLE element_matchups (
   attacker   TEXT NOT NULL REFERENCES elements(id),
   defender   TEXT NOT NULL REFERENCES elements(id),
-  multiplier REAL NOT NULL CHECK (multiplier > 0),
+  multiplier DOUBLE PRECISION NOT NULL CHECK (multiplier > 0),
   PRIMARY KEY (attacker, defender)
 );
 
 CREATE TABLE stages (
   id      TEXT PRIMARY KEY,
   ord     INTEGER NOT NULL,
-  dmg_mul REAL NOT NULL
+  dmg_mul DOUBLE PRECISION NOT NULL
 );
 
 -- Digimon (entidade única: forma jogável e inimigo apontam para cá) --------
@@ -40,13 +40,13 @@ CREATE TABLE digimon (
   stage       TEXT NOT NULL REFERENCES stages(id),
   attribute   TEXT NOT NULL REFERENCES attributes(id),
   element     TEXT NOT NULL REFERENCES elements(id),
-  hp          REAL NOT NULL,
-  atk         REAL NOT NULL,
-  def         REAL NOT NULL,
-  spd         REAL NOT NULL,
-  brain       REAL NOT NULL,
-  growth_rate REAL NOT NULL DEFAULT 0.005, -- valor(nível) = base × (1 + taxa × (nível − 1))
-  size        REAL NOT NULL,
+  hp          DOUBLE PRECISION NOT NULL,
+  atk         DOUBLE PRECISION NOT NULL,
+  def         DOUBLE PRECISION NOT NULL,
+  spd         DOUBLE PRECISION NOT NULL,
+  brain       DOUBLE PRECISION NOT NULL,
+  growth_rate DOUBLE PRECISION NOT NULL DEFAULT 0.005, -- valor(nível) = base × (1 + taxa × (nível − 1))
+  size        DOUBLE PRECISION NOT NULL,
   color       INTEGER NOT NULL
 );
 
@@ -56,17 +56,17 @@ CREATE TABLE moves (
   name          TEXT NOT NULL,
   element       TEXT NOT NULL REFERENCES elements(id),
   pattern       TEXT NOT NULL CHECK (pattern IN ('projectile', 'area', 'cone', 'aura', 'orbital', 'beam')),
-  damage        REAL NOT NULL,
-  cooldown      REAL NOT NULL,
-  reach         REAL NOT NULL,
-  radius        REAL,
+  damage        DOUBLE PRECISION NOT NULL,
+  cooldown      DOUBLE PRECISION NOT NULL,
+  reach         DOUBLE PRECISION NOT NULL,
+  radius        DOUBLE PRECISION,
   count         INTEGER,
   pierce        INTEGER,
-  speed         REAL,
-  duration      REAL,
+  speed         DOUBLE PRECISION,
+  duration      DOUBLE PRECISION,
   max_level     INTEGER NOT NULL,
-  dmg_per_level REAL NOT NULL,
-  cd_per_level  REAL NOT NULL,
+  dmg_per_level DOUBLE PRECISION NOT NULL,
+  cd_per_level  DOUBLE PRECISION NOT NULL,
   color         INTEGER NOT NULL,
   ord           INTEGER NOT NULL
 );
@@ -121,11 +121,11 @@ CREATE TABLE evolutions (
   from_form TEXT NOT NULL REFERENCES forms(digimon_id),
   to_form   TEXT NOT NULL REFERENCES forms(digimon_id),
   min_level INTEGER NOT NULL,
-  min_hp    REAL,
-  min_atk   REAL,
-  min_def   REAL,
-  min_spd   REAL,
-  min_brain REAL,
+  min_hp    DOUBLE PRECISION,
+  min_atk   DOUBLE PRECISION,
+  min_def   DOUBLE PRECISION,
+  min_spd   DOUBLE PRECISION,
+  min_brain DOUBLE PRECISION,
   min_phase INTEGER,
   min_kills INTEGER,
   ord       INTEGER NOT NULL
@@ -148,7 +148,7 @@ CREATE TABLE cards (
   id      TEXT PRIMARY KEY,
   name    TEXT NOT NULL,
   kind    TEXT NOT NULL CHECK (kind IN ('passive', 'slash', 'rare')),
-  weight  REAL NOT NULL,
+  weight  DOUBLE PRECISION NOT NULL,
   move_id TEXT REFERENCES moves(id), -- slash: golpe que entra no lugar
   ord     INTEGER NOT NULL
 );
@@ -157,8 +157,8 @@ CREATE TABLE cards (
 CREATE TABLE card_bonuses (
   card_id       TEXT NOT NULL REFERENCES cards(id),
   stat          TEXT NOT NULL CHECK (stat IN ('hp', 'atk', 'def', 'spd', 'brain', 'dmg', 'pickup', 'xp', 'cooldown')),
-  base_pct      REAL NOT NULL,
-  per_level_pct REAL NOT NULL,
+  base_pct      DOUBLE PRECISION NOT NULL,
+  per_level_pct DOUBLE PRECISION NOT NULL,
   PRIMARY KEY (card_id, stat)
 );
 
@@ -172,11 +172,11 @@ CREATE TABLE card_partners (
 CREATE TABLE enemies (
   digimon_id TEXT NOT NULL REFERENCES digimon(id),
   role       TEXT NOT NULL CHECK (role IN ('enemy', 'miniboss', 'boss')),
-  hp         REAL NOT NULL,
-  dmg        REAL NOT NULL,
-  speed      REAL NOT NULL,
-  xp         REAL NOT NULL,
-  size       REAL NOT NULL,
+  hp         DOUBLE PRECISION NOT NULL,
+  dmg        DOUBLE PRECISION NOT NULL,
+  speed      DOUBLE PRECISION NOT NULL,
+  xp         DOUBLE PRECISION NOT NULL,
+  size       DOUBLE PRECISION NOT NULL,
   min_phase  INTEGER NOT NULL, -- chefe: a fase em que ele é o chefe
   ord        INTEGER NOT NULL,
   PRIMARY KEY (digimon_id, role)
