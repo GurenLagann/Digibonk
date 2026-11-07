@@ -32,7 +32,13 @@ export class EvoNotifier {
 
 export function evolve(p: PlayerProg, toFormId: string, ctx: EvoContext): void {
   if (!availableEvolutions(p, ctx).includes(toFormId)) throw new Error(`cannot evolve ${p.formId} -> ${toFormId}`);
+  applyForm(p, toFormId);
+}
+
+/** troca de forma sem checar requisitos (evolução já validada, ou debug) */
+export function applyForm(p: PlayerProg, toFormId: string): void {
   const to = FORMS[toFormId];
+  if (!to) throw new Error(`unknown form ${toFormId}`);
   p.formId = toFormId;
   p.path.push(toFormId);
   const lvl = p.slots[0]?.level ?? 1;

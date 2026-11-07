@@ -39,7 +39,7 @@ export interface RunState {
   offers: LevelOffer[] | null; pendingCard: string | null;
   nextPickupId: number; unlockedThisRun: string[];
   /** dev only */
-  debug: { xpMul: number; forceItems: boolean };
+  debug: { xpMul: number; forceItems: boolean; god: boolean };
 }
 
 export const PLAYER_RADIUS = 0.5, CHEST_RADIUS = 1.6;
@@ -55,7 +55,8 @@ function setupPhase(r: RunState, n: number) {
   syncHp(r); r.combat.hp = r.combat.maxHp;
 }
 
-function syncHp(r: RunState) {
+/** @internal usado por sim/debug */
+export function syncHp(r: RunState) {
   const max = effectiveStats(r.prog).hp;
   if (max > r.combat.maxHp) r.combat.hp += max - r.combat.maxHp;
   r.combat.maxHp = max;
@@ -72,7 +73,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
-    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false },
+    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);
@@ -121,7 +122,8 @@ function needsChoice(r: RunState, cardId: string): boolean {
   return !!c && (c.kind === 'slash' || (c.kind === 'passive' && !r.prog.passives.includes(null)));
 }
 
-function handleCard(r: RunState, cardId: string, ev: RunEvent[]) {
+/** @internal usado por sim/debug */
+export function handleCard(r: RunState, cardId: string, ev: RunEvent[]) {
   const c = CARDS[cardId]; if (!c) return;
   ev.push({ type: 'cardFound', cardId });
   if (c.kind === 'rare') { gainItem(r.prog, cardId); return; }
@@ -129,7 +131,8 @@ function handleCard(r: RunState, cardId: string, ev: RunEvent[]) {
   r.pendingCard = cardId; // slash: player chooses slot
 }
 
-function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
+/** @internal usado por sim/debug */
+export function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
   const it = ITEMS[itemId]; if (!it) return;
   if (it.kind === 'egg' && it.unlockPartner) {
     if (!r.save.unlocked.includes(it.unlockPartner)) {
@@ -209,6 +212,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   }
 
   // phase
+  if (r.debug.god) r.combat.hp = r.combat.maxHp;
   const playerDead = r.combat.hp <= 0;
   for (const pe of stepPhase(r.phase, { px: r.px, pz: r.pz, dt, killedMiniboss, collectedFragment, bossDead, playerDead })) {
     if (pe === 'missionProgress') ev.push({ type: 'missionProgress' });

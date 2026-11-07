@@ -3,10 +3,10 @@ import { createApp } from './app';
 import { createInput } from './core/input';
 import { createFixedLoop } from './core/loop';
 import { loadSave } from './core/save';
-import { CARDS } from './data/cards';
+import { CARD_LIST, CARDS } from './data/cards';
 import { ENEMIES } from './data/enemies';
 import { FORMS } from './data/forms';
-import { ITEMS } from './data/items';
+import { ITEM_LIST, ITEMS } from './data/items';
 import { T } from './data/tuning';
 import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
@@ -68,6 +68,28 @@ function pause() {
   open();
 }
 installAutoPause(document, pause, window);
+
+// painel de debug: só em dev, com ?debug na URL; F2 mostra/esconde
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
+  const [{ mountDebugPanel }, dbg] = await Promise.all([import('./ui/debugpanel'), import('./sim/debug')]);
+  const withRun = (fn: (r: RunState) => RunEvent[] | void) => () => {
+    if (!run || run.ended) { toast('Debug: comece uma partida primeiro', 'warn'); return; }
+    const ev = fn(run); if (ev) { ev.forEach(announce); events.push(...ev); }
+  };
+  const panel = mountDebugPanel(document.body, {
+    forms: Object.values(FORMS).map(f => ({ id: f.id, name: f.name })),
+    cards: CARD_LIST.map(c => ({ id: c.id, name: c.name })),
+    items: ITEM_LIST.map(i => ({ id: i.id, name: i.name })),
+    evolve: id => withRun(r => { dbg.debugEvolve(r, id); toast(`Debug: virou ${FORMS[id].name}`, 'rare'); })(),
+    levelUp: withRun(r => dbg.debugLevelUp(r)),
+    card: id => withRun(r => dbg.debugGiveCard(r, id))(),
+    item: id => withRun(r => dbg.debugGiveItem(r, id))(),
+    heal: withRun(r => dbg.debugHeal(r)),
+    killAll: withRun(r => dbg.debugKillAll(r)),
+    god: () => { if (!run) return false; const on = dbg.debugToggleGod(run); toast(`Debug: invencível ${on ? 'ligado' : 'desligado'}`); return on; },
+  });
+  addEventListener('keydown', e => { if (e.code === 'F2') { e.preventDefault(); panel.toggle(); } });
+}
 
 function announce(e: RunEvent) {
   switch (e.type) {
