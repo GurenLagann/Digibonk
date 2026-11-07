@@ -20,6 +20,7 @@ import { showLevelUp } from './ui/levelup';
 import { showCredits, showPause, showResults, showSettings, showTitle } from './ui/menus';
 import { activeModal } from './ui/modal';
 import { mountToasts, toast } from './ui/toast';
+import { installAutoPause } from './ui/autopause';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ui = document.getElementById('ui')!;
@@ -63,7 +64,7 @@ function pause() {
   const open = () => showPause(ui, resume, () => openSettings(open), () => { if (run) abandonRun(run).forEach(announce); });
   open();
 }
-document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+installAutoPause(document, pause, window);
 
 function announce(e: RunEvent) {
   switch (e.type) {

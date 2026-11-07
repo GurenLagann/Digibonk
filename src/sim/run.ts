@@ -100,8 +100,19 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
   r.px = clamp(x, -T.MAP_HALF, T.MAP_HALF); r.pz = clamp(z, -T.MAP_HALF, T.MAP_HALF);
 }
 
+function lootRoll(r: RunState, alsoOwned: string[] = []): { kind: 'card' | 'item' | 'heal'; ref?: string } {
+  const owned = [...r.prog.items, ...alsoOwned];
+  const forced = r.debug.forceItems ? eligibleItems(r.partnerId, r.save, owned) : [];
+  return forced.length ? { kind: 'item', ref: r.rng.pick(forced).id } : rollChest(r.partnerId, r.save, owned, r.phase.phase, r.rng);
+}
+
 function spawnPickup(r: RunState, x: number, z: number, roll: { kind: 'card' | 'item' | 'heal'; ref?: string }) {
   r.pickups.push({ id: r.nextPickupId++, x, z, kind: roll.kind, value: 0, ref: roll.ref });
+}
+
+function needsChoice(r: RunState, cardId: string): boolean {
+  const c = CARDS[cardId];
+  return !!c && (c.kind === 'slash' || (c.kind === 'passive' && !r.prog.passives.includes(null)));
 }
 
 function handleCard(r: RunState, cardId: string, ev: RunEvent[]) {
@@ -144,6 +155,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   }
 
   let killedMiniboss = false, bossDead = false, collectedFragment = false;
+  const bossDrops: { kind: 'card' | 'item' | 'heal'; ref?: string }[] = [];
   const stats = effectiveStats(r.prog);
   for (const ce of stepCombat(r.combat, r.prog, r.px, r.pz, r.pool, r.hash, dt, r.rng)) {
     if (ce.type === 'hit') ev.push({ type: 'hit', x: ce.x, z: ce.z, dmg: ce.dmg });
@@ -154,7 +166,10 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
       ev.push({ type: 'kill', x: e.x, z: e.z });
       if (e.boss) {
         if (e.id === r.phase.bossId) bossDead = true;
-        for (let k = 0; k < 2; k++) spawnPickup(r, e.x + k * 1.2, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng));
+        for (let k = 0; k < 2; k++) {
+          const roll = lootRoll(r, bossDrops.map(d => d.ref ?? ''));
+          bossDrops.push(roll); spawnPickup(r, e.x + k * 1.2, e.z, roll);
+        }
         continue;
       }
       if (e.miniboss) { killedMiniboss = true; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng)); }
@@ -174,14 +189,17 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul);
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
     else if (p.kind === 'fragment') collectedFragment = true;
-    else if (p.kind === 'card' && p.ref) handleCard(r, p.ref, ev);
+    else if (p.kind === 'card' && p.ref) {
+      // one choice at a time: a second card that needs a choice waits on the ground
+      if (r.pendingCard !== null && needsChoice(r, p.ref)) r.pickups.push(p);
+      else handleCard(r, p.ref, ev);
+    }
     else if (p.kind === 'item' && p.ref) handleItem(r, p.ref, ev);
   }
   for (const c of r.chests) {
     if (c.opened || Math.hypot(c.x - r.px, c.z - r.pz) > CHEST_RADIUS) continue;
     c.opened = true; ev.push({ type: 'chestOpened', x: c.x, z: c.z });
-    const forced = r.debug.forceItems ? eligibleItems(r.partnerId, r.save, r.prog.items) : [];
-    spawnPickup(r, c.x, c.z, forced.length ? { kind: 'item', ref: r.rng.pick(forced).id } : rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng));
+    spawnPickup(r, c.x, c.z, lootRoll(r));
   }
 
   // phase
@@ -207,6 +225,8 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
       ev.push({ type: 'phaseCleared', phase: n });
       if (n >= T.PHASES) { finish(r, 'victory', ev); return ev; }
       setupPhase(r, n + 1);
+      // boss loot is carried into the next phase, right next to the player
+      bossDrops.forEach((d, k) => spawnPickup(r, r.px + (k - 0.5) * 0.6, r.pz + 0.5, d));
       return ev;
     } else if (pe === 'playerDied') { finish(r, 'defeat', ev); return ev; }
   }

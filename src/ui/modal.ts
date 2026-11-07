@@ -20,13 +20,14 @@ export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
     spec.extra ? cards[cards.length - 1] : null);
   const back = h('div', { class: 'backdrop' }, panel);
   root.append(back);
-  function select(i: number) { sel = (i + all.length) % all.length; cards.forEach((c, j) => c.classList.toggle('sel', j === sel)); }
-  function pick(i: number) { if (closed) return; const o = all[i]; m.close(); o.onPick(); }
+  function select(i: number) { if (!all.length) return; sel = (i + all.length) % all.length; cards.forEach((c, j) => c.classList.toggle('sel', j === sel)); }
+  function pick(i: number) { if (closed) return; const o = all[i]; if (!o) return; m.close(); o.onPick(); }
   select(0);
   const m: Modal = {
     get closed() { return closed; },
     close() { if (!closed) { closed = true; back.remove(); if (current === m) current = null; } },
     handle(input) {
+      if (!all.length) return;
       if (input.pressed('left') || input.pressed('up')) select(sel - 1);
       if (input.pressed('right') || input.pressed('down')) select(sel + 1);
       if (input.pressed('opt1') && spec.options[0]) return pick(0);
