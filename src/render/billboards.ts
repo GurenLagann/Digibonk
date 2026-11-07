@@ -3,10 +3,9 @@ import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { FORMS } from '../data/forms';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
-import { INVULN } from '../sim/combat';
 import { placeholderTexture } from './placeholder';
 import { motionPose } from './motion';
-import { deathFrame, facingFlip, frameIndex, hurtFrame, moveFrame, type Role, type SpriteLibrary } from './sprites';
+import { deathFrame, facingFlip, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
 
 const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -38,6 +37,7 @@ export class Billboards {
   private white = new THREE.Color(1, 1, 1); private flash = new THREE.Color(3, 3, 3);
   private counts = new Map<string, number>();
   private deathRun: RunState | null = null; private deathAt = -1;
+  private hurtRun: RunState | null = null; private hurtStart = -Infinity; private prevInvuln = 0;
 
   constructor(private scene: THREE.Scene, private camera: THREE.Camera, private lib: SpriteLibrary) {
     this.player = new THREE.Mesh(unitPlane, spriteMaterial(placeholderTexture('_', '?', 0xffffff)));
@@ -122,23 +122,27 @@ export class Billboards {
       this.playerHeight = g.tex ? THREE.MathUtils.clamp(g.frameH * PX, 1.2, 7) : f.size * VIS;
     }
     const c = run.combat;
-    const fired = Math.min(...c.firedAgo);
     // morte: conta a partir do primeiro quadro em que a partida terminou em derrota
     if (this.deathRun !== run) { this.deathRun = run; this.deathAt = -1; }
     const dead = run.ended === 'defeat';
     if (dead && this.deathAt < 0) this.deathAt = time;
     const death = dead ? deathFrame(time - this.deathAt, this.playerFrames) : null;
-    const hurtRole = c.invuln > 0 ? hurtFrame(INVULN - c.invuln, this.playerFrames) : null;
+    // dano: golpe novo = invulnerabilidade subiu; conta pelo tempo da tela (não congela com modal aberto)
+    if (this.hurtRun !== run) { this.hurtRun = run; this.hurtStart = -Infinity; this.prevInvuln = 0; }
+    this.hurtStart = nextHurtStart(this.hurtStart, time, c.invuln > this.prevInvuln + 1e-6);
+    this.prevInvuln = c.invuln;
+    const hurtRole = hurtFrame(time - this.hurtStart, this.playerFrames);
     // quadros de dano/morte são de lado: viram para o último lado andado
     const sideOnly = death !== null || (hurtRole !== null && hurtRole !== 'hurt');
     if (this.playerTex) {
-      const role: Role = death ?? hurtRole ?? (fired < 0.15 ? 'attack' : moveFrame(time, 0, run.moving, this.playerFrames, run.facing));
+      // ataque não troca a pose: o golpe sai sem o sprite virar
+      const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing);
       this.setFrame(this.playerTex, this.playerFrames, role);
     }
     const flip = FLIP_SPRITES && this.playerTex && (run.facing === 'side' || sideOnly) ? facingFlip(run.dirX) : 1;
-    const hurt = Math.max(0, Math.min(1, (c.invuln - 0.3) / 0.2));
+    const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
-      : motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt, drawnWalk: this.playerFrames.includes('walk1') || this.playerFrames.includes('walkup1') });
+      : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.includes('walk1') || this.playerFrames.includes('walkup1') });
     this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);

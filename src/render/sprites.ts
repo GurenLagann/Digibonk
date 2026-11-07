@@ -46,7 +46,13 @@ export function moveFrame(time: number, phase: number, moving: boolean, frames: 
 }
 
 /** duração da animação de dano (s) contada do golpe */
-export const HURT_TIME = 0.4;
+export const HURT_TIME = 0.25;
+/** intervalo mínimo entre duas animações de dano: no meio da horda ele não fica cambaleando sem parar */
+export const HURT_COOLDOWN = 1.2;
+/** início da animação de dano: um golpe novo só reinicia depois do cooldown */
+export function nextHurtStart(prevStart: number, time: number, newHit: boolean): number {
+  return newHit && time - prevStart >= HURT_COOLDOWN ? time : prevStart;
+}
 /** dano: hurt1..N espalhados na janela de HURT_TIME; sem eles, a pose única 'hurt'. null quando a janela passou */
 export function hurtFrame(elapsed: number, frames: Role[]): Role | null {
   if (elapsed < 0 || elapsed > HURT_TIME) return null;

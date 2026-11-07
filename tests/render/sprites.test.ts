@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, HURT_TIME, DEATH_FPS, type Role } from '../../src/render/sprites';
+import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
@@ -79,4 +79,11 @@ test('deathFrame plays death1..N once and holds the last; null without death fra
   expect(deathFrame(10, frames)).toBe('death3');
   expect(deathFrame(0, ['idle1'] as Role[])).toBeNull();
   expect(deathDuration(frames)).toBeCloseTo(3 / DEATH_FPS);
+});
+test('a new hit starts the hurt animation only after the cooldown', () => {
+  expect(nextHurtStart(-Infinity, 5, true)).toBe(5);
+  expect(nextHurtStart(5, 5.5, true)).toBe(5);                 // dentro do cooldown: não reinicia
+  expect(nextHurtStart(5, 5 + HURT_COOLDOWN, true)).toBe(5 + HURT_COOLDOWN);
+  expect(nextHurtStart(5, 9, false)).toBe(5);                 // sem golpe novo: mantém
+  expect(HURT_TIME).toBeLessThan(HURT_COOLDOWN / 2);
 });
