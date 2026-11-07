@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 
-/** walk1..walk24: quadros de caminhada desenhados, na ordem do ciclo */
-export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | `walk${number}`;
-const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt'];
-const isRole = (f: unknown): f is Role => typeof f === 'string' && (POSE_ROLES.includes(f) || /^walk([1-9]|1\d|2[0-4])$/.test(f));
+/** walk1..walk24 (de lado), walkupN / walkdownN (de costas / de frente): quadros de caminhada na ordem do ciclo */
+export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'idleup' | 'idledown'
+  | `walk${number}` | `walkup${number}` | `walkdown${number}`;
+export type Facing = 'side' | 'up' | 'down';
+const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'idleup', 'idledown'];
+const isRole = (f: unknown): f is Role => typeof f === 'string' && (POSE_ROLES.includes(f) || /^walk(up|down)?([1-9]|1\d|2[0-4])$/.test(f));
+const WALK_RE: Record<Facing, RegExp> = { side: /^walk\d+$/, up: /^walkup\d+$/, down: /^walkdown\d+$/ };
 export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
 
@@ -27,10 +30,16 @@ const IDLE_CYCLE: Role[] = ['idle1', 'idle2', 'idle3', 'idle2'];
 export function idleFrame(time: number, phase = 0): Role { return IDLE_CYCLE[Math.floor((time + phase) * 6) % 4]; }
 
 const WALK_FPS = 12;
-/** com caminhada desenhada: andando → walk1..walkN (12 quadros/s), parado → idle1 fixo; sem ela → ciclo de idle */
-export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[]): Role {
-  const walk = frames.filter(f => f.startsWith('walk'));
+/**
+ * Com caminhada desenhada: andando → ciclo da direção (12 quadros/s; sem quadros verticais usa os de lado),
+ * parado → pose fixa da direção (idleup/idledown, senão idle1). Sem caminhada desenhada → ciclo de idle.
+ */
+export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[], facing: Facing = 'side'): Role {
+  const side = frames.filter(f => WALK_RE.side.test(f));
+  const dir = facing === 'side' ? side : frames.filter(f => WALK_RE[facing].test(f));
+  const walk = dir.length ? dir : side;
   if (moving && walk.length) return walk[Math.floor((time + phase) * WALK_FPS) % walk.length];
+  if (facing !== 'side' && frames.includes(`idle${facing}`)) return `idle${facing}`;
   if (walk.length) return 'idle1'; // parado com caminhada desenhada: pose fixa, a respiração vem do motion
   return idleFrame(time, phase);
 }

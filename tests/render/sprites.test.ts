@@ -48,3 +48,18 @@ test('supports up to 24 walk frames', () => {
   const seen = new Set(Array.from({ length: 40 }, (_, i) => moveFrame(i / 12 + 0.001, 0, true, frames)));
   expect(seen.size).toBe(17);
 });
+test('vertical facing uses walkup/walkdown frames and their idle poses', () => {
+  const frames = ['walk1', 'walk2', 'walkup1', 'walkup2', 'walkdown1', 'walkdown2', 'idle1', 'idleup', 'idledown'] as Role[];
+  expect(moveFrame(0.001, 0, true, frames, 'up')).toBe('walkup1');
+  expect(moveFrame(1 / 12 + 0.001, 0, true, frames, 'down')).toBe('walkdown2');
+  expect(moveFrame(0.001, 0, false, frames, 'up')).toBe('idleup');
+  expect(moveFrame(0.001, 0, false, frames, 'down')).toBe('idledown');
+  expect(moveFrame(0.001, 0, true, frames, 'side')).toBe('walk1');
+});
+test('vertical facing without vertical frames falls back to side frames', () => {
+  expect(moveFrame(0.001, 0, true, ['walk1', 'walk2', 'idle1'] as Role[], 'up')).toBe('walk1');
+  expect(moveFrame(0.001, 0, false, ['walk1', 'idle1'] as Role[], 'down')).toBe('idle1');
+});
+test('manifest accepts vertical roles', () => {
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['walkup12', 'walkdown3', 'idleup', 'idledown'] } } })).not.toBeNull();
+});

@@ -75,3 +75,12 @@ test('run remembers the horizontal move direction for sprite facing', () => {
   stepRun(r, { mx: 0, mz: 0 }, 1 / 60); expect(r.dirX).toBeGreaterThan(0); // parado mantém a última direção
   stepRun(r, { mx: -1, mz: 0.2 }, 1 / 60); expect(r.dirX).toBeLessThan(0);
 });
+
+test('facing follows the dominant movement axis and is kept when stopped', () => {
+  const r = createRun(opts());
+  expect(r.facing).toBe('side');
+  stepRun(r, { mx: 0, mz: -1 }, 1 / 60); expect(r.facing).toBe('up');
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60); expect(r.facing).toBe('up');
+  stepRun(r, { mx: 0.3, mz: 1 }, 1 / 60); expect(r.facing).toBe('down');
+  stepRun(r, { mx: 1, mz: 0.4 }, 1 / 60); expect(r.facing).toBe('side');
+});

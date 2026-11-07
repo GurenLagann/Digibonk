@@ -122,12 +122,12 @@ export class Billboards {
     const c = run.combat;
     const fired = Math.min(...c.firedAgo);
     if (this.playerTex) {
-      const role: Role = c.invuln > 0.3 ? 'hurt' : fired < 0.15 ? 'attack' : moveFrame(time, 0, run.moving, this.playerFrames);
+      const role: Role = c.invuln > 0.3 ? 'hurt' : fired < 0.15 ? 'attack' : moveFrame(time, 0, run.moving, this.playerFrames, run.facing);
       this.setFrame(this.playerTex, this.playerFrames, role);
     }
-    const flip = FLIP_SPRITES && this.playerTex ? facingFlip(run.dirX) : 1;
+    const flip = FLIP_SPRITES && this.playerTex && run.facing === 'side' ? facingFlip(run.dirX) : 1;
     const hurt = Math.max(0, Math.min(1, (c.invuln - 0.3) / 0.2));
-    const pose = motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt, drawnWalk: this.playerFrames.includes('walk1') });
+    const pose = motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt, drawnWalk: this.playerFrames.includes('walk1') || this.playerFrames.includes('walkup1') });
     this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
