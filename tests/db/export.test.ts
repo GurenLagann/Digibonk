@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { openDb } from '../../tools/db/db';
 import { migrate, seed } from '../../tools/db/migrate';
+import { seedsAtMigration } from './helpers';
 import { exportGameData } from '../../tools/db/export';
 
 const before = JSON.parse(readFileSync('tests/db/fixtures/before.json', 'utf8'));
 const db = openDb(':memory:');
 migrate(db, 'db/migrations');
-seed(db, 'db/seeds');
+seed(db, seedsAtMigration()); // fidelidade da migração: só os seeds daquela época
 const g = exportGameData(db);
 const strip = <T extends object>(o: T, keys: string[]) => Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
 

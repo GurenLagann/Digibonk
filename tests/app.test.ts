@@ -11,7 +11,10 @@ const deps = (o: { unlocked?: string[] } = {}) => {
 test('starts on title', () => expect(createApp(deps()).screen()).toBe('title'));
 test('locked partners are listed but locked', () => {
   const a = createApp(deps());
-  expect(a.partnersFor('adventure')).toEqual([{ id: 'agumon', childForm: 'agumon', locked: false }, { id: 'gabumon', childForm: 'gabumon', locked: true }]);
+  const ps = a.partnersFor('adventure');
+  expect(ps[0]).toEqual({ id: 'agumon', childForm: 'agumon', locked: false });
+  expect(ps.slice(1).every(p => p.locked)).toBe(true);
+  expect(ps.map(p => p.id)).toEqual(['agumon', 'gabumon', 'patamon', 'tentomon', 'gatomon']);
 });
 test('unlocked partner shows as available', () => {
   const a = createApp(deps({ unlocked: ['agumon', 'veemon', 'guilmon', 'wormmon'] }));

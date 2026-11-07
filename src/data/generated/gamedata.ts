@@ -1040,6 +1040,801 @@ export const MOVES: Record<string, MoveDef> = {
    "cooldown": 0.92
   },
   "color": 15922943
+ },
+ "little_horn": {
+  "id": "little_horn",
+  "name": "Little Horn",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "frost_breath": {
+  "id": "frost_breath",
+  "name": "Blue Blaster",
+  "element": "ice",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "gabu_tackle": {
+  "id": "gabu_tackle",
+  "name": "Gabu Tackle",
+  "element": "neutral",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "fox_fire": {
+  "id": "fox_fire",
+  "name": "Fox Fire",
+  "element": "ice",
+  "pattern": "projectile",
+  "damage": 16,
+  "cooldown": 1.1,
+  "range": 13,
+  "radius": 0.7,
+  "pierce": 1,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "slamming_attack": {
+  "id": "slamming_attack",
+  "name": "Slamming Attack",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 14,
+  "cooldown": 0.9,
+  "range": 3.5,
+  "radius": 3.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "kaiser_nail": {
+  "id": "kaiser_nail",
+  "name": "Kaiser Nail",
+  "element": "ice",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "garuru_kick": {
+  "id": "garuru_kick",
+  "name": "Garuru Kick",
+  "element": "neutral",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "wolf_howl": {
+  "id": "wolf_howl",
+  "name": "Wolf Howl",
+  "element": "ice",
+  "pattern": "area",
+  "damage": 22,
+  "cooldown": 2.2,
+  "range": 12,
+  "radius": 3.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "cocytus_breath": {
+  "id": "cocytus_breath",
+  "name": "Cocytus Breath",
+  "element": "ice",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "garuru_tomahawk": {
+  "id": "garuru_tomahawk",
+  "name": "Garuru Tomahawk",
+  "element": "ice",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "metal_wolf_claw": {
+  "id": "metal_wolf_claw",
+  "name": "Metal Wolf Claw",
+  "element": "ice",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 3836927
+ },
+ "boom_bubble": {
+  "id": "boom_bubble",
+  "name": "Boom Bubble",
+  "element": "wind",
+  "pattern": "projectile",
+  "damage": 10,
+  "cooldown": 1,
+  "range": 12,
+  "radius": 0.5,
+  "speed": 14,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "patamon_dive": {
+  "id": "patamon_dive",
+  "name": "Patamon Dive",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "wing_flap": {
+  "id": "wing_flap",
+  "name": "Wing Flap",
+  "element": "wind",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "spiral_bubble": {
+  "id": "spiral_bubble",
+  "name": "Spiral Bubble",
+  "element": "wind",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "angel_rod": {
+  "id": "angel_rod",
+  "name": "Angel Rod",
+  "element": "light",
+  "pattern": "cone",
+  "damage": 14,
+  "cooldown": 0.9,
+  "range": 3.5,
+  "radius": 3.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "holy_aura": {
+  "id": "holy_aura",
+  "name": "Holy Aura",
+  "element": "light",
+  "pattern": "aura",
+  "damage": 5,
+  "cooldown": 0.5,
+  "range": 3.2,
+  "radius": 3.2,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "gate_of_destiny": {
+  "id": "gate_of_destiny",
+  "name": "Gate of Destiny",
+  "element": "light",
+  "pattern": "area",
+  "damage": 22,
+  "cooldown": 2.2,
+  "range": 12,
+  "radius": 3.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "excalibur": {
+  "id": "excalibur",
+  "name": "Excalibur",
+  "element": "light",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "holy_ring": {
+  "id": "holy_ring",
+  "name": "Holy Ring",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "seven_heavens": {
+  "id": "seven_heavens",
+  "name": "Seven Heavens",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 30,
+  "cooldown": 4,
+  "range": 4,
+  "radius": 4,
+  "count": 4,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "strike_of_seven_stars": {
+  "id": "strike_of_seven_stars",
+  "name": "Strike of the Seven Stars",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "testament": {
+  "id": "testament",
+  "name": "Testament",
+  "element": "light",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "double_punch": {
+  "id": "double_punch",
+  "name": "Double Punch",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "static_spark": {
+  "id": "static_spark",
+  "name": "Static Spark",
+  "element": "electric",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "beetle_buzz": {
+  "id": "beetle_buzz",
+  "name": "Beetle Buzz",
+  "element": "electric",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "electro_shocker": {
+  "id": "electro_shocker",
+  "name": "Electro Shocker",
+  "element": "electric",
+  "pattern": "projectile",
+  "damage": 16,
+  "cooldown": 1.1,
+  "range": 13,
+  "radius": 0.7,
+  "pierce": 1,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "beetle_horn": {
+  "id": "beetle_horn",
+  "name": "Beetle Horn",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 14,
+  "cooldown": 0.9,
+  "range": 3.5,
+  "radius": 3.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "horn_buster": {
+  "id": "horn_buster",
+  "name": "Horn Buster",
+  "element": "electric",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "electro_beam": {
+  "id": "electro_beam",
+  "name": "Electro Beam",
+  "element": "electric",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "thunder_ring": {
+  "id": "thunder_ring",
+  "name": "Thunder Ring",
+  "element": "electric",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "giga_blaster": {
+  "id": "giga_blaster",
+  "name": "Giga Blaster",
+  "element": "electric",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "high_electro_shocker": {
+  "id": "high_electro_shocker",
+  "name": "High Electro Shocker",
+  "element": "electric",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "mega_electro_shocker": {
+  "id": "mega_electro_shocker",
+  "name": "Mega Electro Shocker",
+  "element": "electric",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16771146
+ },
+ "puppy_howl": {
+  "id": "puppy_howl",
+  "name": "Puppy Howl",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 10,
+  "cooldown": 1,
+  "range": 12,
+  "radius": 0.5,
+  "speed": 14,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "puppy_claw": {
+  "id": "puppy_claw",
+  "name": "Puppy Claw",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "holy_bark": {
+  "id": "holy_bark",
+  "name": "Holy Bark",
+  "element": "light",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "salamon_rush": {
+  "id": "salamon_rush",
+  "name": "Salamon Rush",
+  "element": "neutral",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "cats_eye": {
+  "id": "cats_eye",
+  "name": "Cat's Eye",
+  "element": "light",
+  "pattern": "area",
+  "damage": 12,
+  "cooldown": 2.2,
+  "range": 11,
+  "radius": 3,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "neko_punch": {
+  "id": "neko_punch",
+  "name": "Neko Punch",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 14,
+  "cooldown": 0.9,
+  "range": 3.5,
+  "radius": 3.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "celestial_arrow": {
+  "id": "celestial_arrow",
+  "name": "Celestial Arrow",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "heavens_charm": {
+  "id": "heavens_charm",
+  "name": "Heaven's Charm",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "holy_arrow_rain": {
+  "id": "holy_arrow_rain",
+  "name": "Holy Arrow Rain",
+  "element": "light",
+  "pattern": "area",
+  "damage": 22,
+  "cooldown": 2.2,
+  "range": 12,
+  "radius": 3.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "eden_javelin": {
+  "id": "eden_javelin",
+  "name": "Eden's Javelin",
+  "element": "light",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "sefirot_crystal": {
+  "id": "sefirot_crystal",
+  "name": "Sefirot Crystal",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "holy_halo": {
+  "id": "holy_halo",
+  "name": "Holy Halo",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 30,
+  "cooldown": 4,
+  "range": 4,
+  "radius": 4,
+  "count": 4,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
  }
 };
 export const FORMS: Record<string, FormDef> = {
@@ -1669,8 +2464,22 @@ export const FORMS: Record<string, FormDef> = {
   },
   "growthRate": 0.005,
   "signature": "petit_fire",
-  "kit": [],
-  "evolutions": [],
+  "kit": [
+   "little_horn",
+   "frost_breath",
+   "gabu_tackle"
+  ],
+  "evolutions": [
+   {
+    "to": "garurumon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "spd": 13
+     }
+    }
+   }
+  ],
   "size": 1,
   "color": 9418751
  },
@@ -1694,6 +2503,499 @@ export const FORMS: Record<string, FormDef> = {
   "evolutions": [],
   "size": 1,
   "color": 7330906
+ },
+ "garurumon": {
+  "id": "garurumon",
+  "name": "Garurumon",
+  "stage": "adult",
+  "line": "gabumon",
+  "attribute": "vaccine",
+  "element": "ice",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 15,
+   "spd": 17,
+   "brain": 12
+  },
+  "growthRate": 0.005,
+  "signature": "fox_fire",
+  "kit": [
+   "slamming_attack",
+   "frost_breath",
+   "little_horn"
+  ],
+  "evolutions": [
+   {
+    "to": "weregarurumon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 26,
+      "spd": 26
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 3836927
+ },
+ "weregarurumon": {
+  "id": "weregarurumon",
+  "name": "WereGarurumon",
+  "stage": "perfect",
+  "line": "gabumon",
+  "attribute": "vaccine",
+  "element": "ice",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 27,
+   "brain": 20
+  },
+  "growthRate": 0.005,
+  "signature": "kaiser_nail",
+  "kit": [
+   "garuru_kick",
+   "wolf_howl",
+   "slamming_attack"
+  ],
+  "evolutions": [
+   {
+    "to": "metalgarurumon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "spd": 40
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 3836927
+ },
+ "metalgarurumon": {
+  "id": "metalgarurumon",
+  "name": "MetalGarurumon",
+  "stage": "ultimate",
+  "line": "gabumon",
+  "attribute": "data",
+  "element": "ice",
+  "baseStats": {
+   "hp": 380,
+   "atk": 54,
+   "def": 44,
+   "spd": 38,
+   "brain": 32
+  },
+  "growthRate": 0.005,
+  "signature": "cocytus_breath",
+  "kit": [
+   "garuru_tomahawk",
+   "metal_wolf_claw",
+   "kaiser_nail"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 3836927
+ },
+ "patamon": {
+  "id": "patamon",
+  "name": "Patamon",
+  "stage": "child",
+  "line": "patamon",
+  "attribute": "data",
+  "element": "light",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 8,
+   "spd": 10,
+   "brain": 10
+  },
+  "growthRate": 0.005,
+  "signature": "boom_bubble",
+  "kit": [
+   "patamon_dive",
+   "wing_flap",
+   "spiral_bubble"
+  ],
+  "evolutions": [
+   {
+    "to": "angemon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "brain": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 16767050
+ },
+ "angemon": {
+  "id": "angemon",
+  "name": "Angemon",
+  "stage": "adult",
+  "line": "patamon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 15,
+   "spd": 13,
+   "brain": 15
+  },
+  "growthRate": 0.005,
+  "signature": "hand_of_fate",
+  "kit": [
+   "angel_rod",
+   "holy_aura",
+   "patamon_dive"
+  ],
+  "evolutions": [
+   {
+    "to": "magnaangemon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 24,
+      "brain": 22
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 16767050
+ },
+ "magnaangemon": {
+  "id": "magnaangemon",
+  "name": "MagnaAngemon",
+  "stage": "perfect",
+  "line": "patamon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 23,
+   "brain": 23
+  },
+  "growthRate": 0.005,
+  "signature": "gate_of_destiny",
+  "kit": [
+   "excalibur",
+   "holy_ring",
+   "angel_rod"
+  ],
+  "evolutions": [
+   {
+    "to": "seraphimon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "brain": 36
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 16767050
+ },
+ "seraphimon": {
+  "id": "seraphimon",
+  "name": "Seraphimon",
+  "stage": "ultimate",
+  "line": "patamon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 380,
+   "atk": 54,
+   "def": 44,
+   "spd": 34,
+   "brain": 35
+  },
+  "growthRate": 0.005,
+  "signature": "seven_heavens",
+  "kit": [
+   "strike_of_seven_stars",
+   "testament",
+   "excalibur"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 16767050
+ },
+ "tentomon": {
+  "id": "tentomon",
+  "name": "Tentomon",
+  "stage": "child",
+  "line": "tentomon",
+  "attribute": "vaccine",
+  "element": "electric",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 11,
+   "spd": 10,
+   "brain": 8
+  },
+  "growthRate": 0.005,
+  "signature": "super_shocker",
+  "kit": [
+   "double_punch",
+   "static_spark",
+   "beetle_buzz"
+  ],
+  "evolutions": [
+   {
+    "to": "kabuterimon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "def": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 16771146
+ },
+ "kabuterimon": {
+  "id": "kabuterimon",
+  "name": "Kabuterimon",
+  "stage": "adult",
+  "line": "tentomon",
+  "attribute": "vaccine",
+  "element": "electric",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 19,
+   "spd": 13,
+   "brain": 12
+  },
+  "growthRate": 0.005,
+  "signature": "electro_shocker",
+  "kit": [
+   "beetle_horn",
+   "static_spark",
+   "double_punch"
+  ],
+  "evolutions": [
+   {
+    "to": "megakabuterimon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 24,
+      "def": 26
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 16771146
+ },
+ "megakabuterimon": {
+  "id": "megakabuterimon",
+  "name": "MegaKabuterimon",
+  "stage": "perfect",
+  "line": "tentomon",
+  "attribute": "vaccine",
+  "element": "electric",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 31,
+   "spd": 23,
+   "brain": 20
+  },
+  "growthRate": 0.005,
+  "signature": "horn_buster",
+  "kit": [
+   "electro_beam",
+   "thunder_ring",
+   "beetle_horn"
+  ],
+  "evolutions": [
+   {
+    "to": "herculeskabuterimon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "def": 46
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 16771146
+ },
+ "herculeskabuterimon": {
+  "id": "herculeskabuterimon",
+  "name": "HerculesKabuterimon",
+  "stage": "ultimate",
+  "line": "tentomon",
+  "attribute": "vaccine",
+  "element": "electric",
+  "baseStats": {
+   "hp": 380,
+   "atk": 54,
+   "def": 48,
+   "spd": 34,
+   "brain": 32
+  },
+  "growthRate": 0.005,
+  "signature": "giga_blaster",
+  "kit": [
+   "high_electro_shocker",
+   "mega_electro_shocker",
+   "horn_buster"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 16771146
+ },
+ "salamon": {
+  "id": "salamon",
+  "name": "Salamon",
+  "stage": "child",
+  "line": "gatomon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 8,
+   "spd": 12,
+   "brain": 9
+  },
+  "growthRate": 0.005,
+  "signature": "puppy_howl",
+  "kit": [
+   "puppy_claw",
+   "holy_bark",
+   "salamon_rush"
+  ],
+  "evolutions": [
+   {
+    "to": "gatomon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "spd": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 16767050
+ },
+ "gatomon": {
+  "id": "gatomon",
+  "name": "Gatomon",
+  "stage": "adult",
+  "line": "gatomon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 15,
+   "spd": 16,
+   "brain": 14
+  },
+  "growthRate": 0.005,
+  "signature": "lightning_paw",
+  "kit": [
+   "cats_eye",
+   "neko_punch",
+   "puppy_claw"
+  ],
+  "evolutions": [
+   {
+    "to": "angewomon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "spd": 24,
+      "brain": 20
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 16767050
+ },
+ "angewomon": {
+  "id": "angewomon",
+  "name": "Angewomon",
+  "stage": "perfect",
+  "line": "gatomon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 26,
+   "brain": 23
+  },
+  "growthRate": 0.005,
+  "signature": "celestial_arrow",
+  "kit": [
+   "heavens_charm",
+   "holy_arrow_rain",
+   "cats_eye"
+  ],
+  "evolutions": [
+   {
+    "to": "ophanimon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "brain": 36
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 16767050
+ },
+ "ophanimon": {
+  "id": "ophanimon",
+  "name": "Ophanimon",
+  "stage": "ultimate",
+  "line": "gatomon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 380,
+   "atk": 54,
+   "def": 44,
+   "spd": 37,
+   "brain": 35
+  },
+  "growthRate": 0.005,
+  "signature": "eden_javelin",
+  "kit": [
+   "sefirot_crystal",
+   "holy_halo",
+   "celestial_arrow"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 16767050
  }
 };
 export const CARDS: Record<string, CardDef> = {
@@ -1915,6 +3217,24 @@ export const ITEMS: Record<string, ItemDef> = {
   "name": "Ovo do Wormmon",
   "kind": "egg",
   "unlockPartner": "wormmon"
+ },
+ "egg_patamon": {
+  "id": "egg_patamon",
+  "name": "Ovo do Patamon",
+  "kind": "egg",
+  "unlockPartner": "patamon"
+ },
+ "egg_tentomon": {
+  "id": "egg_tentomon",
+  "name": "Ovo do Tentomon",
+  "kind": "egg",
+  "unlockPartner": "tentomon"
+ },
+ "egg_gatomon": {
+  "id": "egg_gatomon",
+  "name": "Ovo do Gatomon",
+  "kind": "egg",
+  "unlockPartner": "gatomon"
  }
 };
 export const PARTNERS: PartnerDef[] = [
@@ -1947,6 +3267,24 @@ export const PARTNERS: PartnerDef[] = [
   "childForm": "guilmon",
   "season": "tamers",
   "starter": true
+ },
+ {
+  "id": "patamon",
+  "childForm": "patamon",
+  "season": "adventure",
+  "starter": false
+ },
+ {
+  "id": "tentomon",
+  "childForm": "tentomon",
+  "season": "adventure",
+  "starter": false
+ },
+ {
+  "id": "gatomon",
+  "childForm": "salamon",
+  "season": "adventure",
+  "starter": false
  }
 ];
 export const ENEMIES: EnemyDef[] = [

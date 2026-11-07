@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { openDb } from '../../tools/db/db';
 import { migrate, seed } from '../../tools/db/migrate';
+import { seedsAtMigration } from './helpers';
 
 const before = JSON.parse(readFileSync('tests/db/fixtures/before.json', 'utf8'));
 const db = openDb(':memory:');
 migrate(db, 'db/migrations');
-seed(db, 'db/seeds');
+seed(db, seedsAtMigration()); // fidelidade da migração: só os seeds daquela época
 const count = (sql: string) => Number(db.prepare(sql).get()!.n);
 
 test('seed has the same content as the old TS modules', () => {

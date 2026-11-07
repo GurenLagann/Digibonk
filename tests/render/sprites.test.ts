@@ -20,8 +20,9 @@ test('facingFlip mirrors when moving right', () => { expect(facingFlip(1)).toBe(
 test('every enemy and boss has a sprite source', () => {
   for (const e of [...ENEMIES, ...MINIBOSSES, ...BOSSES]) expect(hasSheet(e.id), e.id).toBe(true);
 });
-test('every form has a v-pet sprite', () => {
-  expect(Object.keys(FORMS).filter(id => !hasSheet(id))).toEqual([]);
+test('forms without a sprite are only from the unlockable partner lines (sprites em avaliação → placeholder)', () => {
+  const unlockable = new Set(['gabumon', 'patamon', 'tentomon', 'gatomon', 'wormmon', 'armadillomon', 'terriermon', 'renamon']);
+  expect(Object.values(FORMS).filter(f => !hasSheet(f.id) && !unlockable.has(f.line)).map(f => f.id)).toEqual([]);
 });
 test('moving with walk frames cycles walk1..walk4', () => {
   const frames: Role[] = ['walk1', 'walk2', 'walk3', 'walk4', 'idle1', 'idle2', 'attack', 'hurt'];
