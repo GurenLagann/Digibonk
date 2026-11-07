@@ -90,7 +90,7 @@ export class Billboards {
       if (i >= T.MAX_ENEMIES) continue;
       this.counts.set(e.def, i + 1);
       const flip = FLIP_SPRITES && sp.tex ? facingFlip(run.px - e.x) : 1;
-      const pose = motionPose({ t: time, phase: (e.id * 0.618) % 1, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0 });
+      const pose = motionPose({ t: time, phase: (e.id * 0.618) % 1, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
       this.m.compose(this.p.set(e.x, pose.y * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
@@ -127,7 +127,7 @@ export class Billboards {
     }
     const flip = FLIP_SPRITES && this.playerTex ? facingFlip(run.dirX) : 1;
     const hurt = Math.max(0, Math.min(1, (c.invuln - 0.3) / 0.2));
-    const pose = motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt });
+    const pose = motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt, drawnWalk: this.playerFrames.includes('walk1') });
     this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);

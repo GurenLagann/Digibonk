@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HOP, motionPose } from '../../src/render/motion';
 
-const base = { t: 0, phase: 0, moving: false, attack: 99, hurt: 0 };
+const base = { t: 0, phase: 0, moving: false, attack: 99, hurt: 0, drawnWalk: false };
 const samples = (o: Partial<typeof base>) => Array.from({ length: 120 }, (_, i) => motionPose({ ...base, ...o, t: i / 60 }));
 
 describe('motionPose', () => {
@@ -42,5 +42,15 @@ describe('motionPose', () => {
 
   it('mantém a área aproximada (sx·sy ≈ 1)', () => {
     for (const p of [...samples({ moving: true }), ...samples({ attack: 0.05 })]) expect(p.sx * p.sy).toBeGreaterThan(0.95), expect(p.sx * p.sy).toBeLessThan(1.05);
+  });
+});
+
+describe('motionPose com caminhada desenhada', () => {
+  it('andando não pula nem balança', () => {
+    for (const p of samples({ moving: true, drawnWalk: true })) { expect(p.y).toBe(0); expect(p.tilt).toBe(0); }
+  });
+  it('ataque e dano continuam', () => {
+    expect(motionPose({ ...base, drawnWalk: true, attack: 0.02 }).sx).toBeGreaterThan(1.1);
+    expect(motionPose({ ...base, drawnWalk: true, hurt: 1 }).tilt).toBeLessThan(-0.15);
   });
 });

@@ -13,13 +13,17 @@
   },
   "agumon": {
    "file": "agumon.png",
-   "frameW": 38,
-   "frameH": 46,
+   "frameW": 45,
+   "frameH": 48,
    "frames": [
     "walk1",
     "walk2",
     "walk3",
     "walk4",
+    "walk5",
+    "walk6",
+    "walk7",
+    "walk8",
     "idle1",
     "idle2",
     "attack",
@@ -159,11 +163,21 @@
   },
   "greymon": {
    "file": "greymon.png",
-   "frameW": 49,
-   "frameH": 48,
+   "frameW": 69,
+   "frameH": 65,
    "frames": [
+    "walk1",
+    "walk2",
+    "walk3",
+    "walk4",
+    "walk5",
+    "walk6",
+    "walk7",
+    "walk8",
     "idle1",
-    "idle2"
+    "idle2",
+    "attack",
+    "hurt"
    ],
    "source": 0
   },

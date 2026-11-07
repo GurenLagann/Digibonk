@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'walk1' | 'walk2' | 'walk3' | 'walk4';
-const ROLES: readonly Role[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'walk1', 'walk2', 'walk3', 'walk4'];
+export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'walk1' | 'walk2' | 'walk3' | 'walk4' | 'walk5' | 'walk6' | 'walk7' | 'walk8';
+const ROLES: readonly Role[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7', 'walk8'];
 export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
 
@@ -24,10 +24,11 @@ export function frameIndex(role: Role, frames: Role[]): number { const i = frame
 const IDLE_CYCLE: Role[] = ['idle1', 'idle2', 'idle3', 'idle2'];
 export function idleFrame(time: number, phase = 0): Role { return IDLE_CYCLE[Math.floor((time + phase) * 6) % 4]; }
 
-const WALK_CYCLE: Role[] = ['walk1', 'walk2', 'walk3', 'walk4'];
-/** andando e com quadros de caminhada → ciclo de caminhada (8 quadros/s); senão o ciclo de idle */
+const WALK_FPS = 10;
+/** andando e com quadros de caminhada → ciclo walk1..walkN (10 quadros/s); senão o ciclo de idle */
 export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[]): Role {
-  if (moving && frames.includes('walk1')) return WALK_CYCLE[Math.floor((time + phase) * 8) % 4];
+  const walk = frames.filter(f => f.startsWith('walk'));
+  if (moving && walk.length) return walk[Math.floor((time + phase) * WALK_FPS) % walk.length];
   return idleFrame(time, phase);
 }
 

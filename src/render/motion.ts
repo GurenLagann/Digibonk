@@ -4,7 +4,8 @@
  * Valores relativos à altura do sprite; tilt em radianos, pivô nos pés.
  */
 export interface Pose { y: number; sx: number; sy: number; tilt: number }
-export interface MotionInput { t: number; phase: number; moving: boolean; attack: number; hurt: number }
+/** drawnWalk: o sprite tem quadros de caminhada desenhados → sem pulinho/balanço ao andar */
+export interface MotionInput { t: number; phase: number; moving: boolean; attack: number; hurt: number; drawnWalk?: boolean }
 
 /** altura máxima do pulinho, fração da altura do sprite */
 export const HOP = 0.12;
@@ -15,9 +16,11 @@ const BREATH = 0.03;
 const ATTACK_TIME = 0.18, ATTACK_STRETCH = 0.25;
 const HURT_TILT = 0.3;
 
-export function motionPose({ t, phase, moving, attack, hurt }: MotionInput): Pose {
+export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false }: MotionInput): Pose {
   let y = 0, tilt = 0, sy: number;
-  if (moving) {
+  if (moving && drawnWalk) {
+    sy = 1;
+  } else if (moving) {
     const w = Math.PI * (t * STEPS + phase);
     const s = Math.sin(w), up = Math.abs(s);
     y = HOP * up;
