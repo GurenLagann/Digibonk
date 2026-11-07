@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "types": ["vite/client", "vitest/globals"],
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "noUnusedLocals": false
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "tests", "tools", "vite.config.ts"]
 }

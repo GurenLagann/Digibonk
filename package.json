@@ -12,8 +12,10 @@
     "three": "0.187.0"
   },
   "devDependencies": {
+    "@types/pngjs": "6.0.5",
     "@types/three": "0.187.0",
     "happy-dom": "20.14.6",
+    "pngjs": "7.0.0",
     "typescript": "5.9.3",
     "vite": "7.3.7",
     "vitest": "4.1.12"
