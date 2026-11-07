@@ -17,7 +17,7 @@ Draw {DIGIMON} (Digimon) in that same PlayStation-era pixel-art style.
 Make a square image with a grid of 3 columns x 2 rows = exactly 6 frames,
 read left to right, top to bottom: a smooth walk cycle, side view,
 {DIGIMON} facing RIGHT in every frame. Legs and arms must clearly change in every frame.
-{DIGIMON} is large and fills most of each cell, same size in every frame,
+{DIGIMON} fills most of each cell, same size in every frame,
 feet on the same baseline, centered in its cell.
 One flat solid gray background (#808080) for the whole image.
 No lines between cells, no borders, no text, no other characters.
@@ -45,7 +45,7 @@ CELLS=sheet.cells INSET=4 FUZZ=6 tools/sprites/cut-gemini.sh ID sheet.png SCALE 
 ```
 
 - `FUZZ=6` works for a flat PNG background. Use 18 for JPEG.
-- Scale by stage, from about 300 px tall in the cell: Child 16%, Adult 25%, Perfect 30%, Ultimate 33%.
+- Every player form is drawn at the same height in game, so scale only sets the strip resolution. Aim for frames about 60–80 px tall: about 25% for a Digimon roughly 300 px tall in its cell.
 
 ## Ask for a redo when
 

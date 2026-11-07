@@ -105,11 +105,6 @@ test('only up/down views are not mirrored', () => {
 test('hurtFrame is null when the sprite has no hurt pose at all (keeps the movement frame)', () => {
   expect(hurtFrame(0.05, ['walkup1', 'walk1', 'idle1'] as Role[])).toBeNull();
 });
-test('manifest keeps an optional per-sprite scale (default 1)', () => {
-  const m = parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['idle1'], scale: 0.8 }, b: { file: 'b.png', frameW: 1, frameH: 1, frames: ['idle1'] } } });
-  expect(m?.sprites.a.scale).toBe(0.8);
-  expect(m?.sprites.b.scale).toBe(1);
-});
 test('running uses runN frames of the facing, walking keeps walkN', () => {
   const frames = ['walk1', 'walk2', 'run1', 'run2', 'run3', 'runup1', 'walkup1', 'idle1'] as Role[];
   expect(moveFrame(2 / 12 + 0.001, 0, true, frames, 'side', true)).toBe('run3');

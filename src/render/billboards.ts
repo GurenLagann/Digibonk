@@ -11,8 +11,8 @@ const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MI
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
 /** escala visual dos placeholders em relação ao tamanho de colisão */
 const VIS = 1.6;
-/** mundo por pixel dos sprites do jogador */
-const PX = 0.04;
+/** altura do Digimon do jogador no mundo: igual para todas as formas (evoluir não aumenta) */
+const PLAYER_HEIGHT = 2;
 export const FLIP_SPRITES = true;
 /** altura visual dos inimigos com sprite = tamanho de colisão × ENEMY_VIS */
 const ENEMY_VIS = 1.7;
@@ -48,10 +48,10 @@ export class Billboards {
     scene.add(this.shadows);
   }
 
-  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[]; frameH: number } {
+  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[] } {
     const info = this.lib.info(id), tex = this.lib.texture(id);
-    if (!info || !tex) return { geo: unitPlane, tex: null, frames: [], frameH: 0 };
-    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, frameH: info.frameH * info.scale };
+    if (!info || !tex) return { geo: unitPlane, tex: null, frames: [] };
+    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames };
   }
 
   private speciesFor(def: string, size: number): Species {
@@ -119,7 +119,7 @@ export class Billboards {
       this.player.geometry = g.geo;
       mat.map = g.tex ?? placeholderTexture('form:' + f.id, f.name, f.color);
       mat.needsUpdate = true;
-      this.playerHeight = g.tex ? THREE.MathUtils.clamp(g.frameH * PX, 1.2, 7) : f.size * VIS;
+      this.playerHeight = g.tex ? PLAYER_HEIGHT : f.size * VIS;
     }
     const c = run.combat;
     // morte: conta a partir do primeiro quadro em que a partida terminou em derrota

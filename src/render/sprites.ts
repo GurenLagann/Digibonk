@@ -15,8 +15,7 @@ const cycle = (frames: Role[], kind: 'walk' | 'run', facing: Facing) => {
 };
 /** costas e frente são simétricas: só lado e diagonais espelham com a direção horizontal */
 export function mirrorsWithDir(f: Facing): boolean { return f !== 'up' && f !== 'down'; }
-/** scale: multiplica o tamanho no mundo (folhas ampliadas na ferramenta, ex.: DW3 2× → 0.8) */
-export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number; scale: number }
+export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
 
 export function parseManifest(json: unknown): SpriteManifest | null {
@@ -28,8 +27,7 @@ export function parseManifest(json: unknown): SpriteManifest | null {
     const s = v as Partial<SpriteInfo>;
     if (!s || typeof s.file !== 'string' || !/^[a-z0-9_]+\.png$/.test(s.file) || typeof s.frameW !== 'number' || typeof s.frameH !== 'number'
       || !Array.isArray(s.frames) || !s.frames.length || !s.frames.every(isRole)) return null;
-    sprites[id] = { file: s.file, frameW: s.frameW, frameH: s.frameH, frames: s.frames as Role[], source: typeof s.source === 'number' ? s.source : 0,
-      scale: typeof s.scale === 'number' && s.scale > 0 ? s.scale : 1 };
+    sprites[id] = { file: s.file, frameW: s.frameW, frameH: s.frameH, frames: s.frames as Role[], source: typeof s.source === 'number' ? s.source : 0 };
   }
   return { version: 1, sprites };
 }

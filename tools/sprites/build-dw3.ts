@@ -16,7 +16,7 @@ type Dir = 'up' | 'diagup' | 'side' | 'diagdown' | 'down';
 type At = [number, number] | string[];
 type Dirs = Record<Dir, At>;
 /** file: folha em assets-src/sprites/dw3 (padrão <id>.png); direções ausentes caem nas de lado no jogo */
-interface Sheet { file?: string; idle?: Partial<Dirs>; walk: Partial<Dirs>; walkFrames: number; run?: Partial<Dirs>; runFrames?: number; scale?: number }
+interface Sheet { file?: string; idle?: Partial<Dirs>; walk: Partial<Dirs>; walkFrames: number; run?: Partial<Dirs>; runFrames?: number }
 const ROW0_IDLE: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
 const CONFIG: Record<string, Sheet> = {
   agumon: {
@@ -30,8 +30,8 @@ const CONFIG: Record<string, Sheet> = {
     run: { up: [2, 0], diagup: [2, 6], side: [2, 12], diagdown: [3, 0], down: [3, 6] },
   },
   // inimigos (folha "Various Digimon 1"): só a caminhada de lado, virada para o jogador
-  bakemon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [3, 6] }, walk: { side: [3, 6] }, walkFrames: 3, scale: 1 },
-  guardromon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [1, 0] }, walk: { side: [1, 0] }, walkFrames: 3, scale: 1 },
+  bakemon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [3, 6] }, walk: { side: [3, 6] }, walkFrames: 3 },
+  guardromon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [1, 0] }, walk: { side: [1, 0] }, walkFrames: 3 },
   guilmon: { // folha rotulada (IDLE / WALK / RUN)
     idle: { up: [0, 0], diagup: [0, 3], side: [0, 6], diagdown: [1, 0], down: [1, 3] }, walkFrames: 4, runFrames: 5,
     walk: { up: [2, 0], diagup: [2, 4], side: [3, 0], diagdown: [3, 4], down: [4, 0] },
@@ -74,7 +74,7 @@ for (const [id, cfg] of Object.entries(CONFIG)) {
       cellsAt(`${kind} ${dir}`, at, n).forEach((q, i) => { frames.push(cut(img, bg, q)); roles.push(`${kind}${SUFFIX[dir]}${i + 1}` as Role); });
   const r = buildStrip(frames);
   writePng(join(OUT, `${id}.png`), r.strip);
-  manifest.sprites[id] = { file: `${id}.png`, frameW: r.frameW, frameH: r.frameH, frames: roles, source: 0, scale: cfg.scale ?? 0.8 };
+  manifest.sprites[id] = { file: `${id}.png`, frameW: r.frameW, frameH: r.frameH, frames: roles, source: 0 };
   console.log(`${id.padEnd(20)} ${r.frameW}x${r.frameH} (dw3, ${frames.length} quadros)`);
 }
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 1) + '\n');
