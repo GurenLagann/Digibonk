@@ -1,14 +1,17 @@
 import * as THREE from 'three';
 
-/** walk1..walk24 (de lado), walkupN / walkdownN (de costas / de frente): quadros de caminhada na ordem do ciclo */
-export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'idleup' | 'idledown'
-  | `walk${number}` | `walkup${number}` | `walkdown${number}` | `hurt${number}` | `death${number}`;
-export type Facing = 'side' | 'up' | 'down';
-const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'idleup', 'idledown'];
+/** walk1..walk24 (de lado), walkupN / walkdownN (costas / frente), walkdiagupN / walkdiagdownN (diagonais): ciclos de caminhada */
+export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'idleup' | 'idledown' | 'idlediagup' | 'idlediagdown'
+  | `walk${number}` | `walkup${number}` | `walkdown${number}` | `walkdiagup${number}` | `walkdiagdown${number}` | `hurt${number}` | `death${number}`;
+export type Facing = 'side' | 'up' | 'down' | 'diagup' | 'diagdown';
+const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'idleup', 'idledown', 'idlediagup', 'idlediagdown'];
 const isRole = (f: unknown): f is Role => typeof f === 'string'
-  && (POSE_ROLES.includes(f) || /^walk(up|down)?([1-9]|1\d|2[0-4])$/.test(f) || /^(hurt|death)([1-9]|[1-5]\d|6[0-4])$/.test(f));
-const WALK_RE: Record<Facing, RegExp> = { side: /^walk\d+$/, up: /^walkup\d+$/, down: /^walkdown\d+$/ };
-export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
+  && (POSE_ROLES.includes(f) || /^walk(up|down|diagup|diagdown)?([1-9]|1\d|2[0-4])$/.test(f) || /^(hurt|death)([1-9]|[1-5]\d|6[0-4])$/.test(f));
+const WALK_RE: Record<Facing, RegExp> = { side: /^walk\d+$/, up: /^walkup\d+$/, down: /^walkdown\d+$/, diagup: /^walkdiagup\d+$/, diagdown: /^walkdiagdown\d+$/ };
+/** costas e frente são simétricas: só lado e diagonais espelham com a direção horizontal */
+export function mirrorsWithDir(f: Facing): boolean { return f !== 'up' && f !== 'down'; }
+/** scale: multiplica o tamanho no mundo (folhas ampliadas na ferramenta, ex.: DW3 2× → 0.8) */
+export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number; scale: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
 
 export function parseManifest(json: unknown): SpriteManifest | null {
@@ -20,7 +23,8 @@ export function parseManifest(json: unknown): SpriteManifest | null {
     const s = v as Partial<SpriteInfo>;
     if (!s || typeof s.file !== 'string' || !/^[a-z0-9_]+\.png$/.test(s.file) || typeof s.frameW !== 'number' || typeof s.frameH !== 'number'
       || !Array.isArray(s.frames) || !s.frames.length || !s.frames.every(isRole)) return null;
-    sprites[id] = { file: s.file, frameW: s.frameW, frameH: s.frameH, frames: s.frames as Role[], source: typeof s.source === 'number' ? s.source : 0 };
+    sprites[id] = { file: s.file, frameW: s.frameW, frameH: s.frameH, frames: s.frames as Role[], source: typeof s.source === 'number' ? s.source : 0,
+      scale: typeof s.scale === 'number' && s.scale > 0 ? s.scale : 1 };
   }
   return { version: 1, sprites };
 }
@@ -53,11 +57,11 @@ export const HURT_COOLDOWN = 1.2;
 export function nextHurtStart(prevStart: number, time: number, newHit: boolean): number {
   return newHit && time - prevStart >= HURT_COOLDOWN ? time : prevStart;
 }
-/** dano: hurt1..N espalhados na janela de HURT_TIME; sem eles, a pose única 'hurt'. null quando a janela passou */
+/** dano: hurt1..N espalhados na janela de HURT_TIME; sem eles, a pose única 'hurt'. null quando a janela passou ou não há pose de dano */
 export function hurtFrame(elapsed: number, frames: Role[]): Role | null {
   if (elapsed < 0 || elapsed > HURT_TIME) return null;
   const seq = frames.filter(f => /^hurt\d+$/.test(f));
-  if (!seq.length) return 'hurt';
+  if (!seq.length) return frames.includes('hurt') ? 'hurt' : null;
   return seq[Math.min(seq.length - 1, Math.floor((elapsed / HURT_TIME) * seq.length))];
 }
 

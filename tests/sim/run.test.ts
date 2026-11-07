@@ -84,3 +84,11 @@ test('facing follows the dominant movement axis and is kept when stopped', () =>
   stepRun(r, { mx: 0.3, mz: 1 }, 1 / 60); expect(r.facing).toBe('down');
   stepRun(r, { mx: 1, mz: 0.4 }, 1 / 60); expect(r.facing).toBe('side');
 });
+
+test('facing has diagonals (8 directions, mirrored by dirX)', () => {
+  const r = createRun(opts());
+  stepRun(r, { mx: 0.7, mz: -0.7 }, 1 / 60); expect(r.facing).toBe('diagup');
+  stepRun(r, { mx: -0.7, mz: 0.7 }, 1 / 60); expect(r.facing).toBe('diagdown');
+  stepRun(r, { mx: 0.2, mz: -1 }, 1 / 60); expect(r.facing).toBe('up');
+  stepRun(r, { mx: 1, mz: 0.2 }, 1 / 60); expect(r.facing).toBe('side');
+});

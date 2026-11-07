@@ -32,7 +32,7 @@ export interface RunState {
   /** última direção horizontal de movimento (para espelhar o sprite) */
   dirX: number;
   /** eixo dominante do último movimento (para escolher os quadros de lado/costas/frente) */
-  facing: 'side' | 'up' | 'down';
+  facing: 'side' | 'up' | 'down' | 'diagup' | 'diagdown';
   pool: EnemyPool; hash: SpatialHash; director: DirectorState; phase: PhaseState;
   pickups: Pickup[]; chests: Chest[]; evo: EvoNotifier;
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
@@ -97,7 +97,11 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
   if (l > 1) { mx /= l; mz /= l; }
   r.moving = l > 0.05;
   if (Math.abs(mx) > 0.05) r.dirX = Math.sign(mx);
-  if (r.moving) r.facing = Math.abs(mz) > Math.abs(mx) ? (mz < 0 ? 'up' : 'down') : 'side';
+  if (r.moving) {
+    // 8 direções: setores de 45° (lado, diagonais, cima/baixo); esquerda/direita vêm do dirX
+    const a = Math.atan2(Math.abs(mz), Math.abs(mx));
+    r.facing = a < Math.PI / 8 ? 'side' : a > (3 * Math.PI) / 8 ? (mz < 0 ? 'up' : 'down') : mz < 0 ? 'diagup' : 'diagdown';
+  }
   const speed = 4 + effectiveStats(r.prog).spd * 0.08;
   let x = r.px + mx * speed * dt, z = r.pz + mz * speed * dt;
   for (const o of MAP_OBSTACLES) {

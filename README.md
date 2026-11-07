@@ -95,15 +95,20 @@ Cada Digimon é uma **tira horizontal** de quadros em `public/sprites/<id>.png`.
 |---|---|
 | `walk1..N` | caminhada de lado (até 24 quadros) |
 | `walkup1..N` / `walkdown1..N` | caminhada de costas / de frente |
-| `idle1`, `idleup`, `idledown` | parado, em cada direção |
+| `walkdiagup1..N` / `walkdiagdown1..N` | caminhada nas diagonais (com o lado e o espelhamento, são 8 direções) |
+| `idle1`, `idleup`, `idledown`, `idlediagup`, `idlediagdown` | parado, em cada direção |
 | `hurt1..N` | dano (toca uma vez a cada golpe, com intervalo mínimo) |
 | `death1..N` | morte (toca uma vez e segura o último quadro) |
 
 Quem não tem quadros de caminhada desenhados ganha uma animação procedural: pulinho e balanço ao andar, respiração parado.
 
-### Folhas geradas por IA
+### Digimon World 3 (formas Child)
 
-Agumon, Greymon, MetalGreymon e Guilmon usam folhas geradas no Gemini. Para recortar uma folha nova:
+Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1): 5 direções × 4 quadros de caminhada, espelhados para a esquerda e ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
+
+### Folhas geradas por IA (evoluções)
+
+Greymon e MetalGreymon usam folhas geradas no Gemini. Para recortar uma folha nova:
 
 ```bash
 # lista as células detectadas (índice x,y,w,h)
@@ -130,9 +135,10 @@ Os demais Digimon e os inimigos usam sprites de V-pet (Vital Bracelet / Pendulum
 
 DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.
 
+- **Sprites do Digimon World 3** (Agumon, Veemon, Guilmon): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
-- **Folhas do Agumon, Greymon, MetalGreymon e Guilmon:** geradas com o Google Gemini a partir de descrições dos personagens.
+- **Folhas do Greymon e do MetalGreymon:** geradas com o Google Gemini a partir de descrições dos personagens.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
 Se você é detentor de direitos e quer a remoção de algum material, abra uma *issue*.

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
+import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, mirrorsWithDir, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
@@ -86,4 +86,26 @@ test('a new hit starts the hurt animation only after the cooldown', () => {
   expect(nextHurtStart(5, 5 + HURT_COOLDOWN, true)).toBe(5 + HURT_COOLDOWN);
   expect(nextHurtStart(5, 9, false)).toBe(5);                 // sem golpe novo: mantém
   expect(HURT_TIME).toBeLessThan(HURT_COOLDOWN / 2);
+});
+test('diagonal facing uses walkdiag frames, falling back to side', () => {
+  const frames = ['walk1', 'walkdiagup1', 'walkdiagup2', 'walkdiagdown1', 'idle1', 'idlediagup'] as Role[];
+  expect(moveFrame(1 / 12 + 0.001, 0, true, frames, 'diagup')).toBe('walkdiagup2');
+  expect(moveFrame(0.001, 0, true, frames, 'diagdown')).toBe('walkdiagdown1');
+  expect(moveFrame(0.001, 0, false, frames, 'diagup')).toBe('idlediagup');
+  expect(moveFrame(0.001, 0, true, ['walk1', 'walk2'] as Role[], 'diagup')).toBe('walk1');
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['walkdiagup4', 'walkdiagdown2', 'idlediagdown'] } } })).not.toBeNull();
+});
+test('only up/down views are not mirrored', () => {
+  expect(mirrorsWithDir('side')).toBe(true);
+  expect(mirrorsWithDir('diagup')).toBe(true);
+  expect(mirrorsWithDir('up')).toBe(false);
+  expect(mirrorsWithDir('down')).toBe(false);
+});
+test('hurtFrame is null when the sprite has no hurt pose at all (keeps the movement frame)', () => {
+  expect(hurtFrame(0.05, ['walkup1', 'walk1', 'idle1'] as Role[])).toBeNull();
+});
+test('manifest keeps an optional per-sprite scale (default 1)', () => {
+  const m = parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['idle1'], scale: 0.8 }, b: { file: 'b.png', frameW: 1, frameH: 1, frames: ['idle1'] } } });
+  expect(m?.sprites.a.scale).toBe(0.8);
+  expect(m?.sprites.b.scale).toBe(1);
 });

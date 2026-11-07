@@ -5,7 +5,7 @@ import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
 import { motionPose } from './motion';
-import { deathFrame, facingFlip, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
+import { deathFrame, facingFlip, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
 
 const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -51,7 +51,7 @@ export class Billboards {
   private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[]; frameH: number } {
     const info = this.lib.info(id), tex = this.lib.texture(id);
     if (!info || !tex) return { geo: unitPlane, tex: null, frames: [], frameH: 0 };
-    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, frameH: info.frameH };
+    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, frameH: info.frameH * info.scale };
   }
 
   private speciesFor(def: string, size: number): Species {
@@ -139,10 +139,10 @@ export class Billboards {
       const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing);
       this.setFrame(this.playerTex, this.playerFrames, role);
     }
-    const flip = FLIP_SPRITES && this.playerTex && (run.facing === 'side' || sideOnly) ? facingFlip(run.dirX) : 1;
+    const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(run.facing) || sideOnly) ? facingFlip(run.dirX) : 1;
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
-      : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.includes('walk1') || this.playerFrames.includes('walkup1') });
+      : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)) });
     this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
