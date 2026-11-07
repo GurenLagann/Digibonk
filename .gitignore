@@ -2,3 +2,6 @@ node_modules
 dist
 .superpowers
 assets-src/sprites/contact-*.png
+
+# banco gerado (fonte: db/migrations + db/seeds)
+db/*.db
