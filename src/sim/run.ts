@@ -9,7 +9,7 @@ import { gainItem, offerPassive, replacePassive, slashIntoSlot } from './cards';
 import { newCombatState, stepCombat, type CombatState } from './combat';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { availableEvolutions, evolve, EvoNotifier } from './evolution';
-import { collect, dropOnKill, eligibleCards, placeChests, rollChest, type Chest, type Pickup } from './loot';
+import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
 import { addXp, applyOffer, newPlayerProg, rollOffers, type LevelOffer, type PlayerProg } from './progression';
@@ -33,6 +33,8 @@ export interface RunState {
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
   offers: LevelOffer[] | null; pendingCard: string | null;
   nextPickupId: number; unlockedThisRun: string[];
+  /** dev only */
+  debug: { xpMul: number; forceItems: boolean };
 }
 
 export const PLAYER_RADIUS = 0.5, CHEST_RADIUS = 1.6;
@@ -65,7 +67,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
-    nextPickupId: 1, unlockedThisRun: [],
+    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);
@@ -159,7 +161,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   // pickups
   for (const p of collect(r.pickups, r.px, r.pz, 1.5 * stats.pickupMul)) {
-    if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul);
+    if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul);
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
     else if (p.kind === 'fragment') collectedFragment = true;
     else if (p.kind === 'card' && p.ref) handleCard(r, p.ref, ev);
@@ -168,7 +170,8 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   for (const c of r.chests) {
     if (c.opened || Math.hypot(c.x - r.px, c.z - r.pz) > CHEST_RADIUS) continue;
     c.opened = true; ev.push({ type: 'chestOpened', x: c.x, z: c.z });
-    spawnPickup(r, c.x, c.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng));
+    const forced = r.debug.forceItems ? eligibleItems(r.partnerId, r.save, r.prog.items) : [];
+    spawnPickup(r, c.x, c.z, forced.length ? { kind: 'item', ref: r.rng.pick(forced).id } : rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng));
   }
 
   // phase
