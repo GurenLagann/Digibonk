@@ -22,3 +22,10 @@ export function maxedProg(formId: string): PlayerProg {
   p.slots = [f.signature, ...f.kit].map(moveId => ({ moveId, level: 5, fromCard: false }));
   return p;
 }
+
+import { chooseOffer, resolveCard, type RunState } from '../src/sim/run';
+export function autoResolveModals(r: RunState) {
+  if (r.offers) chooseOffer(r, 0);
+  if (r.pendingCard) resolveCard(r, { passiveSlot: null });
+}
+export const circleInput = (i: number) => ({ mx: Math.cos(i / 120), mz: Math.sin(i / 120) });
