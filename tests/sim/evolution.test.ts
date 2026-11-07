@@ -15,7 +15,8 @@ test('agumon to greymon needs level and atk', () => {
 test('veemon branches by stats', () => {
   const p = progAt('veemon', 8);
   p.bonus.spd = 10; expect(availableEvolutions(p, ctx())).toEqual(['exveemon']);
-  p.bonus.spd = 0; p.bonus.def = 5; expect(availableEvolutions(p, ctx())).toEqual(['veedramon']);
+  // com 0,5%/nível o ataque no nível 8 fica ~10,35: Veedramon (atk 14) agora exige pontos em ataque
+  p.bonus.spd = 0; p.bonus.def = 5; p.bonus.atk = 4; expect(availableEvolutions(p, ctx())).toEqual(['veedramon']);
   p.bonus.spd = 10; expect(availableEvolutions(p, ctx()).sort()).toEqual(['exveemon', 'veedramon']);
 });
 test('digiegg unlocks flamedramon early', () => {

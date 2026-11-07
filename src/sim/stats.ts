@@ -2,30 +2,39 @@ import { CARDS } from '../data/cards';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
-import type { Stats } from '../data/types';
+import { ATTRIBUTE_CHART, ELEMENT_CHART } from '../data/typing';
+import type { AttributeId, CardStat, ElementId, StatKey, Stats } from '../data/types';
 import type { MoveSlot, PlayerProg } from './progression';
 
 export type EffStats = Stats & { dmgMul: number; pickupMul: number; xpMul: number; cdMul: number };
 
+/** status no nível: base × (1 + taxa × (nível − 1)) — 0,5% do base por nível, sem composição */
+export const statAt = (base: number, rate: number, level: number) => base * (1 + rate * (level - 1));
+
+/** bônus em % de uma carta passiva para um status, no nível da carta */
+export function cardBonusPct(cardId: string, stat: CardStat, level: number): number {
+  const b = CARDS[cardId]?.bonuses.find(x => x.stat === stat);
+  return b ? b.basePct + b.perLevelPct * (level - 1) : 0;
+}
+
+/** vantagem de tipagem: atributo do atacante × elemento do golpe contra atributo/elemento do alvo */
+export function typeMultiplier(atkAttr: AttributeId, atkElem: ElementId, defAttr: AttributeId, defElem: ElementId): number {
+  return (ATTRIBUTE_CHART[atkAttr]?.[defAttr] ?? 1) * (ELEMENT_CHART[atkElem]?.[defElem] ?? 1);
+}
+
 export function effectiveStats(p: PlayerProg): EffStats {
   const f = FORMS[p.formId];
-  const lv = p.level - 1;
-  const s: EffStats = {
-    hp: f.baseStats.hp + f.growth.hp * lv + p.bonus.hp,
-    atk: f.baseStats.atk + f.growth.atk * lv + p.bonus.atk,
-    def: f.baseStats.def + f.growth.def * lv + p.bonus.def,
-    spd: f.baseStats.spd + f.growth.spd * lv + p.bonus.spd,
-    brain: f.baseStats.brain + f.growth.brain * lv + p.bonus.brain,
-    dmgMul: 1, pickupMul: 1, xpMul: 1, cdMul: 1,
-  };
+  const pct: Record<CardStat, number> = { hp: 0, atk: 0, def: 0, spd: 0, brain: 0, dmg: 0, pickup: 0, xp: 0, cooldown: 0 };
   for (const id of p.passives) {
-    const c = id ? CARDS[id]?.passive : undefined;
-    if (!c) continue;
-    s.hp += c.hp ?? 0; s.atk += c.atk ?? 0; s.def += c.def ?? 0; s.spd += c.spd ?? 0; s.brain += c.brain ?? 0;
-    s.dmgMul += c.dmgMul ?? 0;
-    s.pickupMul *= c.pickupMul ?? 1; s.xpMul *= c.xpMul ?? 1; s.cdMul *= c.cdMul ?? 1;
+    if (!id) continue;
+    const level = p.cardLevels[id] ?? 1;
+    for (const b of CARDS[id]?.bonuses ?? []) pct[b.stat] += b.basePct + b.perLevelPct * (level - 1);
   }
-  return s;
+  const stat = (k: StatKey) => (statAt(f.baseStats[k], f.growthRate, p.level) + p.bonus[k]) * (1 + pct[k] / 100);
+  return {
+    hp: stat('hp'), atk: stat('atk'), def: stat('def'), spd: stat('spd'), brain: stat('brain'),
+    dmgMul: 1 + pct.dmg / 100, pickupMul: 1 + pct.pickup / 100, xpMul: 1 + pct.xp / 100, cdMul: 1 + pct.cooldown / 100,
+  };
 }
 
 export function outgoingDamage(p: PlayerProg, slot: MoveSlot): number {

@@ -10,6 +10,8 @@ export interface PlayerProg {
   formId: string; level: number; xp: number; bonus: Stats;
   slots: (MoveSlot | null)[]; passives: (string | null)[]; items: string[];
   pendingLevelUps: number; kills: number; path: string[];
+  /** nível de cada carta equipada (ausente = 1); sobe pegando cópias, até CARD_MAX_LEVEL */
+  cardLevels: Record<string, number>;
 }
 export type LevelOffer =
   | { kind: 'learn'; moveId: string }
@@ -27,7 +29,7 @@ export function newPlayerProg(formId: string): PlayerProg {
   return {
     formId, level: 1, xp: 0, bonus: { hp: 0, atk: 0, def: 0, spd: 0, brain: 0 },
     slots, passives: Array.from({ length: T.PASSIVE_SLOTS }, () => null), items: [],
-    pendingLevelUps: 0, kills: 0, path: [formId],
+    pendingLevelUps: 0, kills: 0, path: [formId], cardLevels: {},
   };
 }
 

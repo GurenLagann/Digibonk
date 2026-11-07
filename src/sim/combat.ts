@@ -1,10 +1,11 @@
 import type { Rng } from '../core/rng';
 import { MOVES } from '../data/moves';
-import type { MoveDef } from '../data/types';
+import { FORMS } from '../data/forms';
+import type { AttributeId, MoveDef } from '../data/types';
 import type { Enemy, EnemyPool } from './director';
 import type { PlayerProg } from './progression';
 import type { SpatialHash } from './spatial';
-import { effectiveStats, incomingDamage, moveCooldown, outgoingDamage } from './stats';
+import { effectiveStats, incomingDamage, moveCooldown, outgoingDamage, typeMultiplier } from './stats';
 import { norm } from './vec';
 import type { BossState } from './boss';
 
@@ -16,11 +17,13 @@ export interface Projectile {
 export type AreaShape = 'circle' | 'cone' | 'beam';
 export interface Area {
   x: number; z: number; radius: number; dmg: number; life: number; maxLife: number; tick: number; moveId: string;
+  /** atributo de quem atacou (golpes de chefe); o elemento vem do golpe */
+  attribute?: AttributeId;
   follow: boolean; shape: AreaShape; dx: number; dz: number; length: number;
   /** seconds until it damages (telegraph); hostile areas only */
   delay: number; hostile: boolean; done: boolean;
 }
-export interface HostileProjectile { x: number; z: number; vx: number; vz: number; dmg: number; radius: number; life: number; moveId: string }
+export interface HostileProjectile { x: number; z: number; vx: number; vz: number; dmg: number; radius: number; life: number; moveId: string; attribute?: AttributeId }
 export interface CombatState {
   cooldowns: number[]; projectiles: Projectile[]; areas: Area[]; hostiles: HostileProjectile[];
   invuln: number; hp: number; maxHp: number; facingX: number; facingZ: number;
@@ -75,15 +78,20 @@ export function pointInArea(a: Area, x: number, z: number, er: number): boolean 
   return along / d >= Math.cos(Math.PI / 4);
 }
 
-export function hitArea(a: Area, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[]) {
+/** dano de um golpe do jogador num inimigo, com a vantagem de tipagem */
+function typedDamage(dmg: number, moveId: string, atkAttr: AttributeId, e: Enemy): number {
+  return dmg * typeMultiplier(atkAttr, MOVES[moveId]?.element ?? 'neutral', e.attribute, e.element);
+}
+
+export function hitArea(a: Area, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[], atkAttr: AttributeId = 'free') {
   const reach = a.shape === 'beam' ? a.length + a.radius : a.radius;
   const cx = a.shape === 'beam' ? a.x + a.dx * a.length * 0.5 : a.x, cz = a.shape === 'beam' ? a.z + a.dz * a.length * 0.5 : a.z;
   tmp.length = 0; hash.query(cx, cz, (a.shape === 'beam' ? reach * 0.5 + a.radius : reach) + 2, tmp);
   const ids = [...tmp];
-  for (const id of ids) { const e = pool.get(id); if (e && inArea(a, e)) damageEnemy(e, a.dmg, pool, out); }
+  for (const id of ids) { const e = pool.get(id); if (e && inArea(a, e)) damageEnemy(e, typedDamage(a.dmg, a.moveId, atkAttr, e), pool, out); }
 }
 
-function fire(m: MoveDef, dmg: number, c: CombatState, px: number, pz: number, target: Enemy, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[]) {
+function fire(m: MoveDef, dmg: number, c: CombatState, px: number, pz: number, target: Enemy, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[], atkAttr: AttributeId) {
   const [dx, dz] = norm(target.x - px, target.z - pz);
   c.facingX = dx; c.facingZ = dz;
   const base = { dmg, moveId: m.id, maxLife: m.duration ?? 0.3, life: m.duration ?? 0.3, tick: 0, delay: 0, hostile: false, done: false, dx, dz, length: m.range };
@@ -102,16 +110,20 @@ function fire(m: MoveDef, dmg: number, c: CombatState, px: number, pz: number, t
         orbit: { angle: (i / n) * Math.PI * 2, radius: m.radius ?? 3, angVel: 3.2, rehit: 0.5 } });
       break;
     }
-    case 'area': { const a: Area = { ...base, x: target.x, z: target.z, radius: m.radius ?? 2, follow: false, shape: 'circle' }; c.areas.push(a); hitArea(a, pool, hash, out); a.done = true; break; }
-    case 'aura': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? 3, follow: true, shape: 'circle', life: 0.2, maxLife: 0.2 }; c.areas.push(a); hitArea(a, pool, hash, out); a.done = true; break; }
-    case 'cone': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? m.range, follow: true, shape: 'cone', life: 0.15, maxLife: 0.15 }; c.areas.push(a); hitArea(a, pool, hash, out); a.done = true; break; }
-    case 'beam': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? 0.8, follow: true, shape: 'beam' }; c.areas.push(a); hitArea(a, pool, hash, out); a.done = true; break; }
+    case 'area': { const a: Area = { ...base, x: target.x, z: target.z, radius: m.radius ?? 2, follow: false, shape: 'circle' }; c.areas.push(a); hitArea(a, pool, hash, out, atkAttr); a.done = true; break; }
+    case 'aura': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? 3, follow: true, shape: 'circle', life: 0.2, maxLife: 0.2 }; c.areas.push(a); hitArea(a, pool, hash, out, atkAttr); a.done = true; break; }
+    case 'cone': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? m.range, follow: true, shape: 'cone', life: 0.15, maxLife: 0.15 }; c.areas.push(a); hitArea(a, pool, hash, out, atkAttr); a.done = true; break; }
+    case 'beam': { const a: Area = { ...base, x: px, z: pz, radius: m.radius ?? 0.8, follow: true, shape: 'beam' }; c.areas.push(a); hitArea(a, pool, hash, out, atkAttr); a.done = true; break; }
   }
 }
 
 export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number, pool: EnemyPool, hash: SpatialHash, dt: number, _rng: Rng): CombatEvent[] {
   const out: CombatEvent[] = [];
   const stats = effectiveStats(p);
+  const form = FORMS[p.formId];
+  /** golpe de chefe no jogador: atributo do chefe × elemento do golpe contra a tipagem da forma */
+  const hostileMul = (attr: AttributeId | undefined, moveId: string) =>
+    typeMultiplier(attr ?? 'free', MOVES[moveId]?.element ?? 'neutral', form.attribute, form.element);
   const alive = pool.alive();
 
   // enemy movement + separation
@@ -141,7 +153,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
     for (const id of tmp) {
       const e = pool.get(id); if (!e) continue;
       if (Math.hypot(e.x - px, e.z - pz) < (e.size + 1) * 0.5) {
-        const dmg = incomingDamage(e.dmg, stats.def);
+        const dmg = incomingDamage(e.dmg * typeMultiplier(e.attribute, e.element, form.attribute, form.element), stats.def);
         c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg }); break;
       }
     }
@@ -159,7 +171,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
     const reach = m.pattern === 'aura' || m.pattern === 'orbital' ? (m.radius ?? m.range) + 0.5 : m.range;
     const target = nearest(pool, hash, px, pz, reach);
     if (!target) continue;
-    fire(m, outgoingDamage(p, s), c, px, pz, target, pool, hash, out);
+    fire(m, outgoingDamage(p, s), c, px, pz, target, pool, hash, out, form.attribute);
     c.cooldowns[i] = moveCooldown(p, s);
     c.firedAgo[i] = 0;
   }
@@ -180,7 +192,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
       for (const id of ids) {
         const e = pool.get(id); if (!e || pr.hit.has(id)) continue;
         if (Math.hypot(e.x - pr.x, e.z - pr.z) <= pr.radius + e.size * 0.5) {
-          pr.hit.add(id); damageEnemy(e, pr.dmg, pool, out);
+          pr.hit.add(id); damageEnemy(e, typedDamage(pr.dmg, pr.moveId, form.attribute, e), pool, out);
           if (!pr.orbit && pr.hit.size > pr.pierce) { dead = true; break; }
         }
       }
@@ -195,7 +207,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
     let dead = h.life <= 0;
     if (!dead && Math.hypot(h.x - px, h.z - pz) <= h.radius + PLAYER_HIT_RADIUS) {
       dead = true;
-      if (c.invuln <= 0) { const dmg = incomingDamage(h.dmg, stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg }); }
+      if (c.invuln <= 0) { const dmg = incomingDamage(h.dmg * hostileMul(h.attribute, h.moveId), stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg }); }
     }
     if (dead) c.hostiles.splice(i, 1);
   }
@@ -209,7 +221,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
       if (a.delay <= 0) {
         a.done = true;
         if (a.dmg > 0 && c.invuln <= 0 && pointInArea(a, px, pz, PLAYER_HIT_RADIUS)) {
-          const dmg = incomingDamage(a.dmg, stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg });
+          const dmg = incomingDamage(a.dmg * hostileMul(a.attribute, a.moveId), stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg });
         }
       }
     }

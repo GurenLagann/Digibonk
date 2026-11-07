@@ -68,3 +68,16 @@ test('debugToggleDoubleSpeed doubles the base speed and restores it', () => {
   expect(debugToggleDoubleSpeed(r)).toBe(false);
   expect(playerSpeed(r.prog)).toBeCloseTo(before);
 });
+
+test('getting an owned card again levels it up and reports it (no slot choice)', () => {
+  const r = mk();
+  debugGiveCard(r, 'card_greymon_horn');
+  const ev = debugGiveCard(r, 'card_greymon_horn');
+  expect(r.prog.cardLevels.card_greymon_horn).toBe(2);
+  expect(ev).toContainEqual({ type: 'cardLeveled', cardId: 'card_greymon_horn', level: 2 });
+  expect(r.pendingCard).toBeNull();
+  r.prog.slots[1] = { moveId: 'lightning_paw', level: 1, fromCard: true };
+  debugGiveCard(r, 'card_lightning_paw');
+  expect(r.prog.slots[1]?.level).toBe(2);
+  expect(r.pendingCard).toBeNull();
+});

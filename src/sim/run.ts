@@ -5,7 +5,7 @@ import { BOSSES, MINIBOSSES } from '../data/enemies';
 import { ITEMS } from '../data/items';
 import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
-import { gainItem, offerPassive, replacePassive, slashIntoSlot } from './cards';
+import { gainItem, levelUpOwnedCard, offerPassive, replacePassive, slashIntoSlot } from './cards';
 import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
@@ -24,7 +24,8 @@ export type RunEvent =
   | { type: 'overtime' } | { type: 'phaseCleared'; phase: number } | { type: 'victory' } | { type: 'defeat' }
   | { type: 'cardFound'; cardId: string } | { type: 'itemFound'; itemId: string } | { type: 'partnerUnlocked'; partnerId: string }
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
-  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number };
+  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
+  | { type: 'cardLeveled'; cardId: string; level: number };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -128,12 +129,21 @@ function spawnPickup(r: RunState, x: number, z: number, roll: { kind: 'card' | '
 
 function needsChoice(r: RunState, cardId: string): boolean {
   const c = CARDS[cardId];
-  return !!c && (c.kind === 'slash' || (c.kind === 'passive' && !r.prog.passives.includes(null)));
+  if (!c) return false;
+  const owned = c.kind === 'passive' ? r.prog.passives.includes(cardId) : r.prog.slots.some(s => s?.fromCard && s.moveId === c.moveId);
+  return !owned && (c.kind === 'slash' || (c.kind === 'passive' && !r.prog.passives.includes(null)));
 }
 
 /** @internal usado por sim/debug */
 export function handleCard(r: RunState, cardId: string, ev: RunEvent[]) {
   const c = CARDS[cardId]; if (!c) return;
+  // cópia de uma carta que já tem: sobe o nível (passiva até CARD_MAX_LEVEL; slash sobe o golpe)
+  const lv = levelUpOwnedCard(r.prog, cardId);
+  if (lv === 'leveled') {
+    const level = c.kind === 'passive' ? r.prog.cardLevels[cardId] : r.prog.slots.find(s => s?.fromCard && s.moveId === c.moveId)!.level;
+    ev.push({ type: 'cardLeveled', cardId, level }); syncHp(r); return;
+  }
+  if (lv === 'maxed') return;
   ev.push({ type: 'cardFound', cardId });
   if (c.kind === 'rare') { gainItem(r.prog, cardId); return; }
   if (c.kind === 'passive') { if (offerPassive(r.prog, cardId).status === 'full') r.pendingCard = cardId; else syncHp(r); return; }

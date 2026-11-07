@@ -63,7 +63,7 @@ export function mountHud(root: HTMLElement) {
         setText(e.label, MOVES[s.moveId].name); setText(e.lv, `Nv ${s.level}`);
         const total = moveCooldown(p, s); setW(e.cd, total > 0 ? (c.cooldowns[i] ?? 0) / total : 0);
       });
-      p.passives.forEach((id, i) => { setText(cardEls[i], id ? CARDS[id].name : 'Carta vazia'); cardEls[i].classList.toggle('empty', !id); });
+      p.passives.forEach((id, i) => { setText(cardEls[i], id ? `${CARDS[id].name} Nv ${p.cardLevels[id] ?? 1}` : 'Carta vazia'); cardEls[i].classList.toggle('empty', !id); });
       const key = p.items.join(',');
       if (key !== itemKey) {
         itemKey = key; items.replaceChildren(...p.items.map(id => h('span', { class: 'item' }, ITEMS[id]?.name ?? CARDS[id]?.name ?? id)));

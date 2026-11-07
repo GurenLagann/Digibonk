@@ -1,4 +1,5 @@
-import { CARDS } from '../data/cards';
+import { CARD_MAX_LEVEL, CARDS } from '../data/cards';
+import { MOVES } from '../data/moves';
 import type { PlayerProg } from './progression';
 
 export type CardResult = { status: 'equipped'; slot: number } | { status: 'full'; cardId: string };
@@ -27,3 +28,23 @@ export function gainItem(p: PlayerProg, id: string): void {
   if (!p.items.includes(id)) p.items.push(id);
 }
 export const gainRare = gainItem;
+
+/**
+ * Cópia de uma carta que o jogador já tem: passiva equipada sobe o nível da carta (até CARD_MAX_LEVEL);
+ * slash já num espaço sobe o nível do golpe (até o máximo do golpe). null = não tem a carta.
+ */
+export function levelUpOwnedCard(p: PlayerProg, cardId: string): 'leveled' | 'maxed' | null {
+  const card = CARDS[cardId]; if (!card) return null;
+  if (card.kind === 'passive' && p.passives.includes(cardId)) {
+    const lv = p.cardLevels[cardId] ?? 1;
+    if (lv >= CARD_MAX_LEVEL) return 'maxed';
+    p.cardLevels[cardId] = lv + 1; return 'leveled';
+  }
+  if (card.kind === 'slash' && card.moveId) {
+    const slot = p.slots.find(s => s?.fromCard && s.moveId === card.moveId);
+    if (!slot) return null;
+    if (slot.level >= MOVES[card.moveId].maxLevel) return 'maxed';
+    slot.level++; return 'leveled';
+  }
+  return null;
+}

@@ -1,12 +1,13 @@
 import type { Rng } from '../core/rng';
 import { ENEMIES } from '../data/enemies';
 import { T } from '../data/tuning';
-import type { BossDef, EnemyDef } from '../data/types';
+import type { AttributeId, BossDef, ElementId, EnemyDef } from '../data/types';
 import { clamp } from './vec';
 
 export interface Enemy {
   id: number; def: string; x: number; z: number; hp: number; maxHp: number; dmg: number; speed: number;
   size: number; xp: number; alive: boolean; boss: boolean; miniboss: boolean; hitFlash: number;
+  attribute: AttributeId; element: ElementId;
 }
 
 export class EnemyPool {
@@ -19,7 +20,8 @@ export class EnemyPool {
     const id = this.free.length ? this.free.pop()! : this.all.length;
     const hp = def.hp * scale.hp;
     const e: Enemy = { id, def: def.id, x, z, hp, maxHp: hp, dmg: def.dmg * scale.dmg, speed: def.speed, size: def.size,
-      xp: 'xp' in def ? def.xp : 0, alive: true, boss: !!flags.boss, miniboss: !!flags.miniboss, hitFlash: 0 };
+      xp: 'xp' in def ? def.xp : 0, alive: true, boss: !!flags.boss, miniboss: !!flags.miniboss, hitFlash: 0,
+      attribute: def.attribute, element: def.element };
     this.all[id] = e;
     if (!special) this.normalAlive++;
     return e;

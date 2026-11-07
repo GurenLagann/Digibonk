@@ -95,6 +95,7 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
 function announce(e: RunEvent) {
   switch (e.type) {
     case 'cardFound': toast(`Carta: ${CARDS[e.cardId].name}`, CARDS[e.cardId].kind === 'rare' ? 'rare' : 'info'); break;
+    case 'cardLeveled': toast(`${CARDS[e.cardId].name} subiu para Nv ${e.level}!`, 'rare'); break;
     case 'itemFound': toast(`${ITEMS[e.itemId].name}!`, 'rare'); break;
     case 'partnerUnlocked': toast(`Ovo encontrado! ${FORMS[e.partnerId]?.name ?? e.partnerId} desbloqueado!`, 'rare'); break;
     case 'evolutionAvailable': toast('Digievolução disponível! Aperte E', 'rare'); break;
