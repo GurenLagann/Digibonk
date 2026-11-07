@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Image } from '../../tools/sprites/slice';
-import { cropToUnion, defringe, DEFRINGE_OUTLINE, VPET_ROLES } from '../../tools/sprites/vpet';
+import { clearHoles, cropToUnion, defringe, DEFRINGE_OUTLINE, VPET_ROLES } from '../../tools/sprites/vpet';
 
 function img(w: number, h: number, dots: [number, number][]): Image {
   const data = new Uint8Array(w * h * 4);
@@ -44,5 +44,32 @@ describe('defringe', () => {
   it('não mexe em borda de cor normal', () => {
     const data = new Uint8Array([200, 120, 20, 255, 0, 0, 0, 0]);
     expect([...defringe({ w: 2, h: 1, data }, [64, 240, 168]).data.subarray(0, 3)]).toEqual([200, 120, 20]);
+  });
+});
+
+describe('defringe com fundo cinza', () => {
+  it('não altera nada (cinza não tem tom para puxar a borda)', () => {
+    const data = new Uint8Array([140, 140, 140, 255, 0, 0, 0, 0]);
+    expect([...defringe({ w: 2, h: 1, data }, [128, 128, 128]).data]).toEqual([140, 140, 140, 255, 0, 0, 0, 0]);
+  });
+});
+
+describe('clearHoles', () => {
+  // 8x8 opaco laranja com um buraco 3x3 cinza (fundo preso) e um pixel cinza solto (detalhe do corpo)
+  const mk = () => {
+    const w = 8, h = 8, data = new Uint8Array(w * h * 4);
+    for (let i = 0; i < w * h; i++) data.set([220, 120, 30, 255], i * 4);
+    for (let y = 2; y < 5; y++) for (let x = 2; x < 5; x++) data.set([118, 118, 118, 255], (y * w + x) * 4);
+    data.set([120, 117, 119, 255], (6 * w + 6) * 4);
+    return { w, h, data };
+  };
+  it('apaga regiões grandes da cor de fundo presas no meio do sprite', () => {
+    const out = clearHoles(mk(), [118, 118, 118], 12, 6);
+    expect(out.data[(3 * 8 + 3) * 4 + 3]).toBe(0);
+  });
+  it('mantém manchinhas da mesma cor menores que o mínimo', () => {
+    const out = clearHoles(mk(), [118, 118, 118], 12, 6);
+    expect(out.data[(6 * 8 + 6) * 4 + 3]).toBe(255);
+    expect(out.data[(0 * 8 + 0) * 4 + 3]).toBe(255);
   });
 });

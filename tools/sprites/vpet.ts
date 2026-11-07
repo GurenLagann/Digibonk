@@ -44,3 +44,29 @@ export function defringe(img: Image, key: readonly number[], minCos = 0.8): Imag
   }
   return { w, h, data };
 }
+
+/**
+ * Fundo "preso" (ex.: vão entre as pernas, sem ligação com a borda): regiões conectadas de pixels opacos
+ * a até maxDist da cor-chave, com pelo menos minArea pixels, viram transparentes. Manchas menores ficam.
+ */
+export function clearHoles(img: Image, key: readonly number[], maxDist = 12, minArea = 40): Image {
+  const { w, h } = img, data = img.data.slice();
+  const near = (p: number) => img.data[p * 4 + 3] > 0
+    && Math.hypot(img.data[p * 4] - key[0], img.data[p * 4 + 1] - key[1], img.data[p * 4 + 2] - key[2]) <= maxDist;
+  const seen = new Uint8Array(w * h);
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || !near(start)) continue;
+    const region: number[] = [], stack = [start]; seen[start] = 1;
+    while (stack.length) {
+      const p = stack.pop()!; region.push(p);
+      const x = p % w, y = (p / w) | 0;
+      for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const q = ny * w + nx;
+        if (!seen[q] && near(q)) { seen[q] = 1; stack.push(q); }
+      }
+    }
+    if (region.length >= minArea) for (const p of region) data[p * 4 + 3] = 0;
+  }
+  return { w, h, data };
+}

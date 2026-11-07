@@ -1,41 +1,55 @@
 # Gemini prompts for DigiBonk sprites
 
-Attach `assets-src/sprites/dw3/agumon.png` (or the previous form's finished sheet) as the reference image.
-For the next forms, continue in the same Gemini conversation.
+One animation per image. Each image is a square grid, and every frame faces RIGHT (the cutter flips them all with `:flip`).
+Gemini fails on big multi-row sheets: it mixes directions, ignores frame counts, and copies the reference frames.
 
-## Template
+Attach `assets-src/sprites/dw3/agumon.png` to the first prompt only, as a style reference. Run the rest in the same conversation.
+Do not describe the Digimon: Gemini already knows it, and descriptions made results worse.
+
+## Base prompt (side walk)
 
 ```
-Use the attached Digimon World 3 sprite sheet as the exact style and layout reference.
-Create the same kind of sheet for {DIGIMON} (Digimon).
+The attached image is ONLY a pixel-art style reference. Do not copy any of its frames
+and do not draw Agumon or any other Digimon from it.
 
-LAYOUT: rows of frames, evenly spaced, on ONE flat solid gray background (#808080).
-No grid lines, no text, no labels, no credits, no other characters, no effects touching the character.
-Row 1 — idle: 5 directions x 1 frame: back, back three-quarter, side, front three-quarter, front.
-Row 2 — walk: the same 5 directions x 6 frames each, legs and arms clearly changing every frame.
-Row 3 — run: the same 5 directions x 6 frames each, wide strides and swinging arms.
-Row 4 — hurt (3 frames, side view) then death (6 frames, side view: falls, lies down, fades into data).
-ALL side and three-quarter views face LEFT. Never mix directions inside a row.
+Draw {DIGIMON} (Digimon) in that same PlayStation-era pixel-art style.
 
-STYLE: PlayStation-era pixel art exactly like the reference: same pixel size, dark outline,
-same shading, no blur, no anti-aliasing. {SIZE_LINE}
-
-{DIGIMON} looks like: {DESCRIPTION}. {NOT_LIKE}
-
+Make a square image with a grid of 3 columns x 2 rows = exactly 6 frames,
+read left to right, top to bottom: a smooth walk cycle, side view,
+{DIGIMON} facing RIGHT in every frame. Legs and arms must clearly change in every frame.
+{DIGIMON} is large and fills most of each cell, same size in every frame,
+feet on the same baseline, centered in its cell.
+One flat solid gray background (#808080) for the whole image.
+No lines between cells, no borders, no text, no other characters.
+Dark outline, no blur, no anti-aliasing.
 Output as PNG.
 ```
 
-## Fill-ins
+## Other animations
 
-- `{SIZE_LINE}`, by stage:
-  - Child: "Same size as the reference."
-  - Adult: "About 1.5x taller than the reference."
-  - Perfect: "About 1.8x taller."
-  - Ultimate: "About 2x taller."
-- `{NOT_LIKE}`: what the previous form had that this one must NOT have, e.g. "No helmet and no horns" for Agumon after Greymon.
+For each one, start with "Same style and same {DIGIMON} as before." and replace the animation sentence:
+
+- **Run:** `a run cycle, side view, facing RIGHT, wide strides and swinging arms.`
+- **Front walk:** `a walk cycle, front view, walking toward the camera.`
+- **Back walk:** `a walk cycle, back view, walking away from the camera.`
+- **Hurt + death:** use a `3 columns x 3 rows = exactly 9 frames` grid. Frames 1–3 are getting hit (recoils backward); frames 4–9 are dying (falls, lies down, dissolves into data particles).
+
+Priority: side walk first; it alone makes the form walk in game. The game falls back to it for every missing direction.
+
+## Cutting a result
+
+The grid is regular, so write the cell rectangles yourself instead of detecting them:
+
+```
+CELLS=sheet.cells INSET=4 FUZZ=6 tools/sprites/cut-gemini.sh ID sheet.png SCALE walk1:0:flip …
+```
+
+- `FUZZ=6` works for a flat PNG background. Use 18 for JPEG.
+- Scale by stage, from about 300 px tall in the cell: Child 16%, Adult 25%, Perfect 30%, Ultimate 33%.
 
 ## Ask for a redo when
 
-- a frame faces right;
-- text, grid lines or another Digimon appear;
+- frames face different ways;
+- the frame count is wrong;
+- lines, text, or another Digimon appear;
 - the background is not one flat color.

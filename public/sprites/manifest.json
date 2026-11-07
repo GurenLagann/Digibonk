@@ -215,8 +215,8 @@
   },
   "greymon": {
    "file": "greymon.png",
-   "frameW": 70,
-   "frameH": 65,
+   "frameW": 84,
+   "frameH": 76,
    "frames": [
     "walk1",
     "walk2",
@@ -226,10 +226,8 @@
     "walk6",
     "walk7",
     "walk8",
-    "idle1",
-    "idle2",
-    "attack",
-    "hurt"
+    "walk9",
+    "idle1"
    ],
    "source": 0
   },
