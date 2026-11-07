@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { parseManifest, idleFrame, facingFlip, frameIndex } from '../../src/render/sprites';
+import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
@@ -21,4 +21,15 @@ test('every enemy and boss has a sprite source', () => {
 });
 test('every form has a v-pet sprite', () => {
   expect(Object.keys(FORMS).filter(id => !hasSheet(id))).toEqual([]);
+});
+test('moving with walk frames cycles walk1..walk4', () => {
+  const frames: Role[] = ['walk1', 'walk2', 'walk3', 'walk4', 'idle1', 'idle2', 'attack', 'hurt'];
+  expect([0, 1, 2, 3, 4].map(i => moveFrame(i / 8 + 0.001, 0, true, frames))).toEqual(['walk1', 'walk2', 'walk3', 'walk4', 'walk1']);
+});
+test('without walk frames or standing still uses idle cycle', () => {
+  expect(moveFrame(0.001, 0, true, ['idle1', 'idle2'])).toBe('idle1');
+  expect(moveFrame(0.001, 0, false, ['walk1', 'idle1'])).toBe('idle1');
+});
+test('manifest accepts walk roles', () => {
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['walk1', 'walk4'] } } })).not.toBeNull();
 });

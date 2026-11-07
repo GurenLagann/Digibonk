@@ -5,7 +5,7 @@ import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
 import { motionPose } from './motion';
-import { facingFlip, frameIndex, idleFrame, type Role, type SpriteLibrary } from './sprites';
+import { facingFlip, frameIndex, moveFrame, type Role, type SpriteLibrary } from './sprites';
 
 const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -103,7 +103,7 @@ export class Billboards {
       sp.mesh.count = this.counts.get(def) ?? 0;
       sp.mesh.instanceMatrix.needsUpdate = true;
       if (sp.mesh.instanceColor) sp.mesh.instanceColor.needsUpdate = true;
-      this.setFrame(sp.tex, sp.frames, idleFrame(time, sp.phase));
+      this.setFrame(sp.tex, sp.frames, moveFrame(time, sp.phase, true, sp.frames));
     }
 
     // jogador
@@ -122,7 +122,7 @@ export class Billboards {
     const c = run.combat;
     const fired = Math.min(...c.firedAgo);
     if (this.playerTex) {
-      const role: Role = c.invuln > 0.3 ? 'hurt' : fired < 0.15 ? 'attack' : idleFrame(time);
+      const role: Role = c.invuln > 0.3 ? 'hurt' : fired < 0.15 ? 'attack' : moveFrame(time, 0, run.moving, this.playerFrames);
       this.setFrame(this.playerTex, this.playerFrames, role);
     }
     const flip = FLIP_SPRITES && this.playerTex ? facingFlip(run.dirX) : 1;

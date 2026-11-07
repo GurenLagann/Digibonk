@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "sprites": "node --experimental-strip-types tools/sprites/build.ts",
-    "sprites:vpet": "node --experimental-strip-types tools/sprites/build-vpet.ts"
+    "sprites:vpet": "node --experimental-strip-types tools/sprites/build-vpet.ts && node --experimental-strip-types tools/sprites/build-gemini.ts"
   },
   "dependencies": {
     "three": "0.187.0"
