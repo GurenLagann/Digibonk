@@ -37,3 +37,11 @@ test('every stat requirement is reachable at its level with the level-up stat po
     expect(deficit, `${f.id} -> ${e.to}`).toBeLessThanOrEqual(T.STAT_OFFER_AMOUNT * (e.req.minLevel - 1));
   }
 });
+
+test('no stat requirement needs more than ~40% of the level-ups spent on stats (offers are random)', () => {
+  for (const f of Object.values(FORMS)) for (const e of f.evolutions) {
+    const deficit = (Object.entries(e.req.minStats ?? {}) as [StatKey, number][])
+      .reduce((sum, [k, v]) => sum + Math.max(0, v - statAt(f.baseStats[k], f.growthRate, e.req.minLevel)), 0);
+    expect(deficit, `${f.id} -> ${e.to}`).toBeLessThanOrEqual(0.4 * T.STAT_OFFER_AMOUNT * (e.req.minLevel - 1));
+  }
+});

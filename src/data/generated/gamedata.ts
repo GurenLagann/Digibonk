@@ -3970,7 +3970,6 @@ export const FORMS: Record<string, FormDef> = {
     "req": {
      "minLevel": 20,
      "minStats": {
-      "hp": 170,
       "def": 28
      }
     }

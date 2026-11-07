@@ -146,7 +146,7 @@ INSERT INTO evolutions (id, from_form, to_form, min_level, min_hp, min_atk, min_
   ('stingmon->jewelbeemon', 'stingmon', 'jewelbeemon', 20, NULL, 24, NULL, 24, NULL, NULL, NULL, 0),
   ('jewelbeemon->grankuwagamon', 'jewelbeemon', 'grankuwagamon', 35, NULL, NULL, NULL, 40, NULL, 4, NULL, 0),
   ('armadillomon->ankylomon', 'armadillomon', 'ankylomon', 8, NULL, NULL, 12, NULL, NULL, NULL, NULL, 0),
-  ('ankylomon->shakkoumon', 'ankylomon', 'shakkoumon', 20, 170, NULL, 28, NULL, NULL, NULL, NULL, 0),
+  ('ankylomon->shakkoumon', 'ankylomon', 'shakkoumon', 20, NULL, NULL, 28, NULL, NULL, NULL, NULL, 0),
   ('shakkoumon->slashangemon', 'shakkoumon', 'slashangemon', 35, NULL, NULL, 48, NULL, NULL, 4, NULL, 0),
   ('terriermon->gargomon', 'terriermon', 'gargomon', 8, NULL, NULL, NULL, 12, NULL, NULL, NULL, 0),
   ('gargomon->rapidmon', 'gargomon', 'rapidmon', 20, NULL, 26, NULL, 22, NULL, NULL, NULL, 0),
