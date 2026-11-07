@@ -1,10 +1,23 @@
 # DigiBonk
 
-Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra no mapa com um Digimon Child, enfrenta hordas cada vez maiores, sobe de nível, junta cartas e **escolhe quando digievoluir**. É inspirado no PokéBonk e no Megabonk, com as digievoluções simplificadas do Digimon World 1.
+Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra no mapa com um Digimon Child, enfrenta hordas cada vez maiores, sobe de nível, junta cartas e **escolhe quando digievoluir**. É **diretamente inspirado no [PokéBonk](https://pokebonk.com/)**, trazendo a mesma ideia para o universo Digimon, com as digievoluções simplificadas do Digimon World 1.
 
 ![Greymon no meio de uma horda](docs/screenshot.jpg)
 
 > **Status:** protótipo jogável. O motor, as 5 fases, as digievoluções, as cartas e os chefes já funcionam. Sprites, parceiros e equilíbrio ainda estão em andamento.
+
+## Inspiração: PokéBonk
+
+O DigiBonk nasceu da vontade de ter um **[PokéBonk](https://pokebonk.com/) de Digimon**. O PokéBonk, criado por Charcher, é um fan-game de Pokémon no estilo do Megabonk. Ele é a nossa principal referência de jogabilidade e de visual:
+
+- **Visual:** sprites 2D em pé num mundo 3D, com câmera de cima.
+- **Combate:** automático, com espaços de ataque; você só se move.
+- **Fases:** cada fase tem uma missão que libera o chefe. Você escolhe a hora de enfrentá-lo ou continua farmando, e as hordas pioram com o tempo.
+- **Ataques substituíveis:** itens que trocam seus ataques, que aqui viraram as cartas *Slash* do Digimon Tamers.
+
+O que muda é o tema e o que é próprio de Digimon: a **digievolução por escolha**, com requisitos de nível, atributos e itens; os Digiovos e as fusões, como Omnimon e Imperialdramon; e as cartas do Tamers como equipamento.
+
+O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum código ou arte do PokéBonk foi copiado.
 
 ## Como funciona uma partida
 
@@ -120,6 +133,6 @@ DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Band
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
 - **Folhas do Agumon, Greymon, MetalGreymon e Guilmon:** geradas com o Google Gemini a partir de descrições dos personagens.
-- **Inspiração:** PokéBonk, Megabonk e Digimon World 1.
+- **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
 Se você é detentor de direitos e quer a remoção de algum material, abra uma *issue*.
