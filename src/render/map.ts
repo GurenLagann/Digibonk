@@ -25,6 +25,7 @@ export class MapView {
   private chestGeo = new THREE.BoxGeometry(1.2, 0.9, 0.9);
   private chestMat = new THREE.MeshLambertMaterial({ color: 0xc8892a });
   private phaseKey = -1;
+  private lastRun: RunState | null = null;
 
   constructor(private scene: THREE.Scene) {
     const size = T.MAP_HALF * 2 + 40;
@@ -62,7 +63,8 @@ export class MapView {
   sync(run: RunState, time: number) {
     const ph = run.phase;
     const key = ph.phase * 1000 + run.chests.length;
-    if (key !== this.phaseKey) {
+    if (key !== this.phaseKey || run !== this.lastRun) {
+      this.lastRun = run;
       this.phaseKey = key;
       this.altar.position.set(ph.bossAltar.x, 0, ph.bossAltar.z);
       for (const pt of this.points) this.scene.remove(pt);

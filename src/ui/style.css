@@ -53,3 +53,5 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1020; fon
 .choice strong { font-size: 16px; }
 .choice small { font-size: 12px; opacity: .85; }
 .choice.extra { width: auto; min-height: 0; margin-top: 12px; text-align: center; display: inline-flex; padding: 8px 20px; }
+.modal .sub { white-space: pre-line; }
+.title-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(20,30,80,.3), rgba(5,8,20,.85)); }

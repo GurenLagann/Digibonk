@@ -209,6 +209,12 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   return ev;
 }
 
+export function abandonRun(r: RunState): RunEvent[] {
+  const ev: RunEvent[] = [];
+  if (!r.ended) finish(r, 'defeat', ev);
+  return ev;
+}
+
 export function chooseOffer(r: RunState, index: number): void {
   if (!r.offers) return;
   const o = r.offers[index]; if (!o) return;
