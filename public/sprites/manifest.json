@@ -13,8 +13,8 @@
   },
   "agumon": {
    "file": "agumon.png",
-   "frameW": 43,
-   "frameH": 48,
+   "frameW": 40,
+   "frameH": 47,
    "frames": [
     "walk1",
     "walk2",
