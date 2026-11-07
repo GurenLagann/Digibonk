@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sprites": "node --experimental-strip-types tools/sprites/build.ts"
   },
   "dependencies": {
     "three": "0.187.0"
