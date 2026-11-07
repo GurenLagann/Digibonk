@@ -8,11 +8,13 @@ import { gridOf, scaleNearest } from './dw3.ts';
  * Sprites de campo do Digimon World 3 (PS1, © Bandai; rips de Ragey e Artzei no The Spriters Resource).
  * Por direção: parado (1 quadro), caminhada (4–5 quadros) e corrida (5–6 quadros, braços balançando; o jogo usa quando a velocidade dobra).
  * Na folha os sprites já olham para a ESQUERDA, como o jogo espera (não espelhar).
- * Cada direção: [fileira, primeira coluna] na grade detectada; os quadros seguem em sequência.
+ * Cada direção: [fileira, primeira coluna] (quadros em sequência) ou lista de ids "fileira.coluna" de tools/sprites/inspect.ts.
  * Atenção: nas folhas do Agumon e do Veemon a 1ª fileira é o PARADO respirando, não a caminhada.
  */
 type Dir = 'up' | 'diagup' | 'side' | 'diagdown' | 'down';
-type Dirs = Record<Dir, [number, number]>;
+/** [fileira, primeira coluna] para quadros em sequência, ou a lista explícita de ids "fileira.coluna" */
+type At = [number, number] | string[];
+type Dirs = Record<Dir, At>;
 /** file: folha em assets-src/sprites/dw3 (padrão <id>.png); direções ausentes caem nas de lado no jogo */
 interface Sheet { file?: string; idle?: Partial<Dirs>; walk: Partial<Dirs>; walkFrames: number; run?: Partial<Dirs>; runFrames?: number; scale?: number }
 const ROW0_IDLE: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
@@ -56,16 +58,19 @@ for (const [id, cfg] of Object.entries(CONFIG)) {
   const bg = backgroundColors(img);
   const grid = gridOf(components(foregroundMask(img, bg), img.w, img.h, 40, 0.1).map(c => c.rect));
   const frames: Image[] = [], roles: Role[] = [];
-  const cellsAt = (what: string, [row, col]: [number, number], n: number) => {
-    const cells = grid[row]?.slice(col, col + n) ?? [];
-    if (cells.length !== n) throw new Error(`${id}: ${what} precisa de ${n} quadros em [${row}, ${col}], achou ${cells.length}`);
+  const cellsAt = (what: string, at: At, n: number) => {
+    const cells = typeof at[0] === 'string'
+      ? (at as string[]).map(ref => { const [r, c] = ref.split('.').map(Number); return grid[r]?.[c]; }).filter((q): q is Rect => !!q)
+      : grid[at[0] as number]?.slice(at[1] as number, (at[1] as number) + n) ?? [];
+    const want = typeof at[0] === 'string' ? at.length : n;
+    if (cells.length !== want) throw new Error(`${id}: ${what} precisa de ${want} quadros em ${JSON.stringify(at)}, achou ${cells.length}`);
     return cells;
   };
-  for (const [dir, at] of Object.entries(cfg.idle ?? {}) as [Dir, [number, number]][]) {
+  for (const [dir, at] of Object.entries(cfg.idle ?? {}) as [Dir, At][]) {
     frames.push(cut(img, bg, cellsAt(`parado ${dir}`, at, 1)[0])); roles.push(IDLE[dir] as Role);
   }
   for (const [kind, n] of [['walk', cfg.walkFrames], ['run', cfg.runFrames ?? 0]] as const)
-    for (const [dir, at] of Object.entries(cfg[kind] ?? {}) as [Dir, [number, number]][])
+    for (const [dir, at] of Object.entries(cfg[kind] ?? {}) as [Dir, At][])
       cellsAt(`${kind} ${dir}`, at, n).forEach((q, i) => { frames.push(cut(img, bg, q)); roles.push(`${kind}${SUFFIX[dir]}${i + 1}` as Role); });
   const r = buildStrip(frames);
   writePng(join(OUT, `${id}.png`), r.strip);

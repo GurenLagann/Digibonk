@@ -3,15 +3,18 @@ import type { Image, Rect } from './slice.ts';
 /** quadros menores que isso são texto, linhas ou sujeira da folha */
 const MIN_W = 10, MIN_H = 15;
 
-/** organiza os quadros detectados em fileiras (sobreposição vertical) ordenadas por x */
+/**
+ * organiza os quadros detectados em fileiras ordenadas por x. Um quadro entra numa fileira quando
+ * sobrepõe verticalmente pelo menos metade da própria altura com a faixa dela (Digimon que voa sobe/desce).
+ */
 export function gridOf(rects: Rect[]): Rect[][] {
-  const rows: { cy: number; h: number; items: Rect[] }[] = [];
+  const rows: { top: number; bottom: number; items: Rect[] }[] = [];
   for (const q of [...rects].filter(q => q.w >= MIN_W && q.h >= MIN_H).sort((a, b) => a.y - b.y)) {
-    const cy = q.y + q.h / 2;
-    const row = rows.find(rw => Math.abs(rw.cy - cy) < Math.min(rw.h, q.h) / 2);
-    if (row) row.items.push(q); else rows.push({ cy, h: q.h, items: [q] });
+    const row = rows.find(rw => Math.min(rw.bottom, q.y + q.h) - Math.max(rw.top, q.y) >= q.h / 2);
+    if (row) { row.items.push(q); row.top = Math.min(row.top, q.y); row.bottom = Math.max(row.bottom, q.y + q.h); }
+    else rows.push({ top: q.y, bottom: q.y + q.h, items: [q] });
   }
-  return rows.sort((a, b) => a.cy - b.cy).map(rw => rw.items.sort((a, b) => a.x - b.x));
+  return rows.sort((a, b) => a.top - b.top).map(rw => rw.items.sort((a, b) => a.x - b.x));
 }
 
 /** ampliação inteira sem interpolação (pixel art continua nítida) */

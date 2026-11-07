@@ -10,6 +10,11 @@ describe('gridOf', () => {
     const g = gridOf(rects);
     expect(g.map(row => row.map(q => q.x))).toEqual([[0, 25, 50], [10, 40]]);
   });
+  it('mantém na mesma fileira quadros que sobem e descem (Digimon voando)', () => {
+    // caso real do Patamon: quadro baixinho (h 16) no pé da faixa da fileira 0; fileira 1 começa em y 40
+    const rects = [r(0, 3, 21, 30), r(25, 18, 22, 16), r(50, 11, 29, 22), r(75, 4, 21, 30), r(0, 40), r(25, 45)];
+    expect(gridOf(rects).map(row => row.map(q => q.x))).toEqual([[0, 25, 50, 75], [0, 25]]);
+  });
   it('ignora pedaços pequenos (texto, linhas)', () => {
     const g = gridOf([r(0, 0), r(30, 0, 6, 7), r(0, 100, 300, 2)]);
     expect(g).toEqual([[r(0, 0)]]);
