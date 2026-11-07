@@ -6,6 +6,7 @@ import type { PlayerProg } from './progression';
 import type { SpatialHash } from './spatial';
 import { effectiveStats, incomingDamage, moveCooldown, outgoingDamage } from './stats';
 import { norm } from './vec';
+import type { BossState } from './boss';
 
 export interface Projectile {
   x: number; z: number; vx: number; vz: number; dmg: number; radius: number; pierce: number; life: number;
@@ -25,6 +26,7 @@ export interface CombatState {
   invuln: number; hp: number; maxHp: number; facingX: number; facingZ: number;
   /** time since each slot last fired (render squash) */
   firedAgo: number[];
+  bosses: Map<number, BossState>;
 }
 export type CombatEvent =
   | { type: 'kill'; enemy: Enemy }
@@ -35,7 +37,7 @@ export const INVULN = 0.5;
 
 export function newCombatState(p: PlayerProg): CombatState {
   const hp = effectiveStats(p).hp;
-  return { cooldowns: p.slots.map(() => 0), projectiles: [], areas: [], hostiles: [], invuln: 0, hp, maxHp: hp, facingX: 1, facingZ: 0, firedAgo: p.slots.map(() => 99) };
+  return { cooldowns: p.slots.map(() => 0), projectiles: [], areas: [], hostiles: [], invuln: 0, hp, maxHp: hp, facingX: 1, facingZ: 0, firedAgo: p.slots.map(() => 99), bosses: new Map() };
 }
 
 const tmp: number[] = [];
@@ -54,8 +56,12 @@ export function damageEnemy(e: Enemy, dmg: number, pool: EnemyPool, out: CombatE
   if (e.hp <= 0) { pool.kill(e.id); out.push({ type: 'kill', enemy: e }); }
 }
 
-function inArea(a: Area, e: Enemy): boolean {
-  const rx = e.x - a.x, rz = e.z - a.z, er = e.size * 0.5;
+export const PLAYER_HIT_RADIUS = 0.5;
+
+function inArea(a: Area, e: Enemy): boolean { return pointInArea(a, e.x, e.z, e.size * 0.5); }
+
+export function pointInArea(a: Area, x: number, z: number, er: number): boolean {
+  const rx = x - a.x, rz = z - a.z;
   if (a.shape === 'circle') return rx * rx + rz * rz <= (a.radius + er) ** 2;
   const along = rx * a.dx + rz * a.dz;
   if (a.shape === 'beam') {
@@ -113,6 +119,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
   for (const e of alive) hash.insert(e.id, e.x, e.z);
   for (const e of alive) {
     if (e.hitFlash > 0) e.hitFlash -= dt;
+    if (c.bosses.has(e.id)) continue; // movido pela IA do chefe
     const [dx, dz] = norm(px - e.x, pz - e.z);
     let mx = dx * e.speed, mz = dz * e.speed;
     tmp.length = 0; hash.query(e.x, e.z, e.size * 0.7, tmp);
@@ -181,10 +188,31 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
     if (dead) c.projectiles.splice(i, 1);
   }
 
-  // areas (visual lifetime; follow player)
+  // hostile projectiles
+  for (let i = c.hostiles.length - 1; i >= 0; i--) {
+    const h = c.hostiles[i];
+    h.x += h.vx * dt; h.z += h.vz * dt; h.life -= dt;
+    let dead = h.life <= 0;
+    if (!dead && Math.hypot(h.x - px, h.z - pz) <= h.radius + PLAYER_HIT_RADIUS) {
+      dead = true;
+      if (c.invuln <= 0) { const dmg = incomingDamage(h.dmg, stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg }); }
+    }
+    if (dead) c.hostiles.splice(i, 1);
+  }
+
+  // areas (visual lifetime; follow player; hostile ones telegraph then strike once)
   for (let i = c.areas.length - 1; i >= 0; i--) {
     const a = c.areas[i];
     if (a.follow) { a.x = px; a.z = pz; }
+    if (a.hostile && !a.done) {
+      a.delay -= dt;
+      if (a.delay <= 0) {
+        a.done = true;
+        if (a.dmg > 0 && c.invuln <= 0 && pointInArea(a, px, pz, PLAYER_HIT_RADIUS)) {
+          const dmg = incomingDamage(a.dmg, stats.def); c.hp -= dmg; c.invuln = INVULN; out.push({ type: 'playerHit', dmg });
+        }
+      }
+    }
     a.life -= dt;
     if (a.life <= 0) c.areas.splice(i, 1);
   }

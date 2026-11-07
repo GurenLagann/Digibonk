@@ -52,10 +52,10 @@ export class MapView {
     scene.add(trunk, crown, rock);
 
     this.altar = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.4, 0.6, 16), new THREE.MeshLambertMaterial({ color: 0x5a4a7a }));
-    base.position.y = 0.3;
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.4, 0.12, 16), new THREE.MeshLambertMaterial({ color: 0x5a4a7a }));
+    base.position.y = 0.06;
     this.altarRing = new THREE.Mesh(new THREE.TorusGeometry(4, 0.15, 6, 32), new THREE.MeshBasicMaterial({ color: 0xff3a5a }));
-    this.altarRing.rotation.x = -Math.PI / 2; this.altarRing.position.y = 0.7;
+    this.altarRing.rotation.x = -Math.PI / 2; this.altarRing.position.y = 0.15;
     this.altar.add(base, this.altarRing);
     scene.add(this.altar);
   }

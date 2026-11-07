@@ -7,6 +7,7 @@ import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
 import { gainItem, offerPassive, replacePassive, slashIntoSlot } from './cards';
 import { newCombatState, stepCombat, type CombatState } from './combat';
+import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { availableEvolutions, evolve, EvoNotifier } from './evolution';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
@@ -42,7 +43,7 @@ export const PLAYER_RADIUS = 0.5, CHEST_RADIUS = 1.6;
 function setupPhase(r: RunState, n: number) {
   r.phase = newPhase(n, r.rng);
   r.pool.clearAll(); r.pickups.length = 0;
-  r.combat.projectiles.length = 0; r.combat.areas.length = 0; r.combat.hostiles.length = 0;
+  r.combat.projectiles.length = 0; r.combat.areas.length = 0; r.combat.hostiles.length = 0; r.combat.bosses.clear();
   r.px = 0; r.pz = 0;
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
   r.chests = placeChests(n, r.rng);
@@ -132,6 +133,15 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   const d = r.director; d.phase = r.phase.phase; d.t = r.phase.t; d.px = r.px; d.pz = r.pz;
   stepDirector(d, dt, r.rng);
+
+  for (const [id] of r.combat.bosses) if (!r.pool.get(id)) r.combat.bosses.delete(id);
+  for (const e of r.pool.all) {
+    if (!e || !e.alive || !e.boss) continue;
+    const def = BOSSES.find(b => b.id === e.def); if (!def) continue;
+    let st = r.combat.bosses.get(e.id);
+    if (!st) { st = newBossState(); r.combat.bosses.set(e.id, st); }
+    stepBoss(e, def, st, r.combat, r.px, r.pz, dt, r.rng);
+  }
 
   let killedMiniboss = false, bossDead = false, collectedFragment = false;
   const stats = effectiveStats(r.prog);
