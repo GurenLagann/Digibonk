@@ -74,7 +74,7 @@ function announce(e: RunEvent) {
     case 'evolutionAvailable': toast('Digievolução disponível! Aperte E', 'rare'); break;
     case 'bossUnlocked': toast('Missão cumprida! O chefe foi liberado', 'rare'); break;
     case 'bossStarted': toast('O chefe apareceu!', 'warn'); break;
-    case 'minibossSpawned': toast('Um Deva apareceu!', 'warn'); break;
+    case 'minibossSpawned': toast('Um guardião apareceu!', 'warn'); break;
     case 'overtime': toast('O tempo acabou! Hordas insanas chegando!', 'warn'); break;
     case 'phaseCleared': toast(`Fase ${e.phase} concluída!`, 'rare'); break;
     case 'victory': toast('VITÓRIA!', 'rare'); resultsAt = performance.now() + 1500; break;

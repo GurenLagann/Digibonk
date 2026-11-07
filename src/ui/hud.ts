@@ -53,7 +53,7 @@ export function mountHud(root: HTMLElement) {
       else if (ph.bossUnlocked) ms = 'Chefe liberado — vá ao altar';
       else if (m.kind === 'collect') ms = `Fragmentos de dados ${m.progress}/${m.goal}`;
       else if (m.kind === 'activate') ms = `Ative os pontos ${m.progress}/${m.goal} (fique dentro do círculo)`;
-      else ms = ph.minibossSpawned ? 'Derrote o Deva!' : `Um Deva vai surgir em ${Math.max(0, Math.ceil(60 - ph.t))}s`;
+      else ms = ph.minibossSpawned ? 'Derrote o guardião!' : `Um guardião vai surgir em ${Math.max(0, Math.ceil(60 - ph.t))}s`;
       setText(mission, ms);
 
       p.slots.forEach((s, i) => {
