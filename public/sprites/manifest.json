@@ -13,7 +13,7 @@
   },
   "agumon": {
    "file": "agumon.png",
-   "frameW": 45,
+   "frameW": 43,
    "frameH": 48,
    "frames": [
     "walk1",
@@ -163,7 +163,7 @@
   },
   "greymon": {
    "file": "greymon.png",
-   "frameW": 69,
+   "frameW": 70,
    "frameH": 65,
    "frames": [
     "walk1",
