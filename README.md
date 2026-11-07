@@ -21,7 +21,15 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
 
 ## Como funciona uma partida
 
-- **Escolha o parceiro.** Os iniciais são Agumon (Adventure), Veemon (Adventure 02) e Guilmon (Tamers). Gabumon e Wormmon se desbloqueiam encontrando o **ovo** deles durante as partidas.
+- **Escolha o parceiro.** São 11, todos com a linha até o Mega:
+
+  | Temporada | Inicial | Desbloqueáveis por ovo |
+  |---|---|---|
+  | Adventure | Agumon | Gabumon, Patamon, Tentomon, Gatomon (começa como Salamon) |
+  | Adventure 02 | Veemon | Wormmon, Armadillomon |
+  | Tamers | Guilmon | Terriermon, Renamon |
+
+  Os ovos são raros nos baús. Pegar um libera o parceiro para sempre, mesmo que você perca a partida.
 - **Combate automático.** Cada Digimon tem espaços de ataque com o próprio kit (Pepper Breath, Spitfire Blast...). Você só se move, e os golpes saem sozinhos.
 - **Level up.** A cada nível você escolhe entre aprender um golpe novo, melhorar um golpe ou aumentar um atributo (Vida, Ataque, Defesa, Velocidade, Cérebro).
 - **Digievolução por escolha.** Quando os requisitos são cumpridos (nível, atributos, itens), aparece o aviso "Digievolução disponível!". Você aperta **E** quando quiser e escolhe o caminho. Algumas formas exigem itens especiais:
@@ -169,7 +177,7 @@ Os demais Digimon e os inimigos usam sprites de V-pet (Vital Bracelet / Pendulum
 
 ## Próximos passos
 
-- Os 8 parceiros desbloqueáveis restantes (Patamon, Tentomon, Armadillomon, Gatomon, Terriermon, Renamon...) com as linhas até o Mega.
+- Sprites para as formas dos parceiros desbloqueáveis (hoje usam o placeholder).
 - Folhas de sprite completas para todas as formas jogáveis.
 - Loja entre partidas para comprar melhorias.
 - Retratos dos Digimon nos menus e tela de créditos.
