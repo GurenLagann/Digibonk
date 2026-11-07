@@ -72,16 +72,57 @@ Abra `http://localhost:5173/?debug` e comece uma partida. Aparece um painel (**F
 
 Também dá para combinar flags na URL: `?debug=xp10,items,spawn600` (10× XP, só itens nos baús, 600 inimigos de uma vez para testar desempenho).
 
+## Banco de dados
+
+Os dados do jogo vivem num banco **SQLite** versionado por migrations. Ele já nasce pensando no servidor futuro: as migrations usam SQL portátil, que também roda em PostgreSQL. O banco guarda:
+- Digimon, com estágio, atributo, elemento e status base;
+- golpes;
+- evoluções;
+- itens;
+- cartas;
+- inimigos e chefes;
+- as tabelas de vantagem.
+
+```
+db/migrations/   esquema (001_esquema.sql, 002_..., aplicadas em ordem)
+db/seeds/        conteúdo (001_tipagem.sql: atributos, elementos e vantagens; 002_conteudo.sql: o resto)
+db/digibonk.db   gerado, não vai para o git
+src/data/generated/gamedata.ts   gerado a partir do banco, vai para o git; o jogo importa daqui
+```
+
+| Comando | O que faz |
+|---|---|
+| `npm run db:build` | recria o banco do zero (migrations + seeds) e gera `src/data/generated/gamedata.ts` |
+| `npm run db:migrate` | aplica só as migrations pendentes |
+| `npm run db:seed` | aplica só os seeds pendentes |
+
+**Para mudar um dado** (status, golpe, carta...): edite o `.sql` em `db/seeds/` e rode `npm run db:build`.
+
+**Para mudar o esquema:** crie uma migration nova com o próximo número (ex.: `002_loja.sql`) usando só `TEXT`, `INTEGER` e `REAL` e chaves explícitas. Nunca edite uma migration que já foi aplicada em outro lugar.
+
+Requer **Node 22**, que traz o `node:sqlite` embutido, sem dependência extra.
+
+### Regras que vêm do banco
+
+- **Crescimento por nível:** `status = base × (1 + 0,005 × (nível − 1))`, ou seja, +0,5% do base por nível. A taxa fica por Digimon.
+- **Vantagem:** dano × (atributo do atacante contra o do alvo) × (elemento do golpe contra o do alvo).
+  - **Atributos:** Vacina > Vírus > Dados > Vacina.
+  - **Elementos:** 11, cada um com suas vantagens, na tabela `element_matchups`.
+  - Vale para os seus golpes e para os ataques dos inimigos.
+- **Cartas:** as passivas dão bônus em %, e pegar a mesma carta de novo na partida sobe o nível dela, até 10. A carta Slash repetida sobe o nível do golpe.
+
 ## Estrutura
 
 ```
 src/
   core/     RNG com seed, loop de passo fixo, entrada (teclado + gamepad), save
-  data/     formas, linhas de evolução, golpes, cartas, itens, inimigos, ajustes
+  data/     dados do jogo (gerados do banco em data/generated) e ajustes (tuning)
   sim/      simulação pura e determinística: combate, hordas, fases, chefes, loot
   render/   Three.js: cena, mapa, billboards com sprites, animação procedural
   ui/       HUD, menus, modais de escolha, painel de debug
 tools/sprites/  recorte das folhas de sprite → tiras + manifest.json
+tools/db/       executor de migrations/seeds e exportador banco → dados do jogo
+db/             migrations e seeds (SQL)
 tests/      testes da simulação, render e UI
 docs/superpowers/  documento de design e planos de implementação
 ```
