@@ -1,0 +1,46 @@
+import { describe, expect, it } from 'vitest';
+import { HOP, motionPose } from '../../src/render/motion';
+
+const base = { t: 0, phase: 0, moving: false, attack: 99, hurt: 0 };
+const samples = (o: Partial<typeof base>) => Array.from({ length: 120 }, (_, i) => motionPose({ ...base, ...o, t: i / 60 }));
+
+describe('motionPose', () => {
+  it('parado: não pula nem inclina, só respira', () => {
+    const ps = samples({});
+    for (const p of ps) { expect(p.y).toBe(0); expect(p.tilt).toBe(0); }
+    expect(Math.max(...ps.map(p => p.sy))).toBeGreaterThan(1);
+  });
+
+  it('andando: pula até HOP e balança para os dois lados', () => {
+    const ps = samples({ moving: true });
+    const ys = ps.map(p => p.y);
+    expect(Math.max(...ys)).toBeGreaterThan(HOP * 0.8);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(HOP + 1e-9);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(0);
+    expect(Math.min(...ps.map(p => p.tilt))).toBeLessThan(-0.05);
+    expect(Math.max(...ps.map(p => p.tilt))).toBeGreaterThan(0.05);
+  });
+
+  it('fase diferente dessincroniza a caminhada', () => {
+    const a = motionPose({ ...base, moving: true, t: 0.1 });
+    const b = motionPose({ ...base, moving: true, t: 0.1, phase: 0.13 });
+    expect(a.y).not.toBeCloseTo(b.y, 3);
+  });
+
+  it('ataque recente estica para o lado e volta ao normal', () => {
+    const hit = motionPose({ ...base, attack: 0.02 });
+    expect(hit.sx).toBeGreaterThan(1.1);
+    expect(hit.sy).toBeLessThan(0.95);
+    const later = motionPose({ ...base, attack: 0.4 });
+    expect(later.sx).toBeCloseTo(1 / later.sy, 1);
+    expect(later.sx).toBeLessThan(1.05);
+  });
+
+  it('dano inclina para trás', () => {
+    expect(motionPose({ ...base, hurt: 1 }).tilt).toBeLessThan(-0.15);
+  });
+
+  it('mantém a área aproximada (sx·sy ≈ 1)', () => {
+    for (const p of [...samples({ moving: true }), ...samples({ attack: 0.05 })]) expect(p.sx * p.sy).toBeGreaterThan(0.95), expect(p.sx * p.sy).toBeLessThan(1.05);
+  });
+});

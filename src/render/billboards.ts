@@ -4,6 +4,7 @@ import { FORMS } from '../data/forms';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
+import { motionPose } from './motion';
 import { facingFlip, frameIndex, idleFrame, type Role, type SpriteLibrary } from './sprites';
 
 const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
@@ -31,7 +32,8 @@ export class Billboards {
   private playerHeight = 1;
   private shadows: THREE.InstancedMesh;
   private m = new THREE.Matrix4(); private p = new THREE.Vector3(); private s = new THREE.Vector3();
-  private ident = new THREE.Quaternion();
+  private ident = new THREE.Quaternion(); private qt = new THREE.Quaternion(); private qz = new THREE.Quaternion();
+  private zAxis = new THREE.Vector3(0, 0, 1);
   private white = new THREE.Color(1, 1, 1); private flash = new THREE.Color(3, 3, 3);
   private counts = new Map<string, number>();
 
@@ -72,6 +74,11 @@ export class Billboards {
     if (tex) tex.offset.x = frameIndex(role, frames) / frames.length;
   }
 
+  /** quaternion da câmera inclinada no plano da tela (pivô nos pés) */
+  private tilted(q: THREE.Quaternion, tilt: number): THREE.Quaternion {
+    return this.qt.copy(q).multiply(this.qz.setFromAxisAngle(this.zAxis, tilt));
+  }
+
   sync(run: RunState, time: number) {
     const q = this.camera.quaternion;
     this.counts.clear();
@@ -82,9 +89,9 @@ export class Billboards {
       const i = this.counts.get(e.def) ?? 0;
       if (i >= T.MAX_ENEMIES) continue;
       this.counts.set(e.def, i + 1);
-      const bob = sp.tex ? 0 : Math.abs(Math.sin(time * 9 + e.id)) * 0.08 * e.size;
       const flip = FLIP_SPRITES && sp.tex ? facingFlip(run.px - e.x) : 1;
-      this.m.compose(this.p.set(e.x, bob, e.z), q, this.s.set(sp.height * flip, sp.height, 1));
+      const pose = motionPose({ t: time, phase: (e.id * 0.618) % 1, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0 });
+      this.m.compose(this.p.set(e.x, pose.y * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
       if (sh < T.MAX_ENEMIES + 31) {
@@ -114,19 +121,17 @@ export class Billboards {
     }
     const c = run.combat;
     const fired = Math.min(...c.firedAgo);
-    let squash = 1, bob = 0;
     if (this.playerTex) {
       const role: Role = c.invuln > 0.3 ? 'hurt' : fired < 0.15 ? 'attack' : idleFrame(time);
       this.setFrame(this.playerTex, this.playerFrames, role);
-    } else {
-      squash = fired < 0.08 ? 0.85 : 1;
-      bob = run.moving ? Math.abs(Math.sin(time * 10)) * 0.05 * f.size * 2 : 0;
     }
     const flip = FLIP_SPRITES && this.playerTex ? facingFlip(run.dirX) : 1;
-    this.player.position.set(run.px, bob, run.pz);
-    this.player.quaternion.copy(q);
-    this.player.scale.set(this.playerHeight * flip * (2 - squash), this.playerHeight * squash, 1);
-    mat.color.copy(c.invuln > 0.35 && !this.playerTex ? this.flash : this.white);
+    const hurt = Math.max(0, Math.min(1, (c.invuln - 0.3) / 0.2));
+    const pose = motionPose({ t: time, phase: 0, moving: run.moving, attack: fired, hurt });
+    this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
+    this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
+    this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
+    mat.color.copy(c.invuln > 0.35 ? this.flash : this.white);
     this.m.compose(this.p.set(run.px, 0.02, run.pz), this.ident, this.s.set(f.size, 1, f.size * 0.6));
     this.shadows.setMatrixAt(sh++, this.m);
     this.shadows.count = sh;
