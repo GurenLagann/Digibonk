@@ -12,7 +12,7 @@ import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
 import { createScene, follow } from './render/scene';
 import { Vfx } from './render/vfx';
-import { SpriteLibrary } from './render/sprites';
+import { deathDuration, SpriteLibrary } from './render/sprites';
 import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './sim/run';
 import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showEvolve } from './ui/evolve';
@@ -103,7 +103,12 @@ function announce(e: RunEvent) {
     case 'overtime': toast('O tempo acabou! Hordas insanas chegando!', 'warn'); break;
     case 'phaseCleared': toast(`Fase ${e.phase} concluída!`, 'rare'); break;
     case 'victory': toast('VITÓRIA!', 'rare'); resultsAt = performance.now() + 1500; break;
-    case 'defeat': toast('Seu Digimon caiu...', 'warn'); resultsAt = performance.now() + 1500; break;
+    case 'defeat': {
+      toast('Seu Digimon caiu...', 'warn');
+      // espera a animação de morte (se o sprite tiver) antes dos resultados
+      const frames = run ? sprites.info(run.prog.formId)?.frames ?? [] : [];
+      resultsAt = performance.now() + Math.max(1500, deathDuration(frames) * 1000 + 800); break;
+    }
   }
 }
 

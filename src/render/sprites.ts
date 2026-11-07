@@ -2,10 +2,11 @@ import * as THREE from 'three';
 
 /** walk1..walk24 (de lado), walkupN / walkdownN (de costas / de frente): quadros de caminhada na ordem do ciclo */
 export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'idleup' | 'idledown'
-  | `walk${number}` | `walkup${number}` | `walkdown${number}`;
+  | `walk${number}` | `walkup${number}` | `walkdown${number}` | `hurt${number}` | `death${number}`;
 export type Facing = 'side' | 'up' | 'down';
 const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'idleup', 'idledown'];
-const isRole = (f: unknown): f is Role => typeof f === 'string' && (POSE_ROLES.includes(f) || /^walk(up|down)?([1-9]|1\d|2[0-4])$/.test(f));
+const isRole = (f: unknown): f is Role => typeof f === 'string'
+  && (POSE_ROLES.includes(f) || /^walk(up|down)?([1-9]|1\d|2[0-4])$/.test(f) || /^(hurt|death)([1-9]|[1-5]\d|6[0-4])$/.test(f));
 const WALK_RE: Record<Facing, RegExp> = { side: /^walk\d+$/, up: /^walkup\d+$/, down: /^walkdown\d+$/ };
 export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
@@ -43,6 +44,25 @@ export function moveFrame(time: number, phase: number, moving: boolean, frames: 
   if (walk.length) return 'idle1'; // parado com caminhada desenhada: pose fixa, a respiração vem do motion
   return idleFrame(time, phase);
 }
+
+/** duração da animação de dano (s) contada do golpe */
+export const HURT_TIME = 0.4;
+/** dano: hurt1..N espalhados na janela de HURT_TIME; sem eles, a pose única 'hurt'. null quando a janela passou */
+export function hurtFrame(elapsed: number, frames: Role[]): Role | null {
+  if (elapsed < 0 || elapsed > HURT_TIME) return null;
+  const seq = frames.filter(f => /^hurt\d+$/.test(f));
+  if (!seq.length) return 'hurt';
+  return seq[Math.min(seq.length - 1, Math.floor((elapsed / HURT_TIME) * seq.length))];
+}
+
+export const DEATH_FPS = 12;
+/** morte: death1..N uma vez e segura o último; null se o sprite não tem quadros de morte */
+export function deathFrame(elapsed: number, frames: Role[]): Role | null {
+  const seq = frames.filter(f => /^death\d+$/.test(f));
+  if (!seq.length) return null;
+  return seq[Math.min(seq.length - 1, Math.max(0, Math.floor(elapsed * DEATH_FPS)))];
+}
+export function deathDuration(frames: Role[]): number { return frames.filter(f => /^death\d+$/.test(f)).length / DEATH_FPS; }
 
 /** sprites do DS olham para a esquerda */
 export function facingFlip(dirX: number): number { return dirX > 0.05 ? -1 : 1; }

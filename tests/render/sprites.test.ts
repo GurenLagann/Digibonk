@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, type Role } from '../../src/render/sprites';
+import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, HURT_TIME, DEATH_FPS, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
@@ -62,4 +62,21 @@ test('vertical facing without vertical frames falls back to side frames', () => 
 });
 test('manifest accepts vertical roles', () => {
   expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['walkup12', 'walkdown3', 'idleup', 'idledown'] } } })).not.toBeNull();
+});
+test('manifest accepts hurtN and deathN roles', () => {
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['hurt1', 'hurt8', 'death1', 'death40'] } } })).not.toBeNull();
+});
+test('hurtFrame plays hurt1..N across the hurt window, or the single hurt pose', () => {
+  const frames = ['idle1', 'hurt1', 'hurt2', 'hurt3', 'hurt4'] as Role[];
+  expect(hurtFrame(0, frames)).toBe('hurt1');
+  expect(hurtFrame(HURT_TIME * 0.99, frames)).toBe('hurt4');
+  expect(hurtFrame(HURT_TIME + 0.01, frames)).toBeNull();
+  expect(hurtFrame(0.05, ['idle1', 'hurt'] as Role[])).toBe('hurt');
+});
+test('deathFrame plays death1..N once and holds the last; null without death frames', () => {
+  const frames = ['idle1', 'death1', 'death2', 'death3'] as Role[];
+  expect(deathFrame(0, frames)).toBe('death1');
+  expect(deathFrame(10, frames)).toBe('death3');
+  expect(deathFrame(0, ['idle1'] as Role[])).toBeNull();
+  expect(deathDuration(frames)).toBeCloseTo(3 / DEATH_FPS);
 });
