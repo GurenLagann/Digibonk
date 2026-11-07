@@ -25,10 +25,11 @@ const IDLE_CYCLE: Role[] = ['idle1', 'idle2', 'idle3', 'idle2'];
 export function idleFrame(time: number, phase = 0): Role { return IDLE_CYCLE[Math.floor((time + phase) * 6) % 4]; }
 
 const WALK_FPS = 10;
-/** andando e com quadros de caminhada → ciclo walk1..walkN (10 quadros/s); senão o ciclo de idle */
+/** com caminhada desenhada: andando → walk1..walkN (10 quadros/s), parado → idle1 fixo; sem ela → ciclo de idle */
 export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[]): Role {
   const walk = frames.filter(f => f.startsWith('walk'));
   if (moving && walk.length) return walk[Math.floor((time + phase) * WALK_FPS) % walk.length];
+  if (walk.length) return 'idle1'; // parado com caminhada desenhada: pose fixa, a respiração vem do motion
   return idleFrame(time, phase);
 }
 

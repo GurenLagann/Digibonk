@@ -11,8 +11,8 @@ const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MI
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
 /** escala visual dos placeholders em relação ao tamanho de colisão */
 const VIS = 1.6;
-/** mundo por pixel dos sprites de V-pet */
-const PX = 0.05;
+/** mundo por pixel dos sprites do jogador */
+const PX = 0.04;
 export const FLIP_SPRITES = true;
 /** altura visual dos inimigos com sprite = tamanho de colisão × ENEMY_VIS */
 const ENEMY_VIS = 1.7;
