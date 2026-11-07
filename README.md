@@ -105,7 +105,7 @@ Quem não tem quadros de caminhada desenhados ganha uma animação procedural: p
 
 ### Digimon World 3 (formas Child)
 
-Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1): 5 direções com caminhada (4 quadros) e corrida (5 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
+Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1): 5 direções com caminhada (4–5 quadros) e corrida (5–6 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
 
 ### Folhas geradas por IA (evoluções)
 

@@ -6,18 +6,28 @@ import { gridOf, scaleNearest } from './dw3.ts';
 
 /**
  * Sprites de campo do Digimon World 3 (PS1, © Bandai; rips de Ragey e Artzei no The Spriters Resource).
- * Caminhada (4 quadros por direção) e corrida (5 por direção; o jogo usa quando a velocidade dobra).
+ * Por direção: parado (1 quadro), caminhada (4–5 quadros) e corrida (5–6 quadros, braços balançando; o jogo usa quando a velocidade dobra).
  * Na folha os sprites já olham para a ESQUERDA, como o jogo espera (não espelhar).
  * Cada direção: [fileira, primeira coluna] na grade detectada; os quadros seguem em sequência.
+ * Atenção: nas folhas do Agumon e do Veemon a 1ª fileira é o PARADO respirando, não a caminhada.
  */
 type Dir = 'up' | 'diagup' | 'side' | 'diagdown' | 'down';
 type Dirs = Record<Dir, [number, number]>;
-const WALK_FRAMES = 4, RUN_FRAMES = 5;
-const ROW0_WALK: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
-const CONFIG: Record<string, { walk: Dirs; run: Dirs }> = {
-  agumon: { walk: ROW0_WALK, run: { up: [1, 0], diagup: [1, 5], side: [1, 10], diagdown: [1, 15], down: [2, 0] } },
-  veemon: { walk: ROW0_WALK, run: { up: [0, 20], diagup: [1, 0], side: [1, 5], diagdown: [1, 10], down: [1, 15] } },
-  guilmon: {
+interface Sheet { idle: Dirs; walk: Dirs; walkFrames: number; run: Dirs; runFrames: number }
+const ROW0_IDLE: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
+const CONFIG: Record<string, Sheet> = {
+  agumon: {
+    idle: ROW0_IDLE, walkFrames: 5, runFrames: 6,
+    walk: { up: [1, 0], diagup: [1, 5], side: [1, 10], diagdown: [1, 15], down: [2, 0] },
+    run: { up: [2, 5], diagup: [2, 11], side: [3, 0], diagdown: [3, 6], down: [3, 12] },
+  },
+  veemon: {
+    idle: ROW0_IDLE, walkFrames: 5, runFrames: 6,
+    walk: { up: [0, 20], diagup: [1, 0], side: [1, 5], diagdown: [1, 10], down: [1, 15] },
+    run: { up: [2, 0], diagup: [2, 6], side: [2, 12], diagdown: [3, 0], down: [3, 6] },
+  },
+  guilmon: { // folha rotulada (IDLE / WALK / RUN)
+    idle: { up: [0, 0], diagup: [0, 3], side: [0, 6], diagdown: [1, 0], down: [1, 3] }, walkFrames: 4, runFrames: 5,
     walk: { up: [2, 0], diagup: [2, 4], side: [3, 0], diagdown: [3, 4], down: [4, 0] },
     run: { up: [5, 0], diagup: [5, 5], side: [6, 0], diagdown: [6, 5], down: [7, 0] },
   },
@@ -42,16 +52,17 @@ for (const [id, cfg] of Object.entries(CONFIG)) {
   const bg = backgroundColors(img);
   const grid = gridOf(components(foregroundMask(img, bg), img.w, img.h, 40, 0.1).map(c => c.rect));
   const frames: Image[] = [], roles: Role[] = [];
-  const take = (kind: 'walk' | 'run', n: number) => {
-    for (const [dir, [row, col]] of Object.entries(cfg[kind]) as [Dir, [number, number]][]) {
-      const cells = grid[row]?.slice(col, col + n) ?? [];
-      if (cells.length !== n) throw new Error(`${id}: ${kind} ${dir} precisa de ${n} quadros em [${row}, ${col}], achou ${cells.length}`);
-      cells.forEach((q, i) => { frames.push(cut(img, bg, q)); roles.push(`${kind}${SUFFIX[dir]}${i + 1}` as Role); });
-      if (kind === 'walk') { frames.push(cut(img, bg, cells[0])); roles.push(IDLE[dir] as Role); }
-    }
+  const cellsAt = (what: string, [row, col]: [number, number], n: number) => {
+    const cells = grid[row]?.slice(col, col + n) ?? [];
+    if (cells.length !== n) throw new Error(`${id}: ${what} precisa de ${n} quadros em [${row}, ${col}], achou ${cells.length}`);
+    return cells;
   };
-  take('walk', WALK_FRAMES);
-  take('run', RUN_FRAMES);
+  for (const [dir, at] of Object.entries(cfg.idle) as [Dir, [number, number]][]) {
+    frames.push(cut(img, bg, cellsAt(`parado ${dir}`, at, 1)[0])); roles.push(IDLE[dir] as Role);
+  }
+  for (const [kind, n] of [['walk', cfg.walkFrames], ['run', cfg.runFrames]] as const)
+    for (const [dir, at] of Object.entries(cfg[kind]) as [Dir, [number, number]][])
+      cellsAt(`${kind} ${dir}`, at, n).forEach((q, i) => { frames.push(cut(img, bg, q)); roles.push(`${kind}${SUFFIX[dir]}${i + 1}` as Role); });
   const r = buildStrip(frames);
   writePng(join(OUT, `${id}.png`), r.strip);
   manifest.sprites[id] = { file: `${id}.png`, frameW: r.frameW, frameH: r.frameH, frames: roles, source: 0, scale: 0.8 };
