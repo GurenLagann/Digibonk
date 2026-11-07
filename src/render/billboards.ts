@@ -9,6 +9,8 @@ const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MI
 const plane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
 /** escala visual dos sprites em relação ao tamanho de colisão */
 const VIS = 1.6;
+/** espelhar pela direção: desligado enquanto os sprites são placeholders com texto (Plano 2 liga) */
+export const FLIP_SPRITES = false;
 
 function spriteMaterial(tex: THREE.Texture) {
   return new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: true, side: THREE.DoubleSide });
@@ -59,7 +61,7 @@ export class Billboards {
       if (i >= T.MAX_ENEMIES) continue;
       this.counts.set(e.def, i + 1);
       const bob = Math.abs(Math.sin(time * 9 + e.id)) * 0.08 * e.size;
-      const flip = e.x > run.px ? -1 : 1;
+      const flip = FLIP_SPRITES && e.x > run.px ? -1 : 1;
       this.m.compose(this.p.set(e.x, bob, e.z), q, this.s.set(e.size * VIS * flip, e.size * VIS, 1));
       mesh.setMatrixAt(i, this.m);
       mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
@@ -85,7 +87,7 @@ export class Billboards {
     const fired = Math.min(...c.firedAgo);
     const squash = fired < 0.08 ? 0.85 : 1;
     const bob = run.moving ? Math.abs(Math.sin(time * 10)) * 0.05 * f.size * 2 : 0;
-    const flip = c.facingX < 0 ? -1 : 1;
+    const flip = FLIP_SPRITES && c.facingX < 0 ? -1 : 1;
     this.player.position.set(run.px, bob, run.pz);
     this.player.quaternion.copy(q);
     this.player.scale.set(f.size * VIS * flip * (2 - squash), f.size * VIS * squash, 1);
