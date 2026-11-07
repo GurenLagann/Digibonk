@@ -24,7 +24,7 @@ test('every form has a v-pet sprite', () => {
 });
 test('moving with walk frames cycles walk1..walk4', () => {
   const frames: Role[] = ['walk1', 'walk2', 'walk3', 'walk4', 'idle1', 'idle2', 'attack', 'hurt'];
-  expect([0, 1, 2, 3, 4].map(i => moveFrame(i / 10 + 0.001, 0, true, frames))).toEqual(['walk1', 'walk2', 'walk3', 'walk4', 'walk1']);
+  expect([0, 1, 2, 3, 4].map(i => moveFrame(i / 12 + 0.001, 0, true, frames))).toEqual(['walk1', 'walk2', 'walk3', 'walk4', 'walk1']);
 });
 test('without walk frames or standing still uses idle cycle', () => {
   expect(moveFrame(0.001, 0, true, ['idle1', 'idle2'])).toBe('idle1');
@@ -34,10 +34,17 @@ test('manifest accepts walk roles', () => {
 });
 test('walk cycle uses every walk frame present', () => {
   const frames: Role[] = ['walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7', 'walk8', 'idle1'];
-  expect(moveFrame(7 / 10 + 0.001, 0, true, frames)).toBe('walk8');
-  expect(moveFrame(8 / 10 + 0.001, 0, true, frames)).toBe('walk1');
+  expect(moveFrame(7 / 12 + 0.001, 0, true, frames)).toBe('walk8');
+  expect(moveFrame(8 / 12 + 0.001, 0, true, frames)).toBe('walk1');
 });
 test('standing still with drawn walk keeps one pose (no leg motion)', () => {
   const frames: Role[] = ['walk1', 'walk2', 'idle1', 'idle2'];
   expect([0, 1, 2, 3, 4, 5].map(i => moveFrame(i / 6 + 0.001, 0, false, frames))).toEqual(Array(6).fill('idle1'));
+});
+test('supports up to 24 walk frames', () => {
+  const frames = Array.from({ length: 17 }, (_, i) => `walk${i + 1}`) as Role[];
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames } } })).not.toBeNull();
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['walk25'] } } })).toBeNull();
+  const seen = new Set(Array.from({ length: 40 }, (_, i) => moveFrame(i / 12 + 0.001, 0, true, frames)));
+  expect(seen.size).toBe(17);
 });

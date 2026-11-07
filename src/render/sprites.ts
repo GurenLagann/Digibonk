@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 
-export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | 'walk1' | 'walk2' | 'walk3' | 'walk4' | 'walk5' | 'walk6' | 'walk7' | 'walk8';
-const ROLES: readonly Role[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt', 'walk1', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7', 'walk8'];
+/** walk1..walk24: quadros de caminhada desenhados, na ordem do ciclo */
+export type Role = 'idle1' | 'idle2' | 'idle3' | 'attack' | 'hurt' | `walk${number}`;
+const POSE_ROLES: readonly string[] = ['idle1', 'idle2', 'idle3', 'attack', 'hurt'];
+const isRole = (f: unknown): f is Role => typeof f === 'string' && (POSE_ROLES.includes(f) || /^walk([1-9]|1\d|2[0-4])$/.test(f));
 export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: Role[]; source: number }
 export interface SpriteManifest { version: 1; sprites: Record<string, SpriteInfo> }
 
@@ -13,7 +15,7 @@ export function parseManifest(json: unknown): SpriteManifest | null {
   for (const [id, v] of Object.entries(j.sprites as Record<string, unknown>)) {
     const s = v as Partial<SpriteInfo>;
     if (!s || typeof s.file !== 'string' || !/^[a-z0-9_]+\.png$/.test(s.file) || typeof s.frameW !== 'number' || typeof s.frameH !== 'number'
-      || !Array.isArray(s.frames) || !s.frames.length || !s.frames.every(f => ROLES.includes(f as Role))) return null;
+      || !Array.isArray(s.frames) || !s.frames.length || !s.frames.every(isRole)) return null;
     sprites[id] = { file: s.file, frameW: s.frameW, frameH: s.frameH, frames: s.frames as Role[], source: typeof s.source === 'number' ? s.source : 0 };
   }
   return { version: 1, sprites };
@@ -24,8 +26,8 @@ export function frameIndex(role: Role, frames: Role[]): number { const i = frame
 const IDLE_CYCLE: Role[] = ['idle1', 'idle2', 'idle3', 'idle2'];
 export function idleFrame(time: number, phase = 0): Role { return IDLE_CYCLE[Math.floor((time + phase) * 6) % 4]; }
 
-const WALK_FPS = 10;
-/** com caminhada desenhada: andando → walk1..walkN (10 quadros/s), parado → idle1 fixo; sem ela → ciclo de idle */
+const WALK_FPS = 12;
+/** com caminhada desenhada: andando → walk1..walkN (12 quadros/s), parado → idle1 fixo; sem ela → ciclo de idle */
 export function moveFrame(time: number, phase: number, moving: boolean, frames: Role[]): Role {
   const walk = frames.filter(f => f.startsWith('walk'));
   if (moving && walk.length) return walk[Math.floor((time + phase) * WALK_FPS) % walk.length];
