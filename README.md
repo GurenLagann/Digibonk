@@ -1,0 +1,125 @@
+# DigiBonk
+
+Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra no mapa com um Digimon Child, enfrenta hordas cada vez maiores, sobe de nível, junta cartas e **escolhe quando digievoluir**. É inspirado no PokéBonk e no Megabonk, com as digievoluções simplificadas do Digimon World 1.
+
+![Greymon no meio de uma horda](docs/screenshot.jpg)
+
+> **Status:** protótipo jogável. O motor, as 5 fases, as digievoluções, as cartas e os chefes já funcionam. Sprites, parceiros e equilíbrio ainda estão em andamento.
+
+## Como funciona uma partida
+
+- **Escolha o parceiro.** Os iniciais são Agumon (Adventure), Veemon (Adventure 02) e Guilmon (Tamers). Gabumon e Wormmon se desbloqueiam encontrando o **ovo** deles durante as partidas.
+- **Combate automático.** Cada Digimon tem espaços de ataque com o próprio kit (Pepper Breath, Spitfire Blast...). Você só se move, e os golpes saem sozinhos.
+- **Level up.** A cada nível você escolhe entre aprender um golpe novo, melhorar um golpe ou aumentar um atributo (Vida, Ataque, Defesa, Velocidade, Cérebro).
+- **Digievolução por escolha.** Quando os requisitos são cumpridos (nível, atributos, itens), aparece o aviso "Digievolução disponível!". Você aperta **E** quando quiser e escolhe o caminho. Algumas formas exigem itens especiais:
+  - os Digiovos da Coragem e da Amizade levam o Veemon a Flamedramon e Raidramon;
+  - os dados de fusão liberam Omnimon e Paildramon;
+  - o Blue Card leva o WarGrowlmon a Gallantmon.
+- **Cartas do Digimon Tamers.** Há 3 espaços para cartas passivas, como Garras do Gatomon ou Armadura do Andromon. As cartas *Slash* substituem um dos seus ataques.
+- **5 fases de 10 minutos.** Cumpra a missão da fase para liberar o chefe (Devimon, Etemon, Myotismon, Kimeramon, Piedmon). Você pode enfrentá-lo ou continuar farmando. Se o tempo acabar, chegam as **hordas insanas**.
+
+## Controles
+
+| Ação | Teclado | Controle |
+|---|---|---|
+| Mover | WASD / setas | D-pad / analógico |
+| Confirmar | Enter / Espaço | A |
+| Voltar | Backspace | B |
+| Digievoluir | E | Y |
+| Pausar | Esc | Start |
+| Opções rápidas nos menus | 1, 2, 3 | — |
+
+Os controles podem ser remapeados no menu **Controles**.
+
+## Rodando localmente
+
+Requisitos: **Node.js 22+**.
+
+```bash
+npm install        # o .npmrc já liga legacy-peer-deps
+npm run dev        # http://localhost:5173
+```
+
+| Script | O que faz |
+|---|---|
+| `npm run dev` | servidor de desenvolvimento (Vite) |
+| `npm run build` | checagem de tipos + build de produção em `dist/` |
+| `npm test` | testes (Vitest) |
+| `npm run sprites:vpet` | regera as tiras de sprite em `public/sprites/` |
+
+### Modo debug (só em desenvolvimento)
+
+Abra `http://localhost:5173/?debug` e comece uma partida. Aparece um painel (**F2** mostra/esconde) com botões para:
+
+- evoluir para qualquer forma (sem requisitos);
+- +1 nível;
+- dar qualquer carta ou item;
+- curar, ficar invencível e matar todos (inclui o chefe).
+
+Também dá para combinar flags na URL: `?debug=xp10,items,spawn600` (10× XP, só itens nos baús, 600 inimigos de uma vez para testar desempenho).
+
+## Estrutura
+
+```
+src/
+  core/     RNG com seed, loop de passo fixo, entrada (teclado + gamepad), save
+  data/     formas, linhas de evolução, golpes, cartas, itens, inimigos, ajustes
+  sim/      simulação pura e determinística: combate, hordas, fases, chefes, loot
+  render/   Three.js: cena, mapa, billboards com sprites, animação procedural
+  ui/       HUD, menus, modais de escolha, painel de debug
+tools/sprites/  recorte das folhas de sprite → tiras + manifest.json
+tests/      testes da simulação, render e UI
+docs/superpowers/  documento de design e planos de implementação
+```
+
+A simulação (`src/sim`) não conhece Three.js nem o DOM. Isso permite testar uma partida inteira de forma determinística.
+
+## Sprites
+
+Cada Digimon é uma **tira horizontal** de quadros em `public/sprites/<id>.png`. O `manifest.json` diz o papel de cada quadro:
+
+| Papel | Uso |
+|---|---|
+| `walk1..N` | caminhada de lado (até 24 quadros) |
+| `walkup1..N` / `walkdown1..N` | caminhada de costas / de frente |
+| `idle1`, `idleup`, `idledown` | parado, em cada direção |
+| `hurt1..N` | dano (toca uma vez a cada golpe, com intervalo mínimo) |
+| `death1..N` | morte (toca uma vez e segura o último quadro) |
+
+Quem não tem quadros de caminhada desenhados ganha uma animação procedural: pulinho e balanço ao andar, respiração parado.
+
+### Folhas geradas por IA
+
+Agumon, Greymon, MetalGreymon e Guilmon usam folhas geradas no Gemini. Para recortar uma folha nova:
+
+```bash
+# lista as células detectadas (índice x,y,w,h)
+tools/sprites/cut-gemini.sh --cells minha-folha.jpeg
+
+# recorta: id, folha, escala %, e papel:célula[:flip] para cada quadro
+tools/sprites/cut-gemini.sh greymon greymon.jpeg 75 walk1:3 walk2:4 idle1:31 hurt1:44
+
+npm run sprites:vpet
+```
+
+O jogo assume que os sprites de lado **olham para a esquerda**. Use `:flip` nos quadros que vierem virados.
+
+Os demais Digimon e os inimigos usam sprites de V-pet (Vital Bracelet / Pendulum Color).
+
+## Próximos passos
+
+- Os 8 parceiros desbloqueáveis restantes (Patamon, Tentomon, Armadillomon, Gatomon, Terriermon, Renamon...) com as linhas até o Mega.
+- Folhas de sprite completas para todas as formas jogáveis.
+- Loja entre partidas para comprar melhorias.
+- Retratos dos Digimon nos menus e tela de créditos.
+
+## Créditos e aviso legal
+
+DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.
+
+- **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
+- **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
+- **Folhas do Agumon, Greymon, MetalGreymon e Guilmon:** geradas com o Google Gemini a partir de descrições dos personagens.
+- **Inspiração:** PokéBonk, Megabonk e Digimon World 1.
+
+Se você é detentor de direitos e quer a remoção de algum material, abra uma *issue*.
