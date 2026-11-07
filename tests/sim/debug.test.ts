@@ -1,5 +1,5 @@
-import { createRun, stepRun } from '../../src/sim/run';
-import { debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleGod } from '../../src/sim/debug';
+import { createRun, playerSpeed, stepRun } from '../../src/sim/run';
+import { debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
 import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
 import { ENEMIES } from '../../src/data/enemies';
@@ -58,4 +58,13 @@ test('god mode keeps hp full while on', () => {
   expect(debugToggleGod(r)).toBe(false);
   r.combat.hp = 1; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(r.combat.hp).toBeLessThan(r.combat.maxHp);
+});
+
+test('debugToggleDoubleSpeed doubles the base speed and restores it', () => {
+  const r = mk();
+  const before = playerSpeed(r.prog);
+  expect(debugToggleDoubleSpeed(r)).toBe(true);
+  expect(playerSpeed(r.prog)).toBeGreaterThanOrEqual(2 * r.baseSpeed);
+  expect(debugToggleDoubleSpeed(r)).toBe(false);
+  expect(playerSpeed(r.prog)).toBeCloseTo(before);
 });

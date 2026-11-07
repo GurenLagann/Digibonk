@@ -1,7 +1,7 @@
 /** Ações do painel de debug (só no modo dev). Não gravam nada de "descoberta" no save. */
 import { addXp, rollOffers, xpToNext } from './progression';
 import { applyForm } from './evolution';
-import { handleCard, handleItem, syncHp, type RunEvent, type RunState } from './run';
+import { handleCard, handleItem, playerSpeed, syncHp, type RunEvent, type RunState } from './run';
 
 export function debugEvolve(r: RunState, formId: string): void {
   applyForm(r.prog, formId);
@@ -33,3 +33,11 @@ export function debugKillAll(r: RunState): void { r.pool.clearAll(); }
 
 /** liga/desliga invencibilidade; devolve o novo estado */
 export function debugToggleGod(r: RunState): boolean { return (r.debug.god = !r.debug.god); }
+
+/** liga/desliga velocidade dobrada (soma pontos de Velocidade até 2× a inicial, para ver a corrida); devolve o novo estado */
+export function debugToggleDoubleSpeed(r: RunState): boolean {
+  const d = r.debug;
+  if (d.doubleSpeed) { r.prog.bonus.spd -= d.speedBonus; d.speedBonus = 0; return (d.doubleSpeed = false); }
+  while (playerSpeed(r.prog) < 2 * r.baseSpeed && d.speedBonus < 10000) { r.prog.bonus.spd++; d.speedBonus++; }
+  return (d.doubleSpeed = true);
+}

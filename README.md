@@ -67,7 +67,8 @@ Abra `http://localhost:5173/?debug` e comece uma partida. Aparece um painel (**F
 - evoluir para qualquer forma (sem requisitos);
 - +1 nível;
 - dar qualquer carta ou item;
-- curar, ficar invencível e matar todos (inclui o chefe).
+- curar, ficar invencível e matar todos (inclui o chefe);
+- velocidade 2× (liga/desliga), para ver a troca de caminhada para corrida.
 
 Também dá para combinar flags na URL: `?debug=xp10,items,spawn600` (10× XP, só itens nos baús, 600 inimigos de uma vez para testar desempenho).
 

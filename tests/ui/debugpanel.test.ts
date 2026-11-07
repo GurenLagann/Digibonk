@@ -10,6 +10,7 @@ function actions(log: string[]): DebugActions {
     evolve: id => log.push('evolve:' + id), levelUp: () => log.push('level'), card: id => log.push('card:' + id),
     item: id => log.push('item:' + id), heal: () => log.push('heal'), killAll: () => log.push('kill'),
     god: () => (god = !god),
+    doubleSpeed: () => false,
   };
 }
 const btn = (root: HTMLElement, text: string) => [...root.querySelectorAll('button')].find(b => b.textContent === text)!;
@@ -34,4 +35,12 @@ test('toggle hides and shows the panel', () => {
   const p = mountDebugPanel(root, actions([]));
   expect(p.el.classList.contains('hidden')).toBe(false);
   p.toggle(); expect(p.el.classList.contains('hidden')).toBe(true);
+});
+
+test('double speed button shows its state', () => {
+  const root = document.createElement('div');
+  let on = false;
+  mountDebugPanel(root, { ...actions([]), doubleSpeed: () => (on = !on) });
+  btn(root, 'Velocidade 2×: não').click();
+  expect(btn(root, 'Velocidade 2×: sim')).toBeTruthy();
 });

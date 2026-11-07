@@ -41,7 +41,7 @@ export interface RunState {
   offers: LevelOffer[] | null; pendingCard: string | null;
   nextPickupId: number; unlockedThisRun: string[];
   /** dev only */
-  debug: { xpMul: number; forceItems: boolean; god: boolean };
+  debug: { xpMul: number; forceItems: boolean; god: boolean; doubleSpeed: boolean; speedBonus: number };
 }
 
 export const PLAYER_RADIUS = 0.5, CHEST_RADIUS = 1.6;
@@ -78,7 +78,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
-    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false },
+    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);

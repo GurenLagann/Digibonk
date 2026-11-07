@@ -87,6 +87,7 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
     heal: withRun(r => dbg.debugHeal(r)),
     killAll: withRun(r => dbg.debugKillAll(r)),
     god: () => { if (!run) return false; const on = dbg.debugToggleGod(run); toast(`Debug: invencível ${on ? 'ligado' : 'desligado'}`); return on; },
+    doubleSpeed: () => { if (!run) return false; const on = dbg.debugToggleDoubleSpeed(run); toast(`Debug: velocidade 2× ${on ? 'ligada' : 'desligada'}`); return on; },
   });
   addEventListener('keydown', e => { if (e.code === 'F2') { e.preventDefault(); panel.toggle(); } });
 }
