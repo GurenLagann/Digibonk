@@ -70,3 +70,8 @@ test('evolution availability is announced once', () => {
   expect(a).toContainEqual({ type: 'evolutionAvailable', forms: ['greymon'] });
   expect(b.some(e => e.type === 'evolutionAvailable')).toBe(false);
 });
+test('run remembers the horizontal move direction for sprite facing', () => {
+  const r = createRun(opts()); stepRun(r, { mx: 1, mz: 0 }, 1 / 60); expect(r.dirX).toBeGreaterThan(0);
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60); expect(r.dirX).toBeGreaterThan(0); // parado mantém a última direção
+  stepRun(r, { mx: -1, mz: 0.2 }, 1 / 60); expect(r.dirX).toBeLessThan(0);
+});

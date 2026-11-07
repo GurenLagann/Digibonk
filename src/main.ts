@@ -12,6 +12,7 @@ import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
 import { createScene, follow } from './render/scene';
 import { Vfx } from './render/vfx';
+import { SpriteLibrary } from './render/sprites';
 import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './sim/run';
 import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showEvolve } from './ui/evolve';
@@ -31,7 +32,9 @@ const input = createInput(window, () => (navigator.getGamepads ? [...navigator.g
 const debug = import.meta.env.DEV ? new URLSearchParams(location.search).get('debug')?.split(',') ?? [] : [];
 
 const map = new MapView(scene);
-const boards = new Billboards(scene, camera);
+const sprites = await SpriteLibrary.load();
+if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: renderer });
+const boards = new Billboards(scene, camera, sprites);
 const vfx = new Vfx(scene);
 const hud = mountHud(ui);
 mountToasts(ui);

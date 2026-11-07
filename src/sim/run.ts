@@ -29,6 +29,8 @@ export type RunEvent =
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
   prog: PlayerProg; combat: CombatState; px: number; pz: number; moving: boolean;
+  /** última direção horizontal de movimento (para espelhar o sprite) */
+  dirX: number;
   pool: EnemyPool; hash: SpatialHash; director: DirectorState; phase: PhaseState;
   pickups: Pickup[]; chests: Chest[]; evo: EvoNotifier;
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
@@ -65,7 +67,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
   const pool = new EnemyPool();
   const r: RunState = {
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
-    prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, pool, hash: new SpatialHash(4),
+    prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
     nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false },
@@ -91,6 +93,7 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
   const l = Math.hypot(mx, mz);
   if (l > 1) { mx /= l; mz /= l; }
   r.moving = l > 0.05;
+  if (Math.abs(mx) > 0.05) r.dirX = Math.sign(mx);
   const speed = 4 + effectiveStats(r.prog).spd * 0.08;
   let x = r.px + mx * speed * dt, z = r.pz + mz * speed * dt;
   for (const o of MAP_OBSTACLES) {
