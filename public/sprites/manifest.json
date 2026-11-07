@@ -92,13 +92,16 @@
   },
   "bakemon": {
    "file": "bakemon.png",
-   "frameW": 58,
-   "frameH": 50,
+   "frameW": 40,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2"
+    "walk1",
+    "walk2",
+    "walk3"
    ],
-   "source": 0
+   "source": 0,
+   "scale": 1
   },
   "blackwargrowlmon": {
    "file": "blackwargrowlmon.png",
@@ -638,6 +641,19 @@
     "idle2"
    ],
    "source": 0
+  },
+  "guardromon": {
+   "file": "guardromon.png",
+   "frameW": 74,
+   "frameH": 86,
+   "frames": [
+    "idle1",
+    "walk1",
+    "walk2",
+    "walk3"
+   ],
+   "source": 0,
+   "scale": 1
   }
  }
 }

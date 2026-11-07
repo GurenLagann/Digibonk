@@ -1,9 +1,10 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, mirrorsWithDir, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
-const hasSheet = (id: string) => existsSync(`assets-src/sprites/vpet/${id}_1.png`) && existsSync(`public/sprites/${id}.png`);
+const manifest = JSON.parse(readFileSync('public/sprites/manifest.json', 'utf8')) as { sprites: Record<string, { file: string }> };
+const hasSheet = (id: string) => !!manifest.sprites[id] && existsSync(`public/sprites/${manifest.sprites[id].file}`);
 
 test('invalid manifest is null', () => {
   expect(parseManifest('x')).toBeNull(); expect(parseManifest({ version: 2 })).toBeNull();
