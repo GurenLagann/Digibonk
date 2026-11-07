@@ -1835,6 +1835,806 @@ export const MOVES: Record<string, MoveDef> = {
    "cooldown": 0.92
   },
   "color": 16767050
+ },
+ "silk_thread": {
+  "id": "silk_thread",
+  "name": "Silk Thread",
+  "element": "plant",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "worm_tackle": {
+  "id": "worm_tackle",
+  "name": "Worm Tackle",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "leaf_rain": {
+  "id": "leaf_rain",
+  "name": "Leaf Rain",
+  "element": "plant",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "spiking_strike": {
+  "id": "spiking_strike",
+  "name": "Spiking Strike",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 14,
+  "cooldown": 0.9,
+  "range": 3.5,
+  "radius": 3.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "moon_shooter": {
+  "id": "moon_shooter",
+  "name": "Moon Shooter",
+  "element": "plant",
+  "pattern": "area",
+  "damage": 12,
+  "cooldown": 2.2,
+  "range": 11,
+  "radius": 3,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "spiking_finish": {
+  "id": "spiking_finish",
+  "name": "Spiking Finish",
+  "element": "plant",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "jewel_sting": {
+  "id": "jewel_sting",
+  "name": "Jewel Sting",
+  "element": "plant",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "royal_swarm": {
+  "id": "royal_swarm",
+  "name": "Royal Swarm",
+  "element": "plant",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6280031
+ },
+ "dimension_scissor": {
+  "id": "dimension_scissor",
+  "name": "Dimension Scissor",
+  "element": "dark",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 8011007
+ },
+ "grand_scissor": {
+  "id": "grand_scissor",
+  "name": "Grand Scissor",
+  "element": "dark",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 8011007
+ },
+ "dark_insect_swarm": {
+  "id": "dark_insect_swarm",
+  "name": "Dark Insect Swarm",
+  "element": "dark",
+  "pattern": "orbital",
+  "damage": 30,
+  "cooldown": 4,
+  "range": 4,
+  "radius": 4,
+  "count": 4,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 8011007
+ },
+ "diamond_shell": {
+  "id": "diamond_shell",
+  "name": "Diamond Shell",
+  "element": "earth",
+  "pattern": "projectile",
+  "damage": 10,
+  "cooldown": 1,
+  "range": 12,
+  "radius": 0.5,
+  "speed": 14,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "rolling_upper": {
+  "id": "rolling_upper",
+  "name": "Rolling Upper",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "mud_ball": {
+  "id": "mud_ball",
+  "name": "Mud Ball",
+  "element": "earth",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "armor_roll": {
+  "id": "armor_roll",
+  "name": "Armor Roll",
+  "element": "earth",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "tail_hammer": {
+  "id": "tail_hammer",
+  "name": "Tail Hammer",
+  "element": "earth",
+  "pattern": "projectile",
+  "damage": 16,
+  "cooldown": 1.1,
+  "range": 13,
+  "radius": 0.7,
+  "pierce": 1,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "megaton_press": {
+  "id": "megaton_press",
+  "name": "Megaton Press",
+  "element": "earth",
+  "pattern": "area",
+  "damage": 12,
+  "cooldown": 2.2,
+  "range": 11,
+  "radius": 3,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "kachina_bombs": {
+  "id": "kachina_bombs",
+  "name": "Kachina Bombs",
+  "element": "earth",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "justice_beam": {
+  "id": "justice_beam",
+  "name": "Justice Beam",
+  "element": "light",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "harmony_ring": {
+  "id": "harmony_ring",
+  "name": "Harmony Ring",
+  "element": "earth",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12618314
+ },
+ "strike_of_the_blade": {
+  "id": "strike_of_the_blade",
+  "name": "Strike of the Blade",
+  "element": "steel",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "heavenly_blade": {
+  "id": "heavenly_blade",
+  "name": "Heavenly Blade",
+  "element": "steel",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "metal_wing_rain": {
+  "id": "metal_wing_rain",
+  "name": "Metal Wing Rain",
+  "element": "steel",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "bunny_blast": {
+  "id": "bunny_blast",
+  "name": "Bunny Blast",
+  "element": "wind",
+  "pattern": "projectile",
+  "damage": 10,
+  "cooldown": 1,
+  "range": 12,
+  "radius": 0.5,
+  "speed": 14,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "terrier_tornado": {
+  "id": "terrier_tornado",
+  "name": "Terrier Tornado",
+  "element": "wind",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "bunny_pummel": {
+  "id": "bunny_pummel",
+  "name": "Bunny Pummel",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "ear_spin": {
+  "id": "ear_spin",
+  "name": "Ear Spin",
+  "element": "wind",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "gargo_laser": {
+  "id": "gargo_laser",
+  "name": "Gargo Laser",
+  "element": "steel",
+  "pattern": "projectile",
+  "damage": 16,
+  "cooldown": 1.1,
+  "range": 13,
+  "radius": 0.7,
+  "pierce": 1,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "gargo_pellets": {
+  "id": "gargo_pellets",
+  "name": "Gargo Pellets",
+  "element": "steel",
+  "pattern": "area",
+  "damage": 12,
+  "cooldown": 2.2,
+  "range": 11,
+  "radius": 3,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "tri_beam": {
+  "id": "tri_beam",
+  "name": "Tri-Beam",
+  "element": "light",
+  "pattern": "beam",
+  "damage": 18,
+  "cooldown": 1.6,
+  "range": 10,
+  "radius": 0.8,
+  "duration": 0.3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "rapid_fire": {
+  "id": "rapid_fire",
+  "name": "Rapid Fire",
+  "element": "steel",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "golden_tri_ring": {
+  "id": "golden_tri_ring",
+  "name": "Golden Tri-Ring",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "mega_barrage": {
+  "id": "mega_barrage",
+  "name": "Mega Barrage",
+  "element": "steel",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "gargo_missiles": {
+  "id": "gargo_missiles",
+  "name": "Gargo Missiles",
+  "element": "steel",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 12109008
+ },
+ "power_pummel": {
+  "id": "power_pummel",
+  "name": "Power Pummel",
+  "element": "neutral",
+  "pattern": "beam",
+  "damage": 40,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "power_paw": {
+  "id": "power_paw",
+  "name": "Power Paw",
+  "element": "neutral",
+  "pattern": "cone",
+  "damage": 8,
+  "cooldown": 0.8,
+  "range": 3,
+  "radius": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "fox_kick": {
+  "id": "fox_kick",
+  "name": "Fox Kick",
+  "element": "neutral",
+  "pattern": "projectile",
+  "damage": 6,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 0.4,
+  "count": 3,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 15922943
+ },
+ "leaf_storm": {
+  "id": "leaf_storm",
+  "name": "Leaf Storm",
+  "element": "wind",
+  "pattern": "area",
+  "damage": 7,
+  "cooldown": 2.4,
+  "range": 10,
+  "radius": 2.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "fox_tail_inferno": {
+  "id": "fox_tail_inferno",
+  "name": "Fox Tail Inferno",
+  "element": "fire",
+  "pattern": "projectile",
+  "damage": 16,
+  "cooldown": 1.1,
+  "range": 13,
+  "radius": 0.7,
+  "pierce": 1,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16742938
+ },
+ "dragon_wheel": {
+  "id": "dragon_wheel",
+  "name": "Dragon Wheel",
+  "element": "fire",
+  "pattern": "area",
+  "damage": 12,
+  "cooldown": 2.2,
+  "range": 11,
+  "radius": 3,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16742938
+ },
+ "talisman_of_light": {
+  "id": "talisman_of_light",
+  "name": "Talisman of Light",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 26,
+  "cooldown": 1.4,
+  "range": 15,
+  "radius": 0.9,
+  "count": 2,
+  "speed": 13,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "thousand_spells": {
+  "id": "thousand_spells",
+  "name": "Thousand Spells",
+  "element": "light",
+  "pattern": "area",
+  "damage": 22,
+  "cooldown": 2.2,
+  "range": 12,
+  "radius": 3.5,
+  "duration": 0.4,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "talisman_spell": {
+  "id": "talisman_spell",
+  "name": "Talisman Spell",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 10,
+  "cooldown": 4,
+  "range": 3,
+  "radius": 3,
+  "count": 2,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "amethyst_wind": {
+  "id": "amethyst_wind",
+  "name": "Amethyst Wind",
+  "element": "wind",
+  "pattern": "area",
+  "damage": 60,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10414335
+ },
+ "spirit_strike": {
+  "id": "spirit_strike",
+  "name": "Spirit Strike",
+  "element": "light",
+  "pattern": "projectile",
+  "damage": 30,
+  "cooldown": 1.3,
+  "range": 15,
+  "radius": 0.9,
+  "count": 3,
+  "pierce": 2,
+  "speed": 15,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
+ },
+ "crystal_sphere": {
+  "id": "crystal_sphere",
+  "name": "Crystal Sphere",
+  "element": "light",
+  "pattern": "orbital",
+  "damage": 30,
+  "cooldown": 4,
+  "range": 4,
+  "radius": 4,
+  "count": 4,
+  "duration": 3,
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16767050
  }
 };
 export const FORMS: Record<string, FormDef> = {
@@ -2499,8 +3299,22 @@ export const FORMS: Record<string, FormDef> = {
   },
   "growthRate": 0.005,
   "signature": "sticky_net",
-  "kit": [],
-  "evolutions": [],
+  "kit": [
+   "silk_thread",
+   "worm_tackle",
+   "leaf_rain"
+  ],
+  "evolutions": [
+   {
+    "to": "stingmon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "def": 12
+     }
+    }
+   }
+  ],
   "size": 1,
   "color": 7330906
  },
@@ -2936,6 +3750,42 @@ export const FORMS: Record<string, FormDef> = {
   "size": 1.5,
   "color": 16767050
  },
+ "stingmon": {
+  "id": "stingmon",
+  "name": "Stingmon",
+  "stage": "adult",
+  "line": "wormmon",
+  "attribute": "data",
+  "element": "plant",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 15,
+   "spd": 16,
+   "brain": 12
+  },
+  "growthRate": 0.005,
+  "signature": "sting_strike",
+  "kit": [
+   "spiking_strike",
+   "moon_shooter",
+   "silk_thread"
+  ],
+  "evolutions": [
+   {
+    "to": "jewelbeemon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 24,
+      "spd": 24
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 6280031
+ },
  "angewomon": {
   "id": "angewomon",
   "name": "Angewomon",
@@ -2972,6 +3822,42 @@ export const FORMS: Record<string, FormDef> = {
   "size": 1.9,
   "color": 16767050
  },
+ "jewelbeemon": {
+  "id": "jewelbeemon",
+  "name": "JewelBeemon",
+  "stage": "perfect",
+  "line": "wormmon",
+  "attribute": "free",
+  "element": "plant",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 27,
+   "brain": 20
+  },
+  "growthRate": 0.005,
+  "signature": "spiking_finish",
+  "kit": [
+   "jewel_sting",
+   "royal_swarm",
+   "spiking_strike"
+  ],
+  "evolutions": [
+   {
+    "to": "grankuwagamon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "spd": 40
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 6280031
+ },
  "ophanimon": {
   "id": "ophanimon",
   "name": "Ophanimon",
@@ -2992,6 +3878,427 @@ export const FORMS: Record<string, FormDef> = {
    "sefirot_crystal",
    "holy_halo",
    "celestial_arrow"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 16767050
+ },
+ "grankuwagamon": {
+  "id": "grankuwagamon",
+  "name": "GranKuwagamon",
+  "stage": "ultimate",
+  "line": "wormmon",
+  "attribute": "virus",
+  "element": "dark",
+  "baseStats": {
+   "hp": 380,
+   "atk": 58,
+   "def": 44,
+   "spd": 34,
+   "brain": 32
+  },
+  "growthRate": 0.005,
+  "signature": "dimension_scissor",
+  "kit": [
+   "grand_scissor",
+   "dark_insect_swarm",
+   "spiking_finish"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 8011007
+ },
+ "armadillomon": {
+  "id": "armadillomon",
+  "name": "Armadillomon",
+  "stage": "child",
+  "line": "armadillomon",
+  "attribute": "free",
+  "element": "earth",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 11,
+   "spd": 10,
+   "brain": 8
+  },
+  "growthRate": 0.005,
+  "signature": "diamond_shell",
+  "kit": [
+   "rolling_upper",
+   "mud_ball",
+   "armor_roll"
+  ],
+  "evolutions": [
+   {
+    "to": "ankylomon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "def": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 12618314
+ },
+ "ankylomon": {
+  "id": "ankylomon",
+  "name": "Ankylomon",
+  "stage": "adult",
+  "line": "armadillomon",
+  "attribute": "data",
+  "element": "earth",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 20,
+   "spd": 13,
+   "brain": 12
+  },
+  "growthRate": 0.005,
+  "signature": "tail_hammer",
+  "kit": [
+   "megaton_press",
+   "mud_ball",
+   "rolling_upper"
+  ],
+  "evolutions": [
+   {
+    "to": "shakkoumon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "hp": 170,
+      "def": 28
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 12618314
+ },
+ "shakkoumon": {
+  "id": "shakkoumon",
+  "name": "Shakkoumon",
+  "stage": "perfect",
+  "line": "armadillomon",
+  "attribute": "vaccine",
+  "element": "earth",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 32,
+   "spd": 23,
+   "brain": 20
+  },
+  "growthRate": 0.005,
+  "signature": "kachina_bombs",
+  "kit": [
+   "justice_beam",
+   "harmony_ring",
+   "tail_hammer"
+  ],
+  "evolutions": [
+   {
+    "to": "slashangemon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "def": 48
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 12618314
+ },
+ "slashangemon": {
+  "id": "slashangemon",
+  "name": "SlashAngemon",
+  "stage": "ultimate",
+  "line": "armadillomon",
+  "attribute": "vaccine",
+  "element": "steel",
+  "baseStats": {
+   "hp": 380,
+   "atk": 57,
+   "def": 48,
+   "spd": 34,
+   "brain": 32
+  },
+  "growthRate": 0.005,
+  "signature": "strike_of_the_blade",
+  "kit": [
+   "heavenly_blade",
+   "metal_wing_rain",
+   "kachina_bombs"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 12109008
+ },
+ "terriermon": {
+  "id": "terriermon",
+  "name": "Terriermon",
+  "stage": "child",
+  "line": "terriermon",
+  "attribute": "vaccine",
+  "element": "wind",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 8,
+   "spd": 12,
+   "brain": 8
+  },
+  "growthRate": 0.005,
+  "signature": "bunny_blast",
+  "kit": [
+   "terrier_tornado",
+   "bunny_pummel",
+   "ear_spin"
+  ],
+  "evolutions": [
+   {
+    "to": "gargomon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "spd": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 10414335
+ },
+ "gargomon": {
+  "id": "gargomon",
+  "name": "Gargomon",
+  "stage": "adult",
+  "line": "terriermon",
+  "attribute": "virus",
+  "element": "steel",
+  "baseStats": {
+   "hp": 130,
+   "atk": 21,
+   "def": 15,
+   "spd": 13,
+   "brain": 12
+  },
+  "growthRate": 0.005,
+  "signature": "gargo_laser",
+  "kit": [
+   "bunny_pummel",
+   "gargo_pellets",
+   "terrier_tornado"
+  ],
+  "evolutions": [
+   {
+    "to": "rapidmon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 26,
+      "spd": 22
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 12109008
+ },
+ "rapidmon": {
+  "id": "rapidmon",
+  "name": "Rapidmon",
+  "stage": "perfect",
+  "line": "terriermon",
+  "attribute": "vaccine",
+  "element": "steel",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 27,
+   "brain": 20
+  },
+  "growthRate": 0.005,
+  "signature": "tri_beam",
+  "kit": [
+   "rapid_fire",
+   "golden_tri_ring",
+   "gargo_laser"
+  ],
+  "evolutions": [
+   {
+    "to": "megagargomon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "atk": 46
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 12109008
+ },
+ "megagargomon": {
+  "id": "megagargomon",
+  "name": "MegaGargomon",
+  "stage": "ultimate",
+  "line": "terriermon",
+  "attribute": "vaccine",
+  "element": "steel",
+  "baseStats": {
+   "hp": 380,
+   "atk": 58,
+   "def": 46,
+   "spd": 34,
+   "brain": 32
+  },
+  "growthRate": 0.005,
+  "signature": "mega_barrage",
+  "kit": [
+   "gargo_missiles",
+   "power_pummel",
+   "tri_beam"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 12109008
+ },
+ "renamon": {
+  "id": "renamon",
+  "name": "Renamon",
+  "stage": "child",
+  "line": "renamon",
+  "attribute": "data",
+  "element": "ice",
+  "baseStats": {
+   "hp": 60,
+   "atk": 10,
+   "def": 8,
+   "spd": 11,
+   "brain": 10
+  },
+  "growthRate": 0.005,
+  "signature": "diamond_storm",
+  "kit": [
+   "power_paw",
+   "fox_kick",
+   "leaf_storm"
+  ],
+  "evolutions": [
+   {
+    "to": "kyubimon",
+    "req": {
+     "minLevel": 8,
+     "minStats": {
+      "brain": 12
+     }
+    }
+   }
+  ],
+  "size": 1,
+  "color": 3836927
+ },
+ "kyubimon": {
+  "id": "kyubimon",
+  "name": "Kyubimon",
+  "stage": "adult",
+  "line": "renamon",
+  "attribute": "data",
+  "element": "fire",
+  "baseStats": {
+   "hp": 130,
+   "atk": 19,
+   "def": 15,
+   "spd": 15,
+   "brain": 15
+  },
+  "growthRate": 0.005,
+  "signature": "fox_tail_inferno",
+  "kit": [
+   "dragon_wheel",
+   "fox_kick",
+   "power_paw"
+  ],
+  "evolutions": [
+   {
+    "to": "taomon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "spd": 22,
+      "brain": 22
+     }
+    }
+   }
+  ],
+  "size": 1.5,
+  "color": 16742938
+ },
+ "taomon": {
+  "id": "taomon",
+  "name": "Taomon",
+  "stage": "perfect",
+  "line": "renamon",
+  "attribute": "data",
+  "element": "light",
+  "baseStats": {
+   "hp": 240,
+   "atk": 32,
+   "def": 27,
+   "spd": 23,
+   "brain": 25
+  },
+  "growthRate": 0.005,
+  "signature": "talisman_of_light",
+  "kit": [
+   "thousand_spells",
+   "talisman_spell",
+   "fox_tail_inferno"
+  ],
+  "evolutions": [
+   {
+    "to": "sakuyamon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "brain": 38
+     },
+     "minPhase": 4
+    }
+   }
+  ],
+  "size": 1.9,
+  "color": 16767050
+ },
+ "sakuyamon": {
+  "id": "sakuyamon",
+  "name": "Sakuyamon",
+  "stage": "ultimate",
+  "line": "renamon",
+  "attribute": "data",
+  "element": "light",
+  "baseStats": {
+   "hp": 380,
+   "atk": 54,
+   "def": 44,
+   "spd": 36,
+   "brain": 37
+  },
+  "growthRate": 0.005,
+  "signature": "amethyst_wind",
+  "kit": [
+   "spirit_strike",
+   "crystal_sphere",
+   "talisman_of_light"
   ],
   "evolutions": [],
   "size": 2.2,
@@ -3235,6 +4542,24 @@ export const ITEMS: Record<string, ItemDef> = {
   "name": "Ovo do Gatomon",
   "kind": "egg",
   "unlockPartner": "gatomon"
+ },
+ "egg_armadillomon": {
+  "id": "egg_armadillomon",
+  "name": "Ovo do Armadillomon",
+  "kind": "egg",
+  "unlockPartner": "armadillomon"
+ },
+ "egg_terriermon": {
+  "id": "egg_terriermon",
+  "name": "Ovo do Terriermon",
+  "kind": "egg",
+  "unlockPartner": "terriermon"
+ },
+ "egg_renamon": {
+  "id": "egg_renamon",
+  "name": "Ovo do Renamon",
+  "kind": "egg",
+  "unlockPartner": "renamon"
  }
 };
 export const PARTNERS: PartnerDef[] = [
@@ -3284,6 +4609,24 @@ export const PARTNERS: PartnerDef[] = [
   "id": "gatomon",
   "childForm": "salamon",
   "season": "adventure",
+  "starter": false
+ },
+ {
+  "id": "armadillomon",
+  "childForm": "armadillomon",
+  "season": "adventure02",
+  "starter": false
+ },
+ {
+  "id": "terriermon",
+  "childForm": "terriermon",
+  "season": "tamers",
+  "starter": false
+ },
+ {
+  "id": "renamon",
+  "childForm": "renamon",
+  "season": "tamers",
   "starter": false
  }
 ];

@@ -22,6 +22,11 @@ test('Adventure: Gabumon, Patamon, Tentomon and Gatomon reach Mega and have an e
   expect(PARTNERS.find(p => p.id === 'gatomon')!.childForm).toBe('salamon');
 });
 
+test('Adventure 02 and Tamers: Wormmon, Armadillomon, Terriermon and Renamon reach Mega and have an egg', () => {
+  checkPartners(['wormmon', 'armadillomon'], 'adventure02');
+  checkPartners(['terriermon', 'renamon'], 'tamers');
+});
+
 test('game data is valid', () => expect(validateData()).toEqual([]));
 
 test('every stat requirement is reachable at its level with the level-up stat points', () => {
