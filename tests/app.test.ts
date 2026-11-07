@@ -11,11 +11,11 @@ const deps = (o: { unlocked?: string[] } = {}) => {
 test('starts on title', () => expect(createApp(deps()).screen()).toBe('title'));
 test('locked partners are listed but locked', () => {
   const a = createApp(deps());
-  expect(a.partnersFor('adventure')).toEqual([{ id: 'agumon', locked: false }, { id: 'gabumon', locked: true }]);
+  expect(a.partnersFor('adventure')).toEqual([{ id: 'agumon', childForm: 'agumon', locked: false }, { id: 'gabumon', childForm: 'gabumon', locked: true }]);
 });
 test('unlocked partner shows as available', () => {
   const a = createApp(deps({ unlocked: ['agumon', 'veemon', 'guilmon', 'wormmon'] }));
-  expect(a.partnersFor('adventure02')).toContainEqual({ id: 'wormmon', locked: false });
+  expect(a.partnersFor('adventure02')).toContainEqual({ id: 'wormmon', childForm: 'wormmon', locked: false });
 });
 test('season then partner starts a run', () => {
   const d = deps(); const a = createApp(d);

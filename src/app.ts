@@ -7,7 +7,7 @@ export type AppScreen = 'title' | 'season' | 'partner' | 'run' | 'results' | 'se
 export function createApp(deps: { save: SaveData; storage: Storage | null; startRun(partnerId: string): void }) {
   let screen: AppScreen = 'title';
   let season: Season = 'adventure';
-  const partnersFor = (s: Season) => PARTNERS.filter(p => p.season === s).map(p => ({ id: p.id, locked: !deps.save.unlocked.includes(p.id) }));
+  const partnersFor = (s: Season) => PARTNERS.filter(p => p.season === s).map(p => ({ id: p.id, childForm: p.childForm, locked: !deps.save.unlocked.includes(p.id) }));
   return {
     screen: () => screen,
     season: () => season,

@@ -47,7 +47,8 @@ export function showPartner(root: HTMLElement, app: App, save: SaveData, back: (
     subtitle: 'Escolha seu parceiro',
     options: ps.map(p => p.locked
       ? { title: '???', tag: 'Bloqueado', body: 'Encontre o ovo deste Digimon nas fases', onPick: () => { showPartner(root, app, save, back); } }
-      : { title: FORMS[p.id].name, tag: 'Child', body: `Golpe inicial: ${MOVES[FORMS[p.id].signature].name}`, onPick: () => { app.pickPartner(p.id); } }),
+      // o parceiro aparece pela forma Child (ex.: parceiro Gatomon começa como Salamon)
+      : { title: FORMS[p.childForm].name, tag: 'Child', body: `Golpe inicial: ${MOVES[FORMS[p.childForm].signature].name}`, onPick: () => { app.pickPartner(p.id); } }),
     extra: { title: 'Voltar', onPick: () => { app.go('season'); showSeason(root, app, save, back); } },
   });
 }
