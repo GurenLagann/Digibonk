@@ -1,473 +1,405 @@
 {
  "version": 1,
  "sprites": {
-  "agumon": {
-   "file": "agumon.png",
-   "frameW": 64,
-   "frameH": 75,
+  "aeroveedramon": {
+   "file": "aeroveedramon.png",
+   "frameW": 59,
+   "frameH": 52,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48418
+   "source": 0
+  },
+  "agumon": {
+   "file": "agumon.png",
+   "frameW": 37,
+   "frameH": 37,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
   },
   "arukenimon": {
    "file": "arukenimon.png",
-   "frameW": 117,
-   "frameH": 122,
+   "frameW": 64,
+   "frameH": 57,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48571
+   "source": 0
   },
   "bakemon": {
    "file": "bakemon.png",
-   "frameW": 65,
-   "frameH": 64,
+   "frameW": 58,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48533
+   "source": 0
   },
   "blackwargrowlmon": {
    "file": "blackwargrowlmon.png",
-   "frameW": 124,
-   "frameH": 123,
+   "frameW": 63,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48707
+   "source": 0
   },
   "blackweregarurumon": {
    "file": "blackweregarurumon.png",
-   "frameW": 76,
-   "frameH": 123,
+   "frameW": 47,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48678
+   "source": 0
   },
   "darktyrannomon": {
    "file": "darktyrannomon.png",
-   "frameW": 142,
-   "frameH": 138,
+   "frameW": 56,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 41245
+   "source": 0
+  },
+  "devidramon": {
+   "file": "devidramon.png",
+   "frameW": 58,
+   "frameH": 54,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
   },
   "devimon": {
    "file": "devimon.png",
-   "frameW": 85,
-   "frameH": 133,
+   "frameW": 54,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48593
+   "source": 0
   },
   "etemon": {
    "file": "etemon.png",
-   "frameW": 79,
-   "frameH": 116,
+   "frameW": 55,
+   "frameH": 55,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48430
+   "source": 0
   },
   "exveemon": {
    "file": "exveemon.png",
-   "frameW": 93,
-   "frameH": 105,
+   "frameW": 57,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48586
+   "source": 0
   },
   "flamedramon": {
    "file": "flamedramon.png",
-   "frameW": 59,
-   "frameH": 97,
+   "frameW": 50,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48588
+   "source": 0
   },
   "gabumon": {
    "file": "gabumon.png",
-   "frameW": 95,
-   "frameH": 81,
+   "frameW": 41,
+   "frameH": 40,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 41249
+   "source": 0
   },
   "gallantmon": {
    "file": "gallantmon.png",
-   "frameW": 162,
-   "frameH": 123,
+   "frameW": 62,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48623
+   "source": 0
   },
-  "goblimon": {
-   "file": "goblimon.png",
-   "frameW": 112,
-   "frameH": 102,
+  "gazimon": {
+   "file": "gazimon.png",
+   "frameW": 58,
+   "frameH": 43,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48522
-  },
-  "gotsumon": {
-   "file": "gotsumon.png",
-   "frameW": 63,
-   "frameH": 63,
-   "frames": [
-    "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
-   ],
-   "source": 48428
+   "source": 0
   },
   "greymon": {
    "file": "greymon.png",
-   "frameW": 105,
-   "frameH": 120,
+   "frameW": 49,
+   "frameH": 48,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48406
+   "source": 0
   },
   "growlmon": {
    "file": "growlmon.png",
-   "frameW": 89,
-   "frameH": 108,
+   "frameW": 58,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 20461
-  },
-  "guardromon": {
-   "file": "guardromon.png",
-   "frameW": 110,
-   "frameH": 99,
-   "frames": [
-    "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
-   ],
-   "source": 48615
+   "source": 0
   },
   "guilmon": {
    "file": "guilmon.png",
-   "frameW": 83,
-   "frameH": 81,
+   "frameW": 48,
+   "frameH": 42,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 24505
+   "source": 0
+  },
+  "hagurumon": {
+   "file": "hagurumon.png",
+   "frameW": 52,
+   "frameH": 38,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
   },
   "imperialdramon_fm": {
    "file": "imperialdramon_fm.png",
-   "frameW": 132,
-   "frameH": 155,
+   "frameW": 66,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48680
-  },
-  "infermon": {
-   "file": "infermon.png",
-   "frameW": 130,
-   "frameH": 96,
-   "frames": [
-    "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
-   ],
-   "source": 48328
+   "source": 0
   },
   "kimeramon": {
    "file": "kimeramon.png",
-   "frameW": 282,
-   "frameH": 224,
+   "frameW": 66,
+   "frameH": 57,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48436
+   "source": 0
   },
   "kuwagamon": {
    "file": "kuwagamon.png",
-   "frameW": 156,
-   "frameH": 119,
+   "frameW": 66,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 41254
+   "source": 0
   },
   "ladydevimon": {
    "file": "ladydevimon.png",
-   "frameW": 116,
-   "frameH": 133,
+   "frameW": 34,
+   "frameH": 34,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48617
+   "source": 0
   },
   "metalgreymon": {
    "file": "metalgreymon.png",
-   "frameW": 124,
-   "frameH": 154,
+   "frameW": 59,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48322
-  },
-  "minotarumon": {
-   "file": "minotarumon.png",
-   "frameW": 112,
-   "frameH": 143,
-   "frames": [
-    "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
-   ],
-   "source": 48557
+   "source": 0
   },
   "myotismon": {
    "file": "myotismon.png",
-   "frameW": 112,
-   "frameH": 134,
+   "frameW": 57,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48609
+   "source": 0
   },
   "ogremon": {
    "file": "ogremon.png",
-   "frameW": 102,
-   "frameH": 111,
+   "frameW": 55,
+   "frameH": 52,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48614
+   "source": 0
   },
   "omnimon": {
    "file": "omnimon.png",
-   "frameW": 133,
-   "frameH": 183,
+   "frameW": 64,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48624
+   "source": 0
   },
   "paildramon": {
    "file": "paildramon.png",
-   "frameW": 135,
-   "frameH": 128,
+   "frameW": 65,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48721
+   "source": 0
   },
   "piedmon": {
    "file": "piedmon.png",
-   "frameW": 94,
-   "frameH": 136,
+   "frameW": 58,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48435
+   "source": 0
   },
-  "tsukaimon": {
-   "file": "tsukaimon.png",
-   "frameW": 66,
-   "frameH": 53,
+  "raidramon": {
+   "file": "raidramon.png",
+   "frameW": 59,
+   "frameH": 50,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48592
+   "source": 0
+  },
+  "skullgreymon": {
+   "file": "skullgreymon.png",
+   "frameW": 64,
+   "frameH": 56,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
+  },
+  "snimon": {
+   "file": "snimon.png",
+   "frameW": 59,
+   "frameH": 49,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
+  },
+  "snowgoblimon": {
+   "file": "snowgoblimon.png",
+   "frameW": 44,
+   "frameH": 42,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
+  },
+  "tankdramon": {
+   "file": "tankdramon.png",
+   "frameW": 63,
+   "frameH": 57,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
+  },
+  "ulforceveedramon": {
+   "file": "ulforceveedramon.png",
+   "frameW": 60,
+   "frameH": 58,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
+  },
+  "veedramon": {
+   "file": "veedramon.png",
+   "frameW": 51,
+   "frameH": 50,
+   "frames": [
+    "idle1",
+    "idle2"
+   ],
+   "source": 0
   },
   "veemon": {
    "file": "veemon.png",
-   "frameW": 62,
-   "frameH": 82,
+   "frameW": 42,
+   "frameH": 42,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48419
-  },
-  "vilemon": {
-   "file": "vilemon.png",
-   "frameW": 89,
-   "frameH": 86,
-   "frames": [
-    "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
-   ],
-   "source": 48620
+   "source": 0
   },
   "wargreymon": {
    "file": "wargreymon.png",
-   "frameW": 103,
-   "frameH": 163,
+   "frameW": 61,
+   "frameH": 58,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48613
+   "source": 0
   },
   "wargrowlmon": {
    "file": "wargrowlmon.png",
-   "frameW": 124,
-   "frameH": 123,
+   "frameW": 63,
+   "frameH": 56,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48670
+   "source": 0
   },
   "wormmon": {
    "file": "wormmon.png",
-   "frameW": 87,
-   "frameH": 53,
+   "frameW": 49,
+   "frameH": 40,
    "frames": [
     "idle1",
-    "idle2",
-    "idle3",
-    "attack",
-    "hurt"
+    "idle2"
    ],
-   "source": 48516
+   "source": 0
   }
  }
 }

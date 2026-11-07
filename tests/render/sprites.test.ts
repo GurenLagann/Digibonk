@@ -3,7 +3,7 @@ import { parseManifest, idleFrame, facingFlip, frameIndex } from '../../src/rend
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
-const hasSheet = (id: string) => existsSync(`assets-src/sprites/dwds/${id}.png`) && existsSync(`public/sprites/${id}.png`);
+const hasSheet = (id: string) => existsSync(`assets-src/sprites/vpet/${id}_1.png`) && existsSync(`public/sprites/${id}.png`);
 
 test('invalid manifest is null', () => {
   expect(parseManifest('x')).toBeNull(); expect(parseManifest({ version: 2 })).toBeNull();
@@ -19,6 +19,6 @@ test('facingFlip mirrors when moving right', () => { expect(facingFlip(1)).toBe(
 test('every enemy and boss has a sprite source', () => {
   for (const e of [...ENEMIES, ...MINIBOSSES, ...BOSSES]) expect(hasSheet(e.id), e.id).toBe(true);
 });
-test('only veedramon line and raidramon lack sprites among forms', () => {
-  expect(Object.keys(FORMS).filter(id => !hasSheet(id)).sort()).toEqual(['aeroveedramon', 'raidramon', 'ulforceveedramon', 'veedramon']);
+test('every form has a v-pet sprite', () => {
+  expect(Object.keys(FORMS).filter(id => !hasSheet(id))).toEqual([]);
 });
