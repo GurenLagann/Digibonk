@@ -1,6 +1,6 @@
 ---
 name: adding-digimon-sprites
-description: Use when a Digimon sprite sheet must go into DigiBonk (Digimon World 3 rip, Gemini-generated sheet, V-pet), when the user sends a sheet image or asks for a Gemini sprite prompt, or when an in-game sprite faces the wrong way, slides without moving its legs, plays the wrong animation, or shows a back view when hit.
+description: Use when a Digimon sprite sheet must go into DigiBonk (Digimon World 3 rip, ChatGPT or Gemini sheet, V-pet), when the user sends a sheet image or asks for a ChatGPT/Gemini sprite prompt (walk, run, front, back, diagonal), or when an in-game sprite faces the wrong way, slides without moving its legs, plays the wrong animation, or shows a back view when hit.
 ---
 
 # Adding Digimon sprites
@@ -22,13 +22,14 @@ Side and diagonal frames must face **LEFT**; the game mirrors them. `up` = back 
 
 ## Process
 
-1. **Find the source.** Child forms: DW3 field sprites (`assets-src/sprites/dw3/`). Forms DW3 lacks: ask the user for a Gemini sheet; prompt templates in `gemini-prompt.md` (attach `assets-src/sprites/dw3/agumon.png` as the style reference).
+1. **Find the source.** Child forms: DW3 field sprites (`assets-src/sprites/dw3/`). Forms DW3 lacks: ask the user for ChatGPT sheets, a base sheet and then a diagonal sheet. Give the prompts from `chatgpt-prompt.md`, filled in for that Digimon, with the files to attach. Gemini (`gemini-prompt.md`) is the fallback.
 2. **Map the frames.**
    ```bash
    node --experimental-strip-types tools/sprites/inspect.ts SHEET.png > grid.txt   # ids "row.col"
    bash tools/sprites/label.sh SHEET.png grid.txt labels.png                       # ids drawn in place
    bash tools/sprites/contact.sh SHEET.png grid.txt contact.png [row]              # frames side by side
    ```
+   ChatGPT sheets (transparent or white background): use `alpha-grid.ts SHEET.png ROWS` instead of `inspect.ts`. It prints the same ids.
    Read `labels.png` first (true positions). A sprite with no box around it was not detected: crop it by hand. Label every group as idle / walk / run / attack / hurt / death, plus its direction.
 3. **Check the direction.** Zoom one side frame until the snout is unambiguous. Classify the other **side** frames against it:
    `node --experimental-strip-types tools/sprites/facing.ts SHEET.png grid.txt REF_ID ids…`
@@ -38,8 +39,9 @@ Side and diagonal frames must face **LEFT**; the game mirrors them. `up` = back 
      - `walkFrames` / `runFrames` apply to every `[row, firstCol]` entry. An id list counts its own length.
      - `idle` takes exactly one frame per direction: `[row, col]` or `['3.0']`. With no separate idle group, use the first frame of each walk cycle.
      - Frames smaller than 10×15 px are never detected and cannot be referenced. Leave them out.
+   - ChatGPT PNG (transparent or flat white): `bash tools/sprites/cut-chatgpt.sh` with one row-prefix list per sheet and a scale per sheet so all views match in height (see `chatgpt-prompt.md`), then `npm run sprites:vpet`.
    - Gemini JPEG: run `tools/sprites/cut-gemini.sh` (`role:cell[:flip]`; `CELLS=file` for irregular sheets), then `npm run sprites:vpet`.
-5. **Verify.** Render each role group of the built strip and look at it. Then run `npx vitest run`. In Chrome at `?debug`, read the frame index the game draws while holding each direction, using the "Velocidade 2×" button for run. Screenshots are only valid while the window is focused; an unfocused tab freezes the game.
+5. **Verify.** Render each role group of the built strip and look at it. Then run `npx vitest run`. In Chrome at `?debug`, read the frame index the game draws while holding each direction, using the "Velocidade 2×" button for run. Screenshots are only valid while the window is focused; an unfocused tab freezes the game. To read the frame from JS, find the material whose `map.image.src` ends in `/<id>.png` through `window.__scene`, then `frames[Math.round(map.offset.x * frames.length)]`. Drive movement with `KeyboardEvent('keydown', {code: 'KeyA'})` on `window`, and set `__run.debug.xpMul = 0` first so level-up menus do not pause the run.
 
 ## How each frame type looks
 
@@ -62,3 +64,6 @@ Side and diagonal frames must face **LEFT**; the game mirrors them. `up` = back 
 | One uniform grid on an irregular sheet | `inspect.ts` ids + `label.sh`; explicit id lists or `CELLS=` |
 | Comparing silhouettes across different Digimon | `facing.ts` only works within one sheet |
 | Crediting the names printed on Gemini sheets | those credits are invented; never copy them |
+| Asking ChatGPT for diagonals in the same sheet as everything else | it returns mixed profile/front rows; diagonals go in their own 4-row sheet |
+| Removing the dark background of a ChatGPT PNG | it is already transparent (alpha≈0); cut by alpha |
+| Contact sheet built with `-gravity south -splice Nx0` | the spliced column lands in the middle of each frame and looks like a cut; use `-border` |
