@@ -5,18 +5,18 @@ import type { LevelOffer } from '../sim/progression';
 import { PATTERN_NAMES, STAT_NAMES } from './dom';
 import { showChoice, type ChoiceOption } from './modal';
 
-export function describeCard(id: string): string {
+const BONUS_NAMES = { dmg: 'dano', cooldown: 'recarga', pickup: 'alcance de coleta', xp: 'XP' } as const;
+
+/** texto da carta; level = nível atual da carta (passivas: bônus em % que sobe por nível) */
+export function describeCard(id: string, level = 1): string {
   const c = CARDS[id]; if (!c) return '';
   if (c.kind === 'slash' && c.moveId) { const m = MOVES[c.moveId]; return `Golpe extra (${PATTERN_NAMES[m.pattern]}), dano ${m.damage}. Ocupa um espaço de ataque.`; }
   if (c.kind === 'rare') return 'Carta rara: libera digievoluções especiais.';
-  const p = c.passive ?? {};
-  const parts: string[] = [];
-  for (const k of ['hp', 'atk', 'def', 'spd', 'brain'] as const) if (p[k]) parts.push(`+${p[k]} ${STAT_NAMES[k]}`);
-  if (p.dmgMul) parts.push(`+${Math.round(p.dmgMul * 100)}% dano`);
-  if (p.cdMul) parts.push(`-${Math.round((1 - p.cdMul) * 100)}% recarga`);
-  if (p.pickupMul) parts.push(`+${Math.round((p.pickupMul - 1) * 100)}% alcance de coleta`);
-  if (p.xpMul) parts.push(`+${Math.round((p.xpMul - 1) * 100)}% XP`);
-  return parts.join(', ');
+  return c.bonuses.map(b => {
+    const pct = Math.round(b.basePct + b.perLevelPct * (level - 1));
+    const name = b.stat in BONUS_NAMES ? BONUS_NAMES[b.stat as keyof typeof BONUS_NAMES] : STAT_NAMES[b.stat as keyof typeof STAT_NAMES];
+    return `${pct >= 0 ? '+' : ''}${pct}% ${name}`;
+  }).join(', ');
 }
 
 function describe(run: RunState, o: LevelOffer): Omit<ChoiceOption, 'onPick'> {

@@ -17,5 +17,5 @@ test('foreign keys and checks protect the data', () => {
   migrate(db, 'db/migrations');
   expect(() => db.exec("INSERT INTO digimon (id, name, stage, attribute, element, hp, atk, def, spd, brain, size, color) VALUES ('x', 'X', 'child', 'nope', 'nope', 1, 1, 1, 1, 1, 1, 0)")).toThrow();
   db.exec("INSERT INTO elements VALUES ('fire', 'Fogo')");
-  expect(() => db.exec("INSERT INTO moves (id, name, element, pattern, damage, cooldown, reach, max_level, dmg_per_level, cd_per_level, color) VALUES ('m', 'M', 'fire', 'laser', 1, 1, 1, 5, 1.25, 0.92, 0)")).toThrow();
+  expect(() => db.exec("INSERT INTO moves (id, name, element, pattern, damage, cooldown, reach, max_level, dmg_per_level, cd_per_level, color, ord) VALUES ('m', 'M', 'fire', 'laser', 1, 1, 1, 5, 1.25, 0.92, 0, 0)")).toThrow();
 });

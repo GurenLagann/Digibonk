@@ -70,13 +70,13 @@ insert('digimon', ['id', 'name', 'stage', 'attribute', 'element', 'hp', 'atk', '
   ...enemyDefs.map(e => { const [a, el, st] = typing(e.id); return [e.id, e.name, st, a, el, e.hp, e.dmg, 0, e.speed, 0, 0.005, e.size, e.color]; }),
 ]);
 
-insert('moves', ['id', 'name', 'element', 'pattern', 'damage', 'cooldown', 'reach', 'radius', 'count', 'pierce', 'speed', 'duration', 'max_level', 'dmg_per_level', 'cd_per_level', 'color'],
-  Object.values(before.MOVES).map((m: any) => {
+insert('moves', ['id', 'name', 'element', 'pattern', 'damage', 'cooldown', 'reach', 'radius', 'count', 'pierce', 'speed', 'duration', 'max_level', 'dmg_per_level', 'cd_per_level', 'color', 'ord'],
+  Object.values(before.MOVES).map((m: any, i: number) => {
     if (!MOVE_ELEMENT[m.id]) throw new Error(`golpe sem elemento: ${m.id}`);
-    return [m.id, m.name, MOVE_ELEMENT[m.id], m.pattern, m.damage, m.cooldown, m.range, m.radius, m.count, m.pierce, m.speed, m.duration, m.maxLevel, m.perLevel.damage, m.perLevel.cooldown, m.color];
+    return [m.id, m.name, MOVE_ELEMENT[m.id], m.pattern, m.damage, m.cooldown, m.range, m.radius, m.count, m.pierce, m.speed, m.duration, m.maxLevel, m.perLevel.damage, m.perLevel.cooldown, m.color, i];
   }));
 
-insert('forms', ['digimon_id', 'line', 'signature'], forms.map(f => [f.id, f.line, f.signature]));
+insert('forms', ['digimon_id', 'line', 'signature', 'ord'], forms.map((f, i) => [f.id, f.line, f.signature, i]));
 insert('form_kit', ['form_id', 'move_id', 'ord'], forms.flatMap(f => f.kit.map((m: string, i: number) => [f.id, m, i])));
 insert('partners', ['id', 'child_form', 'season', 'starter', 'ord'], before.PARTNERS.map((p: any, i: number) => [p.id, p.childForm, p.season, p.starter ? 1 : 0, i]));
 insert('items', ['id', 'name', 'kind', 'unlock_partner', 'ord'], Object.values(before.ITEMS).map((it: any, i) => [it.id, it.name, it.kind, it.unlockPartner, i]));

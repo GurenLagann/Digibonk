@@ -67,14 +67,16 @@ CREATE TABLE moves (
   max_level     INTEGER NOT NULL,
   dmg_per_level REAL NOT NULL,
   cd_per_level  REAL NOT NULL,
-  color         INTEGER NOT NULL
+  color         INTEGER NOT NULL,
+  ord           INTEGER NOT NULL
 );
 
 -- Formas jogáveis, kits e evoluções ------------------------------------------
 CREATE TABLE forms (
   digimon_id TEXT PRIMARY KEY REFERENCES digimon(id),
   line       TEXT NOT NULL,
-  signature  TEXT NOT NULL REFERENCES moves(id)
+  signature  TEXT NOT NULL REFERENCES moves(id),
+  ord        INTEGER NOT NULL
 );
 
 CREATE TABLE form_kit (
