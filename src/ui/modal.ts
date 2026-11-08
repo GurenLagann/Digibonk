@@ -2,7 +2,7 @@ import type { Input } from '../core/input';
 import { h } from './dom';
 
 export interface ChoiceOption { title: string; body?: string; tag?: string; onPick: () => void }
-export interface ChoiceSpec { title: string; subtitle?: string; options: ChoiceOption[]; extra?: ChoiceOption; columns?: boolean }
+export interface ChoiceSpec { title: string; subtitle?: string; options: ChoiceOption[]; extra?: ChoiceOption }
 
 export interface Modal { handle(input: Input): void; close(): void; readonly closed: boolean }
 
@@ -29,7 +29,7 @@ export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
   });
   const panel = h('div', { class: 'b2-panel tick cm-panel' }, h('h2', { class: 'b2-title' }, spec.title),
     spec.subtitle ? h('p', { class: 'cm-sub' }, spec.subtitle) : null,
-    spec.options.length ? h('div', { class: 'cm-list' + (spec.columns === false ? ' rows' : '') }, ...cards.filter((_, i) => all[i] !== spec.extra)) : null,
+    spec.options.length ? h('div', { class: 'cm-list' }, ...cards.filter((_, i) => all[i] !== spec.extra)) : null,
     spec.extra ? cards[cards.length - 1] : null);
   const back = h('div', { class: 'b2-screen cm-screen' }, panel);
   root.append(back);

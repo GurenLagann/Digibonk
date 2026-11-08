@@ -13,6 +13,7 @@ test('credits name every source and the rights notice', () => {
     'Greymon', 'MetalGreymon', 'WarGreymon', 'Omnimon', 'ExVeemon', 'Growlmon', 'WarGrowlmon', 'Gallantmon', '© Akiyoshi Hongo, Toei Animation e Bandai'])
     expect(t, s).toContain(s);
   expect(t).not.toContain('Sprites provisórios');
+  expect(t).not.toContain('Gemini: Agumon');
 });
 
 test('cancel and Esc (pause) go back from the credits', () => {

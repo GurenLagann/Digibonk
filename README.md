@@ -159,7 +159,7 @@ Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1), 
 
 ### Folhas geradas por IA (evoluções)
 
-Greymon e MetalGreymon usam folhas geradas no Gemini. Para recortar uma folha nova:
+As folhas geradas por IA (ChatGPT e, nas primeiras versões, Gemini) são recortadas em quadros. Para recortar uma folha nova:
 
 ```bash
 # lista as células detectadas (índice x,y,w,h)
@@ -190,7 +190,7 @@ DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Band
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
 - **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon e Gallantmon.
-- **Folhas geradas no Google Gemini:** Agumon e Guilmon.
+- As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
 Se você é detentor de direitos e quer a remoção de algum material, abra uma *issue*.

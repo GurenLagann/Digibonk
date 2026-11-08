@@ -26,7 +26,6 @@ export function showSettings(root: HTMLElement, input: Input, save: SaveData, st
   const m = showChoice(root, {
     title: 'Controles',
     subtitle: 'Escolha uma ação e aperte a tecla ou botão do controle novo. Analógico esquerdo sempre move.',
-    columns: false,
     options: (['evolve', 'confirm', 'cancel', 'pause', 'up', 'down', 'left', 'right'] as Action[]).map(a => ({
       title: `${ACTION_NAMES[a]}: ${input.codesFor(a).map(prettyCode).join(' / ')}`,
       onPick: () => {
@@ -47,7 +46,7 @@ export const CREDITS_TEXT = [
   'Sprites do Digimon World 3 (Agumon, Veemon, Guilmon, Bakemon, Guardromon): rips de Ragey e Artzei no The Spriters Resource.',
   'Sprites de V-pet: extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo humulos.com.',
   'Folhas geradas no ChatGPT: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon e Gallantmon.',
-  'Folhas geradas no Google Gemini: Agumon e Guilmon.',
+  'As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.',
   'Inspiração: PokéBonk (a referência principal), Megabonk e Digimon World 1.',
   'Se você é detentor de direitos e quer a remoção de algum material, abra uma issue no repositório.',
 ].join('\n\n');
