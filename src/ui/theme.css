@@ -1,0 +1,155 @@
+/*
+ * DigiBonk — tema visual "B2" (base de todas as telas novas). Tudo prefixado `b2-` para não mexer nas telas antigas.
+ *
+ * Decisões (skill ui-ux-pro-max, consulta "dark tech game UI / HUD / glass / cyan + orange"):
+ * - Fonte: Exo 2 (par "Crypto/Web3 · futuristic tech" da skill; o par "Gaming Bold" — Russo One/Chakra Petch — e
+ *   Orbitron não têm itálico 900 verdadeiro, que os títulos B2 exigem). Exo 2 tem itálico real 400–900, acentos
+ *   pt-BR no subconjunto latin e cara de interface tecnológica sem perder leitura. Empacotada localmente via
+ *   @fontsource/exo-2 5.3.0 (versão exata), só os pesos usados: 400, 600, 800, 800 itálico, 900 itálico.
+ *   Números de HUD/código continuam em ui-monospace (selo de tecla, hex).
+ * - Escala tipográfica (referência 1280×720, razão ~1.25–1.33, mínimo 11px só para rótulos em maiúsculas):
+ *   --b2-fs-xs 11 · sm 13 · md 15 (corpo) · lg 18 · xl 24 · 2xl 32 · 3xl 48 · display 72. Corpo com line-height 1.45.
+ * - Espaçamento: base 4px → --b2-sp-1..8 = 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64.
+ * - Interação: botões ≥ 44px de altura, cursor pointer, foco visível (anel ciano), transições 150–250 ms só em
+ *   transform/opacity/sombra/cor; prefers-reduced-motion desliga animações e transições.
+ * - Contraste: texto claro (#dff7ff) sobre vidro escuro; selos claros (Gelo, Elétrico, Luz) usam tinta escura (theme.ts).
+ * - Laranja #ff8a1f só para destaque (seleção, botão principal); verde #5dff8f só para ganhos.
+ */
+@import '@fontsource/exo-2/latin-400.css';
+@import '@fontsource/exo-2/latin-600.css';
+@import '@fontsource/exo-2/latin-800.css';
+@import '@fontsource/exo-2/latin-800-italic.css';
+@import '@fontsource/exo-2/latin-900-italic.css';
+
+:root {
+  --b2-font: 'Exo 2', system-ui, sans-serif;
+  --b2-mono: ui-monospace, 'Cascadia Mono', 'DejaVu Sans Mono', monospace;
+  /* fundo */
+  --b2-bg0: #12345a;
+  --b2-bg1: #050b16;
+  /* painel de vidro */
+  --b2-glass0: #0f2a4c;
+  --b2-glass1: #08162b;
+  --b2-cell: #071a30;
+  /* cores */
+  --b2-cyan: #00d9ff;
+  --b2-cyan-soft: #7fdcff;
+  --b2-blue: #3d7bff;
+  --b2-text: #dff7ff;
+  --b2-text-dim: #9fd8ef;
+  --b2-orange: #ff8a1f;
+  --b2-orange0: #ff6a13;
+  --b2-orange1: #ffae2e;
+  --b2-orange-deep: #b44a07;
+  --b2-green: #5dff8f;
+  --b2-line: rgba(0, 217, 255, .45);
+  /* forma */
+  --b2-corner: 16px 4px 16px 4px;
+  --b2-corner-sm: 12px 3px 12px 3px;
+  /* tipografia */
+  --b2-fs-xs: 11px; --b2-fs-sm: 13px; --b2-fs-md: 15px; --b2-fs-lg: 18px;
+  --b2-fs-xl: 24px; --b2-fs-2xl: 32px; --b2-fs-3xl: 48px; --b2-fs-display: 72px;
+  /* espaçamento */
+  --b2-sp-1: 4px; --b2-sp-2: 8px; --b2-sp-3: 12px; --b2-sp-4: 16px;
+  --b2-sp-5: 24px; --b2-sp-6: 32px; --b2-sp-7: 48px; --b2-sp-8: 64px;
+  /* tempo */
+  --b2-fast: 150ms; --b2-med: 250ms;
+}
+
+/* ── tela cheia: fundo azul-marinho com grade ciano e varredura; o jogo 3D aparece escurecido atrás ── */
+.b2-screen {
+  position: absolute; inset: 0; pointer-events: auto; overflow: hidden; isolation: isolate;
+  font-family: var(--b2-font); font-size: var(--b2-fs-md); line-height: 1.45; color: var(--b2-text);
+  background: radial-gradient(circle at 25% 18%, rgba(18, 52, 90, .9), rgba(5, 11, 22, .96) 74%);
+}
+.b2-screen::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 217, 255, .04) 0 1px, transparent 1px 3px),
+    linear-gradient(rgba(0, 217, 255, .07) 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(90deg, rgba(0, 217, 255, .07) 1px, transparent 1px) 0 0 / 26px 26px;
+}
+
+/* ── painel de vidro ── */
+.b2-panel {
+  position: relative; padding: var(--b2-sp-3) var(--b2-sp-4);
+  font-family: var(--b2-font); color: var(--b2-text);
+  background: linear-gradient(160deg, rgba(15, 42, 76, .82), rgba(8, 22, 43, .82));
+  border: 1px solid var(--b2-line); border-radius: var(--b2-corner);
+  box-shadow: 0 0 22px rgba(0, 217, 255, .13), inset 0 0 18px rgba(0, 217, 255, .08);
+}
+.b2-panel.tick::after {
+  content: ''; position: absolute; top: 9px; right: 12px; width: 34px; height: 4px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--b2-cyan) 0 6px, transparent 6px 9px);
+}
+
+/* ── texto ── */
+.b2-title {
+  margin: 0; font-family: var(--b2-font); font-style: italic; font-weight: 900; font-size: var(--b2-fs-xl);
+  line-height: 1.1; letter-spacing: -.01em; color: #fff; text-shadow: 0 0 12px rgba(0, 217, 255, .6);
+}
+.b2-label {
+  font-family: var(--b2-font); font-size: var(--b2-fs-xs); font-weight: 600; line-height: 1.3;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--b2-cyan-soft);
+}
+
+/* ── botões ── */
+.b2-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--b2-sp-3);
+  min-height: 44px; padding: var(--b2-sp-2) var(--b2-sp-5); border: 0; border-radius: 999px; cursor: pointer;
+  font-family: var(--b2-font); font-style: italic; font-weight: 900; font-size: var(--b2-fs-lg); color: #fff;
+  background: linear-gradient(90deg, var(--b2-orange0), var(--b2-orange1));
+  box-shadow: 0 5px 0 var(--b2-orange-deep), 0 0 22px rgba(255, 138, 31, .45);
+  text-shadow: 0 1px 0 rgba(165, 64, 0, .55);
+  transition: transform var(--b2-fast) ease-out, box-shadow var(--b2-fast) ease-out, filter var(--b2-fast);
+}
+.b2-btn:hover { filter: brightness(1.08); box-shadow: 0 5px 0 var(--b2-orange-deep), 0 0 30px rgba(255, 138, 31, .7); }
+.b2-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--b2-orange-deep), 0 0 18px rgba(255, 138, 31, .5); }
+.b2-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.b2-btn:disabled { cursor: default; filter: grayscale(.8) brightness(.7); transform: none; }
+.b2-btn.secondary {
+  color: var(--b2-text); text-shadow: none; font-weight: 800;
+  background: rgba(7, 26, 48, .7); border: 1px solid var(--b2-line);
+  box-shadow: 0 0 14px rgba(0, 217, 255, .12);
+}
+.b2-btn.secondary:hover { border-color: var(--b2-cyan); box-shadow: 0 0 18px rgba(0, 217, 255, .35); filter: none; }
+.b2-btn.secondary:active { transform: translateY(1px); }
+.b2-btn.secondary:focus-visible { outline-color: var(--b2-cyan); }
+
+/* selo da tecla de atalho */
+.b2-key {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, .4);
+  background: rgba(0, 0, 0, .4); color: #fff; text-shadow: none;
+  font: 800 var(--b2-fs-xs)/1.4 var(--b2-mono); font-style: normal; letter-spacing: .04em;
+}
+
+/* selo de atributo / elemento (a cor vem de theme.ts) */
+.b2-chip {
+  display: inline-block; padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  font-family: var(--b2-font); font-size: var(--b2-fs-xs); font-weight: 800; line-height: 1.4; letter-spacing: .02em;
+}
+
+/* barra de status: .b2-bar > i com width em % */
+.b2-bar {
+  position: relative; height: 8px; border-radius: 4px; overflow: hidden;
+  background: #06142a; border: 1px solid rgba(0, 217, 255, .2);
+}
+.b2-bar > i {
+  display: block; height: 100%; width: 0; border-radius: inherit;
+  background: linear-gradient(90deg, var(--b2-cyan), var(--b2-blue)); box-shadow: 0 0 6px var(--b2-cyan);
+  transition: width var(--b2-med) ease-out;
+}
+
+/* seleção (laranja = destaque) */
+.b2-sel { border: 2px solid var(--b2-orange) !important; box-shadow: 0 0 14px rgba(255, 138, 31, .6); }
+/* ganho "antes → depois" */
+.b2-gain { color: var(--b2-green); font-weight: 800; text-shadow: 0 0 8px rgba(93, 255, 143, .45); }
+
+/* retrato (canvas pixelado) */
+.b2-portrait { image-rendering: pixelated; display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .b2-screen *, .b2-screen *::before, .b2-screen *::after, .b2-btn, .b2-bar > i {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
+  }
+}

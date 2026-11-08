@@ -1,4 +1,5 @@
 import './ui/style.css';
+import './ui/theme.css';
 import { createApp } from './app';
 import { createInput } from './core/input';
 import { createFixedLoop } from './core/loop';
@@ -22,6 +23,7 @@ import { showCredits, showPause, showResults, showSettings, showTitle } from './
 import { activeModal } from './ui/modal';
 import { mountToasts, toast } from './ui/toast';
 import { installAutoPause } from './ui/autopause';
+import { setPortraitSource } from './ui/portrait';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ui = document.getElementById('ui')!;
@@ -33,6 +35,7 @@ const debug = import.meta.env.DEV ? new URLSearchParams(location.search).get('de
 
 const map = new MapView(scene);
 const sprites = await SpriteLibrary.load();
+setPortraitSource(sprites);
 if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: renderer });
 const boards = new Billboards(scene, camera, sprites);
 const vfx = new Vfx(scene);
