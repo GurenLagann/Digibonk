@@ -20,6 +20,33 @@ export function availableEvolutions(p: PlayerProg, ctx: EvoContext): string[] {
   }).map(e => e.to);
 }
 
+export type EvoMissing =
+  | { kind: 'level'; need: number }
+  | { kind: 'stat'; stat: StatKey; need: number }
+  | { kind: 'item'; id: string }
+  | { kind: 'phase'; need: number }
+  | { kind: 'kills'; need: number };
+export type EvoHint = { kind: 'final' } | { kind: 'none' } | { kind: 'next'; to: string; missing: EvoMissing[] };
+
+export function nextEvolutionHint(p: PlayerProg, ctx: EvoContext): EvoHint {
+  const f = FORMS[p.formId];
+  if (f.evolutions.length === 0) return { kind: 'final' };
+  const s = effectiveStats(p);
+  let best: { to: string; missing: EvoMissing[] } | null = null;
+  for (const { to, req } of f.evolutions) {
+    if (req.unlocked && !req.unlocked.every(u => ctx.save.unlocked.includes(u))) continue;
+    const missing: EvoMissing[] = [];
+    if (p.level < req.minLevel) missing.push({ kind: 'level', need: req.minLevel });
+    for (const [k, v] of Object.entries(req.minStats ?? {}))
+      if (s[k as StatKey] < (v as number)) missing.push({ kind: 'stat', stat: k as StatKey, need: v as number });
+    for (const id of req.items ?? []) if (!p.items.includes(id)) missing.push({ kind: 'item', id });
+    if (req.minPhase && ctx.phase < req.minPhase) missing.push({ kind: 'phase', need: req.minPhase });
+    if (req.minKills && p.kills < req.minKills) missing.push({ kind: 'kills', need: req.minKills });
+    if (!best || missing.length < best.missing.length) best = { to, missing };
+  }
+  return best ? { kind: 'next', ...best } : { kind: 'none' };
+}
+
 export class EvoNotifier {
   private seen = new Set<string>();
   update(available: string[]): string[] {

@@ -1,4 +1,4 @@
-import { availableEvolutions, evolve, EvoNotifier, type EvoContext } from '../../src/sim/evolution';
+import { availableEvolutions, evolve, EvoNotifier, nextEvolutionHint, type EvoContext } from '../../src/sim/evolution';
 import { newPlayerProg } from '../../src/sim/progression';
 import { defaultSave } from '../../src/core/save';
 import { progAt } from '../helpers';
@@ -45,3 +45,27 @@ test('evolve upgrades signature keeping level and records path', () => {
   expect(p.slots[1]).toMatchObject({ moveId: 'sharp_claws', level: 2 }); expect(p.path).toEqual(['agumon', 'greymon']);
 });
 test('evolve rejects unavailable form', () => expect(() => evolve(newPlayerProg('agumon'), 'wargreymon', ctx())).toThrow());
+
+describe('nextEvolutionHint', () => {
+  test('final form', () => {
+    expect(nextEvolutionHint(newPlayerProg('omnimon'), ctx())).toEqual({ kind: 'final' });
+  });
+  test('agumon level 1 misses level and atk', () => {
+    expect(nextEvolutionHint(newPlayerProg('agumon'), ctx())).toEqual({
+      kind: 'next', to: 'greymon', missing: [{ kind: 'level', need: 8 }, { kind: 'stat', stat: 'atk', need: 14 }],
+    });
+  });
+  test('agumon ready has nothing missing', () => {
+    const p = progAt('agumon', 8); p.bonus.atk = 20;
+    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'next', to: 'greymon', missing: [] });
+  });
+  test('veemon picks the closest branch', () => {
+    const p = progAt('veemon', 8); p.bonus.spd = 10;
+    const h = nextEvolutionHint(p, ctx());
+    expect(h).toEqual({ kind: 'next', to: 'exveemon', missing: [] });
+  });
+  test('none when all edges impossible', () => {
+    const p = progAt('exveemon', 22); p.items.push('fusion_stingmon');
+    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'none' });
+  });
+});
