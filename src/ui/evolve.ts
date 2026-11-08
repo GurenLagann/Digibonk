@@ -19,7 +19,9 @@ function optionCard(run: RunState, formId: string): HTMLElement {
   const before = effectiveStats(run.prog);
   const after = effectiveStats({ ...run.prog, formId }); // cópia rasa: só a forma muda
   const stats = STAT_ROWS.map(([k, lbl]) => {
-    const a = Math.round(before[k]), b = Math.round(after[k]);
+    // HP arredonda para cima como o HUD (Math.ceil(maxHp)); os demais, ao mais próximo
+    const rnd = k === 'hp' ? Math.ceil : Math.round;
+    const a = rnd(before[k]), b = rnd(after[k]);
     const top = Math.max(a, b, 1);
     const bar = h('div', { class: 'b2-bar evo-bar' }, h('i', {}), h('b', {}));
     (bar.children[0] as HTMLElement).style.width = `${(Math.min(a, b) / top) * 100}%`;

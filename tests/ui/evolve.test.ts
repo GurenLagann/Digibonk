@@ -37,7 +37,8 @@ test('mostra forma atual, cartão Greymon com selos, status antes → depois e o
   const rows = [...card.querySelectorAll('.evo-stat')].map(e => e.textContent ?? '');
   expect(rows).toHaveLength(4);
   (['hp', 'atk', 'def', 'spd'] as const).forEach((k, i) => {
-    expect(rows[i]).toContain(`${Math.round(before[k])} → ${Math.round(after[k])}`);
+    const rnd = k === 'hp' ? Math.ceil : Math.round; // HP como no HUD
+    expect(rows[i]).toContain(`${rnd(before[k])} → ${rnd(after[k])}`);
   });
   ['HP', 'Atq', 'Def', 'Vel'].forEach((lbl, i) => expect(rows[i].startsWith(lbl)).toBe(true));
   expect(card.textContent).toContain('Mega Flame');

@@ -30,7 +30,7 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
     path.push(h('div', { class: 'res-step' + (big ? ' last' : '') },
       portrait(id, { size: big ? 112 : 80 }),
       h('span', { class: 'res-sname' }, FORMS[id]?.name ?? id),
-      i > 0 ? h('div', { class: 'b2-label' }, `Nv ${p.pathLevels[i] ?? '?'}`) : null));
+      i > 0 && p.pathLevels[i] !== undefined ? h('div', { class: 'b2-label' }, `Nv ${p.pathLevels[i]}`) : null));
   });
 
   const kit = [
@@ -67,7 +67,7 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
         unlocked.length ? h('div', { class: 'b2-panel res-unlock' },
           h('div', { class: 'b2-label' }, 'Novo parceiro liberado!'), ...unlocked) : null)),
     h('div', { class: 'res-foot' },
-      btn('Menu', '2', 'b2-btn secondary', onMenu),
+      btn('Menu', 'Esc', 'b2-btn secondary res-menu', onMenu),
       btn('Jogar de novo', '1', 'b2-btn res-again', onAgain)));
   root.append(screen);
 

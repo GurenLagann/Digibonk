@@ -69,6 +69,17 @@ test('golpes e cartas finais com nível; números em destaque', () => {
   expect(text()).not.toContain('Novo parceiro liberado!');
   expect(text()).toContain('Jogar de novo');
   expect(text()).toContain('Menu');
+  // Ruling 2: o selo do botão Menu mostra Esc (2/cancel/pause continuam valendo)
+  expect(root.querySelector('.res-menu .b2-key')!.textContent).toBe('Esc');
+});
+
+test('nível ausente em pathLevels não mostra rótulo Nv', () => {
+  const r = endedRun();
+  r.prog.pathLevels = [1, 8];
+  const { root } = show(r);
+  const steps = [...root.querySelectorAll('.res-step')];
+  expect(steps[1].textContent).toContain('Nv 8');
+  expect(steps[2].textContent).not.toContain('Nv');
 });
 
 test('sem recorde novo não mostra "Novo recorde!"; melhor fase vem do recorde do parceiro', () => {
