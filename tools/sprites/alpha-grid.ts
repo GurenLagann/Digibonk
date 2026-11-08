@@ -3,7 +3,8 @@
  * Escreve "fileira.coluna x,y,w,h" por quadro, igual ao inspect.ts.
  * uso: node --experimental-strip-types tools/sprites/alpha-grid.ts <folha.png> [fileiras]
  *   fileiras: quantas linhas a folha tem. Quando os sprites de linhas vizinhas se encostam,
- *   a folha é cortada perto de k*altura/fileiras (no vão mais vazio) em vez de pelos vãos.
+ *   a folha é cortada perto de k*altura/fileiras (no vão mais vazio) em vez de pelos vãos, e cada
+ *   quadro fica só com a faixa vertical principal (pedaços da linha vizinha são descartados).
  * Fundo transparente: o ChatGPT deixa cor escura com alpha≈0 no fundo; só alpha>128 conta.
  * Rótulos (caixas cheias, como DIREITA/ANDANDO) e faixas de título que cruzam a folha são ignorados.
  */
@@ -35,8 +36,20 @@ function bands(p: number[], gap: number, min: number): Band[] {
 const rowSum = (y0: number, y1: number, x0 = 0, x1 = W) => { let n = 0; for (let y = y0; y <= y1; y++) for (let x = x0; x < x1; x++) n += fg[y * W + x]; return n; };
 const rowProj = Array.from({ length: H }, (_, y) => rowSum(y, y));
 
+/** faixa vertical com mais pixels dentro do quadro: descarta pedaços das linhas vizinhas que caem no corte forçado */
+function mainRun(top: number, bot: number, x0: number, x1: number): Band {
+  let best: Band = [top, bot], bestN = -1, s = -1, last = -99, n = 0;
+  for (let y = top; y <= bot + 4; y++) {
+    const v = y <= bot ? rowSum(y, y, x0, x1) : 0;
+    if (v > 0) { if (s < 0) { s = y; n = 0; } last = y; n += v; }
+    else if (s >= 0 && y - last > 3) { if (n > bestN) { bestN = n; best = [s, last]; } s = -1; }
+  }
+  return best;
+}
+
 let rows = bands(rowProj.map(v => (v > 2 ? 1 : 0)), 4, 30);
-if (want && rows.length !== want) {
+const forced = !!want && rows.length !== want;
+if (forced) {
   const cuts = [0];
   for (let k = 1; k < want; k++) {
     const c = Math.round((k * H) / want), r = Math.round(H / want / 5);
@@ -57,6 +70,7 @@ for (const [y0, y1] of rows) {
     let top = -1, bot = -1;
     for (let y = y0; y <= y1; y++) if (rowSum(y, y, x0, x1 + 1)) { if (top < 0) top = y; bot = y; }
     if (top < 0) continue;
+    if (forced) [top, bot] = mainRun(top, bot, x0, x1 + 1);
     const w = x1 - x0 + 1, h = bot - top + 1;
     if (rowSum(top, bot, x0, x1 + 1) > w * h * 0.8) continue; // caixa de rótulo
     console.log(`${r}.${c++} ${x0},${top},${w},${h}`);
