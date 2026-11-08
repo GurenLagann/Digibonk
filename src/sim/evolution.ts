@@ -41,7 +41,13 @@ export function applyForm(p: PlayerProg, toFormId: string): void {
   if (!to) throw new Error(`unknown form ${toFormId}`);
   p.formId = toFormId;
   p.path.push(toFormId);
-  const lvl = p.slots[0]?.level ?? 1;
+  const prev = p.slots[0];
+  const lvl = prev?.level ?? 1;
   for (let i = 1; i < p.slots.length; i++) if (p.slots[i]?.moveId === to.signature) p.slots[i] = null;
   p.slots[0] = { moveId: to.signature, level: lvl, fromCard: false };
+  // a assinatura anterior que faz parte do kit novo passa para um espaço livre, mantendo o nível
+  if (prev && to.kit.includes(prev.moveId) && !p.slots.some(s => s?.moveId === prev.moveId)) {
+    const free = p.slots.findIndex((s, i) => i > 0 && s === null);
+    if (free > 0) p.slots[free] = { moveId: prev.moveId, level: prev.level, fromCard: false };
+  }
 }
