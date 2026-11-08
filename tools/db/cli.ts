@@ -11,10 +11,11 @@ import { exportToFile } from './export.ts';
 export const DB_PATH = 'db/digibonk.db', MIGRATIONS = 'db/migrations', SEEDS = 'db/seeds';
 
 const cmd = process.argv[2];
+// checa o comando antes de abrir o banco: openDb cria o arquivo
+if (!['migrate', 'seed', 'build'].includes(cmd)) { console.error('uso: cli.ts <migrate|seed|build>'); process.exit(1); }
 if (cmd === 'build' && existsSync(DB_PATH)) rmSync(DB_PATH);
 const db = openDb(DB_PATH);
 const log = (what: string, names: string[]) => console.log(`${what}: ${names.length ? names.join(', ') : 'nada pendente'}`);
 if (cmd === 'migrate' || cmd === 'build') log('migrations', migrate(db, MIGRATIONS));
 if (cmd === 'seed' || cmd === 'build') log('seeds', seed(db, SEEDS));
 if (cmd === 'build') console.log(`exportado: ${exportToFile(db)}`);
-if (!['migrate', 'seed', 'build'].includes(cmd)) { console.error('uso: cli.ts <migrate|seed|build>'); process.exit(1); }
