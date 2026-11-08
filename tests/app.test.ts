@@ -9,24 +9,25 @@ const deps = (o: { unlocked?: string[] } = {}) => {
 };
 
 test('starts on title', () => expect(createApp(deps()).screen()).toBe('title'));
-test('locked partners are listed but locked', () => {
-  const a = createApp(deps());
-  const ps = a.partnersFor('adventure');
-  expect(ps[0]).toEqual({ id: 'agumon', childForm: 'agumon', locked: false });
-  expect(ps.slice(1).every(p => p.locked)).toBe(true);
-  expect(ps.map(p => p.id)).toEqual(['agumon', 'gabumon', 'patamon', 'tentomon', 'gatomon']);
+test('partners() lists all 11 in season order and only the starters are unlocked', () => {
+  const ps = createApp(deps()).partners();
+  expect(ps.length).toBe(11);
+  expect(ps.map(p => p.season)).toEqual([...ps.map(p => p.season)].sort((x, y) => ['adventure', 'adventure02', 'tamers'].indexOf(x) - ['adventure', 'adventure02', 'tamers'].indexOf(y)));
+  expect(ps.slice(0, 5).map(p => p.id)).toEqual(['agumon', 'gabumon', 'patamon', 'tentomon', 'gatomon']);
+  expect(ps[0]).toEqual({ id: 'agumon', childForm: 'agumon', season: 'adventure', locked: false });
+  expect(ps.filter(p => !p.locked).map(p => p.id).sort()).toEqual(['agumon', 'guilmon', 'veemon']);
 });
 test('unlocked partner shows as available', () => {
   const a = createApp(deps({ unlocked: ['agumon', 'veemon', 'guilmon', 'wormmon'] }));
-  expect(a.partnersFor('adventure02')).toContainEqual({ id: 'wormmon', childForm: 'wormmon', locked: false });
+  expect(a.partners()).toContainEqual({ id: 'wormmon', childForm: 'wormmon', season: 'adventure02', locked: false });
 });
-test('season then partner starts a run', () => {
+test('picking an unlocked partner starts a run without any season', () => {
   const d = deps(); const a = createApp(d);
-  a.go('season'); a.selectSeason('tamers'); expect(a.screen()).toBe('partner'); expect(a.season()).toBe('tamers');
-  a.pickPartner('guilmon'); expect(d.started).toEqual(['guilmon']); expect(a.screen()).toBe('run');
+  a.go('partner'); expect(a.pickPartner('guilmon')).toBe(true); expect(d.started).toEqual(['guilmon']); expect(a.screen()).toBe('run');
 });
 test('locked partner cannot start', () => {
-  const d = deps(); const a = createApp(d); a.selectSeason('adventure'); a.pickPartner('gabumon');
+  const d = deps(); const a = createApp(d); a.go('partner');
+  expect(a.pickPartner('gabumon')).toBe(false);
   expect(d.started).toEqual([]); expect(a.screen()).toBe('partner');
 });
 test('abandoning a run is a defeat and counts the run', () => {

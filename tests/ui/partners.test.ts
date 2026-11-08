@@ -7,7 +7,7 @@ const press = (...a: string[]) => ({ pressed: (x: string) => a.includes(x) } as 
 
 function fakeApp(partners: { id: string; childForm: string; locked: boolean }[]) {
   const picked: string[] = [];
-  return { picked, app: { season: () => 'adventure', partnersFor: () => partners, pickPartner: (id: string) => { picked.push(id); return true; }, go: () => {} } };
+  return { picked, app: { partners: () => partners, pickPartner: (id: string) => { picked.push(id); return true; }, go: () => {} } };
 }
 
 test('partner select lists 5 partners, names them by their Child form, and reaches the 5th with the arrows', () => {

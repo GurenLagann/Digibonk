@@ -9,6 +9,12 @@ export interface Modal { handle(input: Input): void; close(): void; readonly clo
 let current: Modal | null = null;
 export const activeModal = () => (current && !current.closed ? current : null);
 
+/** registra uma tela própria (sem showChoice) para receber o input do laço principal; fecha a anterior */
+export function setActiveModal(m: Modal): void {
+  if (current && current !== m) current.close();
+  current = m;
+}
+
 export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
   current?.close();
   const all = spec.extra ? [...spec.options, spec.extra] : spec.options;

@@ -1,8 +1,6 @@
 import { ACTIONS, DEFAULT_BINDINGS, type Action, type Input } from '../core/input';
 import { storeSave, type SaveData } from '../core/save';
 import { FORMS } from '../data/forms';
-import { SEASON_NAMES } from '../data/partners';
-import type { Season } from '../data/types';
 import type { App } from '../app';
 import type { RunState } from '../sim/run';
 import { fmtTime, h } from './dom';
@@ -15,41 +13,15 @@ const ACTION_NAMES: Record<Action, string> = {
 };
 const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^pad:b(\d+)$/, 'Controle botão $1').replace(/^Arrow/, 'Seta ');
 
-export function showTitle(root: HTMLElement, app: App, save: SaveData, onSettings: () => void, onCredits: () => void) {
-  const rec = save.records;
-  return showChoice(root, {
-    title: 'DigiBonk',
-    subtitle: `Survivor de Digimon · fan-game não oficial · Parceiros: ${save.unlocked.length} · Vitórias: ${rec.wins} · Melhor fase: ${rec.bestPhase}`,
-    options: [
-      { title: 'Jogar', body: 'Escolher temporada e parceiro', onPick: () => { app.go('season'); showSeason(root, app, save, () => showTitle(root, app, save, onSettings, onCredits)); } },
-      { title: 'Controles', body: 'Teclado e controle', onPick: () => { app.go('settings'); onSettings(); } },
-      { title: 'Créditos', body: 'Aviso legal', onPick: () => { app.go('credits'); onCredits(); } },
-    ],
-  });
-}
-
-export function showSeason(root: HTMLElement, app: App, save: SaveData, back: () => void) {
-  const seasons: Season[] = ['adventure', 'adventure02', 'tamers'];
-  return showChoice(root, {
-    title: 'Escolha a temporada',
-    options: seasons.map(s => {
-      const ps = app.partnersFor(s);
-      return { title: SEASON_NAMES[s], body: `${ps.filter(p => !p.locked).length}/${ps.length} parceiros`, onPick: () => { app.selectSeason(s); showPartner(root, app, save, back); } };
-    }),
-    extra: { title: 'Voltar', onPick: () => { app.go('title'); back(); } },
-  });
-}
-
 export function showPartner(root: HTMLElement, app: App, save: SaveData, back: () => void) {
-  const ps = app.partnersFor(app.season());
+  const ps = app.partners();
   return showChoice(root, {
-    title: SEASON_NAMES[app.season()],
-    subtitle: 'Escolha seu parceiro',
+    title: 'Escolha seu parceiro',
     options: ps.map(p => p.locked
       ? { title: '???', tag: 'Bloqueado', body: 'Encontre o ovo deste Digimon nas fases', onPick: () => { showPartner(root, app, save, back); } }
       // o parceiro aparece pela forma Child (ex.: parceiro Gatomon começa como Salamon)
       : { title: FORMS[p.childForm].name, tag: 'Child', body: `Golpe inicial: ${MOVES[FORMS[p.childForm].signature].name}`, onPick: () => { app.pickPartner(p.id); } }),
-    extra: { title: 'Voltar', onPick: () => { app.go('season'); showSeason(root, app, save, back); } },
+    extra: { title: 'Voltar', onPick: () => { app.go('title'); back(); } },
   });
 }
 
