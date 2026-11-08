@@ -41,6 +41,7 @@ export function applyForm(p: PlayerProg, toFormId: string): void {
   if (!to) throw new Error(`unknown form ${toFormId}`);
   p.formId = toFormId;
   p.path.push(toFormId);
+  p.pathLevels.push(p.level);
   const prev = p.slots[0];
   const lvl = prev?.level ?? 1;
   for (let i = 1; i < p.slots.length; i++) if (p.slots[i]?.moveId === to.signature) p.slots[i] = null;

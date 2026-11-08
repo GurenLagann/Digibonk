@@ -40,6 +40,10 @@ export interface RunState {
   pickups: Pickup[]; chests: Chest[]; evo: EvoNotifier;
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
   offers: LevelOffer[] | null; pendingCard: string | null;
+  /** chefes de fase e guardiões derrotados nesta partida */
+  stats: { bosses: number; guardians: number };
+  /** true quando `finish` superou o bestPhase deste parceiro */
+  newRecord: boolean;
   nextPickupId: number; unlockedThisRun: string[];
   /** dev only */
   debug: { xpMul: number; forceItems: boolean; god: boolean; doubleSpeed: boolean; speedBonus: number };
@@ -79,7 +83,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
-    nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
+    stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);
@@ -93,6 +97,11 @@ function finish(r: RunState, result: 'victory' | 'defeat', ev: RunEvent[]) {
   const rec = r.save.records;
   rec.runs++; if (result === 'victory') rec.wins++;
   rec.bestPhase = Math.max(rec.bestPhase, result === 'victory' ? T.PHASES : r.phase.phase);
+  const best = result === 'victory' ? T.PHASES : r.phase.phase;
+  const pr = r.save.partnerRecords[r.partnerId] ??= { runs: 0, wins: 0, bestPhase: 0 };
+  pr.runs++; if (result === 'victory') pr.wins++;
+  r.newRecord = best > pr.bestPhase;
+  pr.bestPhase = Math.max(pr.bestPhase, best);
   persist(r);
   ev.push({ type: result });
 }
@@ -193,14 +202,14 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
       r.prog.kills++;
       ev.push({ type: 'kill', x: e.x, z: e.z });
       if (e.boss) {
-        if (e.id === r.phase.bossId) bossDead = true;
+        if (e.id === r.phase.bossId) { bossDead = true; r.stats.bosses++; }
         for (let k = 0; k < 2; k++) {
           const roll = lootRoll(r, bossDrops.map(d => d.ref ?? ''));
           bossDrops.push(roll); spawnPickup(r, e.x + k * 1.2, e.z, roll);
         }
         continue;
       }
-      if (e.miniboss) { killedMiniboss = true; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
+      if (e.miniboss) { killedMiniboss = true; r.stats.guardians++; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
       const drop = dropOnKill(e, r.rng);
       if (drop.xp > 0) r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z, kind: 'xp', value: drop.xp });
       if (drop.extra === 'heal') spawnPickup(r, e.x + 0.6, e.z, { kind: 'heal' });

@@ -1,9 +1,10 @@
-import { createRun, stepRun, doEvolve, playerSpeed, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, type RunState } from '../../src/sim/run';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
 import { BOSSES } from '../../src/data/enemies';
 import { T } from '../../src/data/tuning';
+import { MINIBOSSES } from '../../src/data/enemies';
 import { MAP_OBSTACLES } from '../../src/sim/map';
 import { fakeStorage, autoResolveModals, circleInput } from '../helpers';
 
@@ -98,4 +99,30 @@ test('playerSpeed follows spd and the run remembers its base speed', () => {
   expect(r.baseSpeed).toBeCloseTo(playerSpeed(r.prog));
   r.prog.bonus.spd += 1000;
   expect(playerSpeed(r.prog)).toBeGreaterThan(2 * r.baseSpeed);
+});
+
+test('abandon updates the per-partner record and flags a new record once', () => {
+  const save = defaultSave();
+  const a = createRun({ ...opts(), save }); abandonRun(a);
+  expect(save.partnerRecords.agumon).toEqual({ runs: 1, wins: 0, bestPhase: 1 }); expect(a.newRecord).toBe(true);
+  const b = createRun({ ...opts(), save }); abandonRun(b);
+  expect(save.partnerRecords.agumon.runs).toBe(2); expect(b.newRecord).toBe(false);
+});
+test('evolving stacks the level in pathLevels', () => {
+  const r = createRun(opts()); expect(r.prog.pathLevels).toEqual([1]);
+  r.prog.level = 9; r.prog.bonus.atk = 20; doEvolve(r, 'greymon');
+  expect(r.prog.pathLevels).toEqual([1, 9]);
+});
+test('killing a miniboss counts as a guardian', () => {
+  const r = createRun(opts()); r.prog.bonus.hp = 1e6;
+  expect(r.stats).toEqual({ bosses: 0, guardians: 0 });
+  const m = r.pool.spawn(MINIBOSSES[0], r.px + 1, r.pz, { hp: 1, dmg: 0 }, { miniboss: true })!; m.hp = 0;
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60); expect(r.stats.guardians).toBe(1);
+});
+test('killing the phase boss counts in stats', () => {
+  const r = createRun(opts({ partnerId: 'veemon', seed: 5 })); r.prog.bonus.hp = 1e6;
+  r.phase.mission.done = true; r.phase.bossUnlocked = true; r.phase.bossActive = true;
+  const b = r.pool.spawn(BOSSES[0], r.px + 1, r.pz, { hp: 1, dmg: 0 }, { boss: true })!; b.hp = 0.001; r.phase.bossId = b.id;
+  for (let i = 0; i < 120 && !r.stats.bosses; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(r.stats.bosses).toBe(1);
 });
