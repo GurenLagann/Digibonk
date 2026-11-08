@@ -22,5 +22,6 @@ test('todo golpe tem descrição curta', () => {
   for (const m of Object.values(MOVES)) {
     expect.soft(m.description, m.id).toMatch(/\S/);
     expect.soft(m.description.length, m.id).toBeLessThanOrEqual(90);
+    expect.soft(m.description, m.id).toMatch(/\.$/);
   }
 });
