@@ -158,12 +158,8 @@
 /* ── tela inicial (src/ui/title.ts): escala com a janela (clamp/vw) ── */
 .title-screen { display: flex; align-items: center; padding: 0 clamp(24px, 5vw, 96px); gap: clamp(24px, 4vw, 80px); }
 .title-menu { flex: 0 1 clamp(400px, 40vw, 1000px); display: flex; flex-direction: column; gap: var(--b2-sp-4); z-index: 1; }
-.title-logo-text {
-  font-weight: 900; font-style: italic; font-size: clamp(72px, 8.5vw, 240px); line-height: 1; letter-spacing: -1px; color: #fff;
-  text-shadow: 0 0 18px var(--b2-cyan), 0 4px 0 #0b3d6b;
-}
-.title-logo-text span { color: #ff9a2e; text-shadow: 0 0 18px var(--b2-orange), 0 4px 0 #8a3a05; }
 .title-logo { margin-bottom: var(--b2-sp-4); }
+.title-logo-img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 18px rgba(0, 217, 255, .35)); user-select: none; }
 .title-logo .b2-label { margin-top: var(--b2-sp-2); }
 .title-hero { flex: 1 1 0; display: flex; justify-content: center; align-items: center; min-width: 0; filter: drop-shadow(0 0 18px rgba(0, 217, 255, .4)); }
 .title-hero canvas, .title-hero img { width: clamp(220px, 30vw, 760px); height: auto; aspect-ratio: 1; image-rendering: pixelated; }

@@ -30,7 +30,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
   const screen = h('div', { class: 'b2-screen title-screen' },
     h('div', { class: 'title-menu' },
       h('div', { class: 'title-logo' },
-        h('div', { class: 'title-logo-text' }, 'Digi', h('span', {}, 'Bonk')),
+        h('img', { class: 'title-logo-img', src: './ui/logo.webp', alt: 'DigiBonk', draggable: 'false' }),
         h('div', { class: 'b2-label' }, 'Survivor de Digimon · fan-game não oficial')),
       els[0], h('div', { class: 'title-grid' }, ...els.slice(1))),
     h('div', { class: 'title-hero' }, portrait('wargreymon', { size: 256 })),
