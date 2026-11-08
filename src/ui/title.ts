@@ -3,7 +3,6 @@ import type { SaveData } from '../core/save';
 import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
-import { PARTNERS } from '../data/partners';
 
 export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void }
 
@@ -11,7 +10,7 @@ export interface TitleNav { play(): void; partners(): void; records(): void; set
 export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: TitleNav): Modal {
   const rec = save.records;
   const unlocked = app.partners().filter(p => !p.locked).length;
-  const total = app.partners().length || PARTNERS.length;
+  const total = app.partners().length;
   const items: { icon: string; label: string; sub: string; key: string; go: () => void }[] = [
     { icon: '▶', label: 'Jogar', sub: '', key: '1', go: nav.play },
     { icon: '🥚', label: 'Parceiros', sub: `${unlocked} / ${total} liberados`, key: '', go: nav.partners },
@@ -39,15 +38,17 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
       row('Vitórias', rec.wins), row('Partidas', rec.runs), row('Parceiros', `${unlocked} / ${total}`)),
     h('div', { class: 'b2-label title-legal' }, 'Digimon © Akiyoshi Hongo / Toei / Bandai · não afiliado'));
   root.append(screen);
-  function select(i: number) { sel = (i + items.length) % items.length; els.forEach((e, j) => e.classList.toggle('b2-sel', j === sel)); }
+  function select(i: number) { sel = i; els.forEach((e, j) => e.classList.toggle('b2-sel', j === sel)); }
   select(0);
   const m: Modal = {
     get closed() { return closed; },
     close() { if (!closed) { closed = true; screen.remove(); } },
     handle(input) {
       if (closed) return;
-      if (input.pressed('up') || input.pressed('left')) select(sel - 1);
-      if (input.pressed('down') || input.pressed('right')) select(sel + 1);
+      if (input.pressed('up')) select(sel >= 3 ? sel - 2 : 0);
+      else if (input.pressed('down')) select(sel === 0 ? 1 : sel <= 2 ? sel + 2 : sel);
+      else if (input.pressed('left') && sel > 0 && (sel - 1) % 2 === 1) select(sel - 1);
+      else if (input.pressed('right') && sel > 0 && (sel - 1) % 2 === 0) select(sel + 1);
       if (input.pressed('opt1')) return items[0].go();
       if (input.pressed('confirm')) items[sel].go();
     },

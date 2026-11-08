@@ -1,29 +1,34 @@
 import type { App } from '../app';
 import type { SaveData } from '../core/save';
 import { partnerRecord } from '../core/save';
+import { CARDS } from '../data/cards';
 import { FORMS } from '../data/forms';
+import { ITEMS } from '../data/items';
 import { MOVES } from '../data/moves';
-import { SEASON_NAMES } from '../data/partners';
+import { PARTNERS, SEASON_NAMES } from '../data/partners';
 import type { EvoReq, Stats } from '../data/types';
-import { h, STAGE_NAMES, STAT_NAMES } from './dom';
+import { h, STAGE_NAMES, STAT_NAMES, STAT_SHORT } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 import { btn, chip, panel } from './theme';
 
 const COLS = 4;
 const STAT_KEYS = ['hp', 'atk', 'def', 'spd', 'brain'] as const;
-const STAT_SHORT: Record<string, string> = { hp: 'Vida', atk: 'Atq', def: 'Def', spd: 'Vel', brain: 'Cér' };
 /** teto de cada barra: maior status base entre todas as formas Child (barra nunca passa de 100%) */
 const STAT_MAX = Object.fromEntries(STAT_KEYS.map(k => [k,
   Math.max(1, ...Object.values(FORMS).filter(f => f.stage === 'child').map(f => f.baseStats[k]))])) as Record<keyof Stats, number>;
 
 /** "Nv 8 e Atq 14" */
-function reqText(req: EvoReq): string {
+export function reqText(req: EvoReq): string {
   const parts = [`Nv ${req.minLevel}`];
-  for (const [k, v] of Object.entries(req.minStats ?? {})) parts.push(`${STAT_SHORT[k] ?? k} ${v}`);
+  for (const [k, v] of Object.entries(req.minStats ?? {})) parts.push(`${STAT_SHORT[k as keyof typeof STAT_SHORT] ?? k} ${v}`);
   if (req.minPhase) parts.push(`fase ${req.minPhase}`);
   if (req.minKills) parts.push(`${req.minKills} abates`);
-  if (req.items?.length) parts.push(req.items.length > 1 ? 'itens' : 'item');
+  for (const id of req.items ?? []) parts.push(ITEMS[id]?.name ?? CARDS[id]?.name ?? id);
+  for (const id of req.unlocked ?? []) {
+    const cf = PARTNERS.find(x => x.id === id)?.childForm;
+    parts.push(`com ${cf ? FORMS[cf].name : id} liberado`);
+  }
   return parts.join(' e ');
 }
 
@@ -39,7 +44,7 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
   const cells = ps.map((p, i) => {
     const name = p.locked ? '???' : FORMS[p.childForm].name;
     return h('button', { type: 'button', class: 'b2-panel ps-cell' + (p.locked ? ' locked' : ''), 'data-partner': p.id, title: name,
-      onclick: () => { select(i); confirm(); }, onmouseenter: () => select(i) },
+      onclick: () => { if (opts.mode === 'pick' && sel !== i) select(i); else { select(i); confirm(); } }, onmouseenter: () => select(i) },
       portrait(p.childForm, { size: 64, silhouette: p.locked }), h('span', { class: 'ps-name' }, name));
   });
   const detail = h('div', { class: 'b2-panel tick ps-detail' });

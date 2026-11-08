@@ -19,7 +19,7 @@ import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showEvolve } from './ui/evolve';
 import { mountHud } from './ui/hud';
 import { showLevelUp } from './ui/levelup';
-import { showCredits, showPause, showSettings } from './ui/menus';
+import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
 import { showRecords } from './ui/records';
 import { showPartnerSelect } from './ui/partnerSelect';
@@ -43,7 +43,7 @@ setPortraitSource(sprites);
 if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: renderer });
 const boards = new Billboards(scene, camera, sprites);
 const vfx = new Vfx(scene);
-const hud = mountHud(ui);
+const hud = mountHud(ui, () => input.codesFor('evolve').map(prettyCode).join(' / ') || '—');
 mountToasts(hud.toastHost); // coluna da direita do HUD, abaixo do painel de abates
 
 let run: RunState | null = null;

@@ -33,14 +33,6 @@ test('confirm on the initial item plays; opt1 plays too', () => {
   const b = setup(); b.m.handle(press('opt1')); expect(b.calls).toEqual(['play']);
 });
 
-test('down/right walk the items, up/left go back', () => {
-  const order = ['play', 'partners', 'records', 'settings', 'credits'];
-  const { m, calls } = setup();
-  for (let i = 0; i < order.length; i++) { m.handle(press('confirm')); m.handle(press(i % 2 ? 'right' : 'down')); }
-  expect(calls).toEqual(order);
-  m.handle(press('up')); m.handle(press('confirm'));
-  expect(calls[calls.length - 1]).toBe('credits');
-});
 
 test('title registers as the active modal and closes cleanly', () => {
   const { m, root } = setup();
@@ -67,4 +59,20 @@ test('records: pause (Esc) and confirm also go back', () => {
     let back = 0; const m = showRecords(document.createElement('div'), defaultSave(), () => { back++; });
     m.handle(press(a)); expect(back).toBe(1);
   }
+});
+
+test('navegação espacial: Jogar em cima; grade 2x2 Parceiros|Recordes / Controles|Créditos', () => {
+  const sels = (root: HTMLElement) => [...root.querySelectorAll('.b2-sel')].map(e => e.textContent!.replace(/[^A-Za-zéÉ]/g, '').slice(0, 6));
+  const { m, root } = setup();
+  const at = () => root.querySelector('.b2-sel')!.textContent!;
+  expect(at()).toContain('Jogar');
+  m.handle(press('down')); expect(at()).toContain('Parceiros');
+  m.handle(press('right')); expect(at()).toContain('Recordes');
+  m.handle(press('down')); expect(at()).toContain('Créditos');
+  m.handle(press('left')); expect(at()).toContain('Controles');
+  m.handle(press('up')); expect(at()).toContain('Parceiros');
+  m.handle(press('up')); expect(at()).toContain('Jogar');
+  m.handle(press('right')); expect(at()).toContain('Jogar');
+  m.handle(press('down')); m.handle(press('right')); m.handle(press('up')); expect(at()).toContain('Jogar');
+  expect(sels(root).length).toBe(1);
 });

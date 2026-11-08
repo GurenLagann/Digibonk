@@ -76,7 +76,7 @@ function offerCard(run: RunState, o: LevelOffer): TamerCardSpec {
     case 'upgrade': {
       const s = p.slots[o.slot]!; const m = MOVES[s.moveId];
       return {
-        kind: 'upgrade', name: m.name, level: `Nv ${s.level} → ${s.level + 1}`, art: { formId: p.formId },
+        kind: 'upgrade', name: m.name, level: `Nv ${s.level} → ${s.level + 1}`, art: o.slot === 0 ? { formId: p.formId } : { glyph: ELEM_GLYPHS[m.element] },
         typeLine: `Melhorar · ${o.slot === 0 ? 'Assinatura' : ELEM_NAMES[m.element]}`, text: '',
         gains: moveGains(p, s, { ...s, level: s.level + 1 }),
         pips: { filled: s.level, next: true, max: m.maxLevel },

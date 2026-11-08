@@ -21,3 +21,8 @@ test('overtime: full bar and extra time with a plus sign', () => {
 test('pct is the whole percentage of the elapsed phase time', () => {
   expect(timerView(ph(372)).pct).toBe(62);
 });
+
+test('after overtime, a fresh phase state (t=0, overtime=false) is back to normal', () => {
+  expect(timerView(ph(683, true)).mode).toBe('overtime');
+  expect(timerView(ph(0, false)).mode).toBe('normal');
+});

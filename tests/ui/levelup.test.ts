@@ -84,3 +84,15 @@ test('clicking a card picks it too', () => {
   vi.advanceTimersByTime(SLASH_MS);
   expect(r.prog.slots[1]?.moveId).toBe('spitfire_blast');
 });
+
+test('melhorar: só o golpe assinatura (slot 0) usa o sprite; os outros mostram o glifo do elemento', () => {
+  const r = levelUpRun();
+  r.prog.slots[1] = { moveId: 'spitfire_blast', level: 1, fromCard: false };
+  r.offers = [{ kind: 'upgrade', slot: 0 }, { kind: 'upgrade', slot: 1 }, { kind: 'card', cardId: 'card_hyper_speed' }];
+  const root = document.createElement('div');
+  showLevelUp(root, r);
+  const cards = [...root.querySelectorAll('.tc')];
+  expect(cards[0].querySelector('canvas')).toBeTruthy();
+  expect(cards[1].querySelector('canvas')).toBeNull();
+  expect(cards[1].querySelector('.tc-glyph')).toBeTruthy();
+});

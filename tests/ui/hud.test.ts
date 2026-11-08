@@ -130,6 +130,15 @@ test('no floating evolution notice anymore', () => {
 test('evoMissingText formats every kind', () => {
   expect(evoMissingText([{ kind: 'level', need: 8 }, { kind: 'stat', stat: 'atk', need: 14 }])).toBe('Nv 8 · Atq 14');
   expect(evoMissingText([{ kind: 'stat', stat: 'hp', need: 1 }, { kind: 'stat', stat: 'def', need: 2 }, { kind: 'stat', stat: 'spd', need: 3 }, { kind: 'stat', stat: 'brain', need: 4 }]))
-    .toBe('HP 1 · Def 2 · Vel 3 · Int 4');
+    .toBe('Vida 1 · Def 2 · Vel 3 · Cér 4');
   expect(evoMissingText([{ kind: 'phase', need: 3 }, { kind: 'kills', need: 500 }])).toBe('Fase 3 · 500 abates');
+});
+
+test('evolve hint shows the bound key label from the getter', () => {
+  const run = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: fakeStorage({}) });
+  run.prog.level = 9; run.prog.bonus.atk = 6;
+  const root = document.createElement('div');
+  const hud = mountHud(root, () => 'Q');
+  hud.update(run);
+  expect(root.querySelector('.hud-evotext')!.textContent).toBe('Digievoluir [Q]');
 });

@@ -4,12 +4,11 @@ import { FORMS } from '../data/forms';
 import { ITEMS } from '../data/items';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
-import type { StatKey } from '../data/types';
 import { availableEvolutions, nextEvolutionHint, type EvoMissing } from '../sim/evolution';
 import { xpToNext } from '../sim/progression';
 import type { RunState } from '../sim/run';
 import { moveCooldown } from '../sim/stats';
-import { h } from './dom';
+import { h, STAT_SHORT } from './dom';
 import { timerView, type TimerMode } from './hudTimer';
 import { portrait } from './portrait';
 import { chip } from './theme';
@@ -18,7 +17,6 @@ function setText(el: HTMLElement, t: string) { if (el.textContent !== t) el.text
 function setW(el: HTMLElement, frac: number) { const w = `${Math.max(0, Math.min(1, frac)) * 100}%`; if (el.style.width !== w) el.style.width = w; }
 function setH(el: HTMLElement, frac: number) { const v = `${Math.max(0, Math.min(1, frac)) * 100}%`; if (el.style.height !== v) el.style.height = v; }
 
-const STAT_SHORT: Record<StatKey, string> = { hp: 'HP', atk: 'Atq', def: 'Def', spd: 'Vel', brain: 'Int' };
 
 /** "Nv 8 · Atq 14": só o que ainda falta para a próxima evolução */
 export function evoMissingText(missing: EvoMissing[]): string {
@@ -38,7 +36,7 @@ function fmtInt(n: number): string { return String(Math.floor(n)).replace(/\B(?=
 
 const MODES: TimerMode[] = ['normal', 'warning', 'overtime'];
 
-export function mountHud(root: HTMLElement) {
+export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E / Y') {
   // ── cartão do parceiro (canto superior esquerdo)
   const port = h('div', { class: 'hud-port' });
   const name = h('b', { class: 'hud-name' }), lv = h('span', { class: 'b2-label hud-lv' });
@@ -149,7 +147,7 @@ export function mountHud(root: HTMLElement) {
         evoPort.classList.toggle('hidden', !to);
       }
       setText(evoName, hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—' : FORMS[to]?.name ?? to);
-      setText(evoText, ready ? 'Digievoluir [E / Y]' : hint.kind === 'next' ? evoMissingText(hint.missing) : '');
+      setText(evoText, ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : '');
 
       // golpes e cartas
       p.slots.forEach((s, i) => {

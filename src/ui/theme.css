@@ -187,7 +187,7 @@
 .rec-head .b2-title { font-size: var(--b2-fs-2xl); }
 .rec-totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--b2-sp-3); }
 .rec-big { font-size: var(--b2-fs-2xl); }
-.rec-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--b2-sp-2); overflow-y: auto; align-content: start; }
+.rec-list { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--b2-sp-2); overflow-y: auto; align-content: start; }
 .rec-row { display: flex; align-items: center; gap: var(--b2-sp-3); padding: var(--b2-sp-2) var(--b2-sp-3); }
 .rec-name { flex: 1; font-size: var(--b2-fs-lg); }
 .rec-stat { display: flex; flex-direction: column; align-items: center; min-width: 56px; }

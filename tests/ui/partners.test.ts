@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { showPartnerSelect } from '../../src/ui/partnerSelect';
+import { reqText, showPartnerSelect } from '../../src/ui/partnerSelect';
 import { defaultSave } from '../../src/core/save';
 import { PARTNERS } from '../../src/data/partners';
 import { FORMS } from '../../src/data/forms';
@@ -85,4 +85,23 @@ test('mode view: sem botão Escolher e confirm não escolhe', () => {
   v.m.handle(press('confirm'));
   expect(v.picked).toEqual([]);
   expect(setup('pick').root.textContent).toContain('Escolher parceiro!');
+});
+
+test('pick: clique numa célula não selecionada só seleciona; clicar de novo confirma', () => {
+  const ids = ordered.map(p => p.id);
+  const { root, picked } = setup('pick', ids);
+  const cells = root.querySelectorAll<HTMLElement>('.ps-cell');
+  cells[2].click();
+  expect(picked).toEqual([]); expect(cells[2].classList.contains('b2-sel')).toBe(true);
+  cells[2].click(); expect(picked).toEqual([ids[2]]);
+});
+
+test('requisitos nomeiam itens e parceiros liberados', () => {
+  const { root } = setup('pick', ordered.map(p => p.id));
+  const vee = root.querySelector<HTMLElement>('.ps-cell[data-partner="' + ordered.find(p => p.childForm === 'veemon')!.id + '"]')!;
+  vee.dispatchEvent(new Event('mouseenter'));
+  const d = root.querySelector('.ps-detail')!.textContent!;
+  expect(d).toContain('Flamedramon · Nv 5 e Digiovo da Coragem');
+  expect(d).toContain('Raidramon · Nv 5 e Digiovo da Amizade');
+  expect(reqText({ minLevel: 42, items: ['fusion_garurumon'], unlocked: ['gabumon'] })).toContain('com Gabumon liberado');
 });

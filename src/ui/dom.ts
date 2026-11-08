@@ -12,6 +12,8 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<s
   return el;
 }
 export const STAT_NAMES = { hp: 'Vida', atk: 'Ataque', def: 'Defesa', spd: 'Velocidade', brain: 'Cérebro' } as const;
+/** nomes curtos de status (HUD, telas compactas); os longos ficam em STAT_NAMES */
+export const STAT_SHORT = { hp: 'Vida', atk: 'Atq', def: 'Def', spd: 'Vel', brain: 'Cér' } as const;
 export const PATTERN_NAMES = { projectile: 'projétil', area: 'área', cone: 'golpe em cone', aura: 'aura', orbital: 'orbital', beam: 'raio' } as const;
 export const STAGE_NAMES = { child: 'Child', adult: 'Adult', perfect: 'Perfect', ultimate: 'Ultimate' } as const;
 export function fmtTime(t: number) { const s = Math.max(0, Math.floor(t)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }

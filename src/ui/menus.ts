@@ -1,4 +1,4 @@
-import { ACTIONS, DEFAULT_BINDINGS, type Action, type Input } from '../core/input';
+import type { Action, Input } from '../core/input';
 import { storeSave, type SaveData } from '../core/save';
 import type { App } from '../app';
 import { showChoice, type Modal } from './modal';
@@ -7,7 +7,7 @@ const ACTION_NAMES: Record<Action, string> = {
   up: 'Mover p/ cima', down: 'Mover p/ baixo', left: 'Mover p/ esquerda', right: 'Mover p/ direita',
   confirm: 'Confirmar', cancel: 'Cancelar / Esperar', evolve: 'Digievoluir', pause: 'Pausar', opt1: 'Opção 1', opt2: 'Opção 2', opt3: 'Opção 3',
 };
-const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^pad:b(\d+)$/, 'Controle botão $1').replace(/^Arrow/, 'Seta ');
+export const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^pad:b(\d+)$/, 'Controle botão $1').replace(/^Arrow/, 'Seta ');
 
 export function showPause(root: HTMLElement, onResume: () => void, onSettings: () => void, onQuit: () => void) {
   return showChoice(root, {
@@ -39,7 +39,6 @@ export function showSettings(root: HTMLElement, input: Input, save: SaveData, st
   });
   return m;
 }
-void ACTIONS; void DEFAULT_BINDINGS;
 
 export const CREDITS_TEXT = [
   'DigiBonk é um projeto de fã, gratuito, sem fins lucrativos e sem vínculo com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.',

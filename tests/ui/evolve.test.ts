@@ -40,7 +40,7 @@ test('mostra forma atual, cartão Greymon com selos, status antes → depois e o
     const rnd = k === 'hp' ? Math.ceil : Math.round; // HP como no HUD
     expect(rows[i]).toContain(`${rnd(before[k])} → ${rnd(after[k])}`);
   });
-  ['HP', 'Atq', 'Def', 'Vel'].forEach((lbl, i) => expect(rows[i].startsWith(lbl)).toBe(true));
+  ['Vida', 'Atq', 'Def', 'Vel'].forEach((lbl, i) => expect(rows[i].startsWith(lbl)).toBe(true));
   expect(card.textContent).toContain('Mega Flame');
   expect(card.textContent).toContain('substitui Baby Flame mantendo o nível');
   expect(root.textContent).toContain('Agora não');
@@ -90,4 +90,21 @@ test('com 2 caminhos (Veemon), setas trocam a opção e confirm evolui para a es
   expect(name()).toContain(FORMS.veedramon.name);
   m.handle(press('confirm'));
   expect(r.prog.formId).toBe('veedramon');
+});
+
+test('opt1/opt2/opt3 escolhem o caminho e evoluem na hora; opção inexistente é ignorada; abas mostram 1/2/3', () => {
+  const mk = () => {
+    const r = createRun({ partnerId: 'veemon', seed: 1, save: defaultSave(), storage: null });
+    r.prog.level = 9; r.prog.bonus.atk = 6; r.prog.bonus.def = 6; r.prog.bonus.spd = 6;
+    return r;
+  };
+  const r = mk(); const root = document.createElement('div');
+  const m = showEvolve(root, r, () => {});
+  expect([...root.querySelectorAll('.evo-tab .b2-key')].map(e => e.textContent)).toEqual(['1', '2']);
+  m.handle(press('opt2'));
+  expect(r.prog.formId).toBe('veedramon'); expect(m.closed).toBe(true);
+  activeModal()?.close();
+  const r3 = mk(); const m3 = showEvolve(document.createElement('div'), r3, () => {});
+  m3.handle(press('opt3')); expect(r3.prog.formId).toBe('veemon'); expect(m3.closed).toBe(false);
+  m3.handle(press('opt1')); expect(r3.prog.formId).toBe('exveemon');
 });

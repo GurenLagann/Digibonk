@@ -4,14 +4,14 @@ import { MOVES } from '../data/moves';
 import { availableEvolutions } from '../sim/evolution';
 import { doEvolve, type RunState } from '../sim/run';
 import { effectiveStats } from '../sim/stats';
-import { h, STAGE_NAMES } from './dom';
+import { h, STAGE_NAMES, STAT_SHORT } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 import { chip } from './theme';
 
 export function canEvolve(run: RunState) { return availableEvolutions(run.prog, { save: run.save, phase: run.phase.phase }).length > 0; }
 
-const STAT_ROWS = [['hp', 'HP'], ['atk', 'Atq'], ['def', 'Def'], ['spd', 'Vel']] as const;
+const STAT_ROWS = (['hp', 'atk', 'def', 'spd'] as const).map(k => [k, STAT_SHORT[k]] as const);
 
 /** cartão grande de uma opção: retrato, nome, selos, status no nível atual "antes → depois" e o golpe assinatura novo */
 function optionCard(run: RunState, formId: string): HTMLElement {
@@ -55,7 +55,7 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
   let sel = 0, closed = false;
 
   const slot = h('div', { class: 'evo-opt' });
-  const tabs = forms.length > 1 ? forms.map((id, i) => h('button', { type: 'button', class: 'evo-tab', onclick: () => select(i) }, FORMS[id].name)) : [];
+  const tabs = forms.length > 1 ? forms.map((id, i) => h('button', { type: 'button', class: 'evo-tab', onclick: () => select(i) }, h('span', { class: 'b2-key' }, String(i + 1)), FORMS[id].name)) : [];
   const screen = h('div', { class: 'b2-screen evo-screen' },
     h('div', { class: 'evo-head' },
       h('h1', { class: 'b2-title evo-title' }, 'Digievolução!'),
@@ -101,6 +101,9 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
       if (input.pressed('left') || input.pressed('up')) select(sel - 1);
       if (input.pressed('right') || input.pressed('down')) select(sel + 1);
       if (input.pressed('cancel') || input.pressed('pause')) return refuse();
+      for (const [a, i] of [['opt1', 0], ['opt2', 1], ['opt3', 2]] as const) {
+        if (input.pressed(a) && i < forms.length) { select(i); return accept(); }
+      }
       if (input.pressed('confirm')) accept();
     },
   };
