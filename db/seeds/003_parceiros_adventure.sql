@@ -1,7 +1,7 @@
 -- Parceiros desbloqueáveis (adventure). Gerado uma vez; daqui em diante, editar este arquivo.
 INSERT INTO moves (id, name, element, pattern, damage, cooldown, reach, radius, count, pierce, speed, duration, max_level, dmg_per_level, cd_per_level, color, ord) VALUES
   ('little_horn', 'Little Horn', 'neutral', 'cone', 8, 0.8, 3, 3, NULL, NULL, NULL, NULL, 5, 1.25, 0.92, 15922943, 61),
-  ('frost_breath', 'Blue Blaster', 'ice', 'area', 7, 2.4, 10, 2.5, NULL, NULL, NULL, 0.4, 5, 1.25, 0.92, 3836927, 62),
+  ('frost_breath', 'Petit Fire Hook', 'ice', 'area', 7, 2.4, 10, 2.5, NULL, NULL, NULL, 0.4, 5, 1.25, 0.92, 3836927, 62),
   ('gabu_tackle', 'Gabu Tackle', 'neutral', 'projectile', 6, 1.8, 12, 0.4, 3, NULL, 13, NULL, 5, 1.25, 0.92, 15922943, 63),
   ('fox_fire', 'Fox Fire', 'ice', 'projectile', 16, 1.1, 13, 0.7, NULL, 1, 15, NULL, 5, 1.25, 0.92, 3836927, 64),
   ('slamming_attack', 'Slamming Attack', 'neutral', 'cone', 14, 0.9, 3.5, 3.5, NULL, NULL, NULL, NULL, 5, 1.25, 0.92, 15922943, 65),
@@ -151,6 +151,6 @@ INSERT INTO evolutions (id, from_form, to_form, min_level, min_hp, min_atk, min_
   ('tentomon->kabuterimon', 'tentomon', 'kabuterimon', 8, NULL, NULL, 12, NULL, NULL, NULL, NULL, 0),
   ('kabuterimon->megakabuterimon', 'kabuterimon', 'megakabuterimon', 20, NULL, 24, 26, NULL, NULL, NULL, NULL, 0),
   ('megakabuterimon->herculeskabuterimon', 'megakabuterimon', 'herculeskabuterimon', 35, NULL, NULL, 46, NULL, NULL, 4, NULL, 0),
-  ('salamon->gatomon', 'salamon', 'gatomon', 8, NULL, NULL, NULL, 12, NULL, NULL, NULL, 0),
+  ('salamon->gatomon', 'salamon', 'gatomon', 8, NULL, NULL, NULL, 15, NULL, NULL, NULL, 0),
   ('gatomon->angewomon', 'gatomon', 'angewomon', 20, NULL, NULL, NULL, 24, 20, NULL, NULL, 0),
   ('angewomon->ophanimon', 'angewomon', 'ophanimon', 35, NULL, NULL, NULL, NULL, 36, 4, NULL, 0);

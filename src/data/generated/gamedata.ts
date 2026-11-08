@@ -1059,7 +1059,7 @@ export const MOVES: Record<string, MoveDef> = {
  },
  "frost_breath": {
   "id": "frost_breath",
-  "name": "Blue Blaster",
+  "name": "Petit Fire Hook",
   "element": "ice",
   "pattern": "area",
   "damage": 7,
@@ -2477,23 +2477,6 @@ export const MOVES: Record<string, MoveDef> = {
   },
   "color": 15922943
  },
- "leaf_storm": {
-  "id": "leaf_storm",
-  "name": "Leaf Storm",
-  "element": "wind",
-  "pattern": "area",
-  "damage": 7,
-  "cooldown": 2.4,
-  "range": 10,
-  "radius": 2.5,
-  "duration": 0.4,
-  "maxLevel": 5,
-  "perLevel": {
-   "damage": 1.25,
-   "cooldown": 0.92
-  },
-  "color": 10414335
- },
  "fox_tail_inferno": {
   "id": "fox_tail_inferno",
   "name": "Fox Tail Inferno",
@@ -3706,7 +3689,7 @@ export const FORMS: Record<string, FormDef> = {
     "req": {
      "minLevel": 8,
      "minStats": {
-      "spd": 12
+      "spd": 15
      }
     }
    }
@@ -4066,7 +4049,7 @@ export const FORMS: Record<string, FormDef> = {
     "req": {
      "minLevel": 8,
      "minStats": {
-      "spd": 12
+      "spd": 15
      }
     }
    }
@@ -4189,8 +4172,7 @@ export const FORMS: Record<string, FormDef> = {
   "signature": "diamond_storm",
   "kit": [
    "power_paw",
-   "fox_kick",
-   "leaf_storm"
+   "fox_kick"
   ],
   "evolutions": [
    {
