@@ -37,7 +37,7 @@ export function showRecords(root: HTMLElement, save: SaveData, back: () => void)
     close() { if (!closed) { closed = true; screen.remove(); } },
     handle(input) {
       if (closed) return;
-      if (input.pressed('cancel')) { m.close(); back(); }
+      if (input.pressed('cancel') || input.pressed('pause') || input.pressed('confirm')) { m.close(); back(); }
     },
   };
   setActiveModal(m);

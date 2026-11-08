@@ -29,11 +29,12 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
   });
   const row = (label: string, v: string | number) => h('div', { class: 'title-stat' }, h('span', {}, label), h('b', {}, String(v)));
   const screen = h('div', { class: 'b2-screen title-screen' },
-    h('div', { class: 'title-logo' },
-      h('div', { class: 'title-logo-text' }, 'Digi', h('span', {}, 'Bonk')),
-      h('div', { class: 'b2-label' }, 'Survivor de Digimon · fan-game não oficial')),
-    h('div', { class: 'title-hero' }, portrait('wargreymon', { size: 260 })),
-    h('div', { class: 'title-menu' }, els[0], h('div', { class: 'title-grid' }, ...els.slice(1))),
+    h('div', { class: 'title-menu' },
+      h('div', { class: 'title-logo' },
+        h('div', { class: 'title-logo-text' }, 'Digi', h('span', {}, 'Bonk')),
+        h('div', { class: 'b2-label' }, 'Survivor de Digimon · fan-game não oficial')),
+      els[0], h('div', { class: 'title-grid' }, ...els.slice(1))),
+    h('div', { class: 'title-hero' }, portrait('wargreymon', { size: 256 })),
     h('div', { class: 'b2-panel tick title-progress' }, h('div', { class: 'b2-label' }, 'Seu progresso'),
       row('Vitórias', rec.wins), row('Partidas', rec.runs), row('Parceiros', `${unlocked} / ${total}`)),
     h('div', { class: 'b2-label title-legal' }, 'Digimon © Akiyoshi Hongo / Toei / Bandai · não afiliado'));

@@ -61,3 +61,10 @@ test('records lists only unlocked partners with their numbers; cancel goes back'
   expect(activeModal()).toBe(m);
   m.handle(press('cancel')); expect(back).toBe(1); expect(m.closed).toBe(true);
 });
+
+test('records: pause (Esc) and confirm also go back', () => {
+  for (const a of ['pause', 'confirm']) {
+    let back = 0; const m = showRecords(document.createElement('div'), defaultSave(), () => { back++; });
+    m.handle(press(a)); expect(back).toBe(1);
+  }
+});

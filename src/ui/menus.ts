@@ -15,7 +15,7 @@ const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').re
 
 export function showPartner(root: HTMLElement, app: App, save: SaveData, back: () => void) {
   const ps = app.partners();
-  return showChoice(root, {
+  const m = showChoice(root, {
     title: 'Escolha seu parceiro',
     options: ps.map(p => p.locked
       ? { title: '???', tag: 'Bloqueado', body: 'Encontre o ovo deste Digimon nas fases', onPick: () => { showPartner(root, app, save, back); } }
@@ -23,6 +23,10 @@ export function showPartner(root: HTMLElement, app: App, save: SaveData, back: (
       : { title: FORMS[p.childForm].name, tag: 'Child', body: `Golpe inicial: ${MOVES[FORMS[p.childForm].signature].name}`, onPick: () => { app.pickPartner(p.id); } }),
     extra: { title: 'Voltar', onPick: () => { app.go('title'); back(); } },
   });
+  // Esc é a ação `pause`: também volta (Ruling 2)
+  const base = m.handle.bind(m);
+  m.handle = input => base(input.pressed('pause') ? { pressed: (a: string) => a === 'cancel' } as never : input);
+  return m;
 }
 
 export function showPause(root: HTMLElement, onResume: () => void, onSettings: () => void, onQuit: () => void) {

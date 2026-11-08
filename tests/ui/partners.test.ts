@@ -26,3 +26,10 @@ test('partner select lists 5 partners, names them by their Child form, and reach
   m.handle(press('confirm'));
   expect(picked).toEqual(['gatomon']);
 });
+
+test('partner select: pause (Esc) goes back like cancel', () => {
+  const { app } = fakeApp([{ id: 'agumon', childForm: 'agumon', locked: false }]);
+  let back = 0;
+  const m = showPartner(document.createElement('div'), app as never, defaultSave(), () => { back++; });
+  m.handle(press('pause')); expect(back).toBe(1);
+});
