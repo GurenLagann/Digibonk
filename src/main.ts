@@ -19,8 +19,9 @@ import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showEvolve } from './ui/evolve';
 import { mountHud } from './ui/hud';
 import { showLevelUp } from './ui/levelup';
-import { showCredits, showPartner, showPause, showResults, showSettings } from './ui/menus';
+import { showCredits, showPause, showResults, showSettings } from './ui/menus';
 import { showRecords } from './ui/records';
+import { showPartnerSelect } from './ui/partnerSelect';
 import { showTitle } from './ui/title';
 import { activeModal } from './ui/modal';
 import { mountToasts, toast } from './ui/toast';
@@ -53,9 +54,8 @@ const app = createApp({ save, storage: null, startRun });
 const toTitle = () => {
   app.go('title'); hud.el.classList.add('hidden');
   const m = showTitle(ui, app, save, {
-    play: () => { m.close(); app.go('partner'); showPartner(ui, app, save, toTitle); },
-    // provisório: a tela de parceiros em modo consulta chega na Task 6
-    partners: () => { m.close(); app.go('partner'); showPartner(ui, app, save, toTitle); },
+    play: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'pick', back: toTitle }); },
+    partners: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'view', back: toTitle }); },
     records: () => { m.close(); app.go('records'); showRecords(ui, save, toTitle); },
     settings: () => { m.close(); app.go('settings'); openSettings(); },
     credits: () => { m.close(); app.go('credits'); showCredits(ui, toTitle); },
