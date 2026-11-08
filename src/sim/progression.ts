@@ -14,6 +14,8 @@ export interface PlayerProg {
   pathLevels: number[];
   /** nível de cada carta equipada (ausente = 1); sobe pegando cópias, até CARD_MAX_LEVEL */
   cardLevels: Record<string, number>;
+  /** vezes em que o HP caiu abaixo de NEAR_DEATH_PCT; só volta a contar depois de curar acima de NEAR_DEATH_REARM */
+  nearDeaths: number; nearDeathArmed: boolean;
 }
 export type LevelOffer =
   | { kind: 'learn'; moveId: string }
@@ -32,7 +34,17 @@ export function newPlayerProg(formId: string): PlayerProg {
     formId, level: 1, xp: 0, bonus: { hp: 0, atk: 0, def: 0, spd: 0, brain: 0 },
     slots, passives: Array.from({ length: T.PASSIVE_SLOTS }, () => null), items: [],
     pendingLevelUps: 0, kills: 0, path: [formId], pathLevels: [1], cardLevels: {},
+    nearDeaths: 0, nearDeathArmed: true,
   };
+}
+
+export const NEAR_DEATH_PCT = 0.25, NEAR_DEATH_REARM = 0.5;
+
+/** conta uma "quase-morte" quando o HP (vivo) cai abaixo de 25%; rearma ao voltar a 50%. Devolve true ao contar. */
+export function trackNearDeath(p: PlayerProg, hp: number, maxHp: number): boolean {
+  if (hp >= maxHp * NEAR_DEATH_REARM) { p.nearDeathArmed = true; return false; }
+  if (hp > 0 && hp < maxHp * NEAR_DEATH_PCT && p.nearDeathArmed) { p.nearDeathArmed = false; p.nearDeaths++; return true; }
+  return false;
 }
 
 export const xpToNext = (level: number) => Math.round(5 + level * 4 + level ** 1.6);

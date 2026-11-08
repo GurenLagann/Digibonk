@@ -1,4 +1,4 @@
-import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext } from '../../src/sim/progression';
+import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath } from '../../src/sim/progression';
 import { createRng } from '../../src/core/rng';
 import { maxedProg } from '../helpers';
 
@@ -28,4 +28,22 @@ test('upgrade and stat offers apply', () => {
   const p = newPlayerProg('agumon');
   applyOffer(p, { kind: 'upgrade', slot: 0 }); expect(p.slots[0]!.level).toBe(2);
   applyOffer(p, { kind: 'stat', stat: 'atk', amount: 3 }); expect(p.bonus.atk).toBe(3);
+});
+
+describe('trackNearDeath', () => {
+  test('counts once per drop below 25% and rearms at 50%', () => {
+    const p = newPlayerProg('agumon');
+    expect(trackNearDeath(p, 80, 100)).toBe(false);
+    expect(trackNearDeath(p, 20, 100)).toBe(true);
+    expect(trackNearDeath(p, 10, 100)).toBe(false); // ainda na mesma queda
+    expect(trackNearDeath(p, 40, 100)).toBe(false); // curou, mas não o bastante para rearmar
+    expect(trackNearDeath(p, 20, 100)).toBe(false);
+    trackNearDeath(p, 50, 100);
+    expect(trackNearDeath(p, 24, 100)).toBe(true);
+    expect(p.nearDeaths).toBe(2);
+  });
+  test('death does not count', () => {
+    const p = newPlayerProg('agumon');
+    expect(trackNearDeath(p, 0, 100)).toBe(false); expect(p.nearDeaths).toBe(0);
+  });
 });

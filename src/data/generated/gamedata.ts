@@ -2938,7 +2938,7 @@ export const FORMS: Record<string, FormDef> = {
      "minStats": {
       "atk": 38
      },
-     "minKills": 800
+     "minNearDeaths": 3
     }
    }
   ],
@@ -3416,6 +3416,16 @@ export const FORMS: Record<string, FormDef> = {
       "brain": 18
      }
     }
+   },
+   {
+    "to": "blackwargrowlmon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 34
+     },
+     "minNearDeaths": 3
+    }
    }
   ],
   "size": 1.5,
@@ -3459,7 +3469,7 @@ export const FORMS: Record<string, FormDef> = {
      "minStats": {
       "atk": 60
      },
-     "minKills": 3000
+     "minNearDeaths": 12
     }
    }
   ],
@@ -4566,7 +4576,7 @@ export const FORMS: Record<string, FormDef> = {
      "minStats": {
       "atk": 62
      },
-     "minKills": 2500
+     "minNearDeaths": 8
     }
    }
   ],
@@ -4622,6 +4632,42 @@ export const FORMS: Record<string, FormDef> = {
   "evolutions": [],
   "size": 2.4,
   "color": 9116186
+ },
+ "blackwargrowlmon": {
+  "id": "blackwargrowlmon",
+  "name": "BlackWarGrowlmon",
+  "stage": "perfect",
+  "line": "guilmon",
+  "attribute": "virus",
+  "element": "dark",
+  "baseStats": {
+   "hp": 260,
+   "atk": 40,
+   "def": 20,
+   "spd": 22,
+   "brain": 10
+  },
+  "growthRate": 0.005,
+  "signature": "atomic_blaster",
+  "kit": [
+   "pyro_blaster",
+   "radiation_blade",
+   "touch_of_evil"
+  ],
+  "evolutions": [
+   {
+    "to": "megidramon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "atk": 60
+     },
+     "minNearDeaths": 8
+    }
+   }
+  ],
+  "size": 2.2,
+  "color": 15231626
  }
 };
 export const CARDS: Record<string, CardDef> = {

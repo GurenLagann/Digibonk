@@ -35,23 +35,30 @@ test('no evolution depends on the run phase', () => {
   expect(availableEvolutions(p, ctx({ phase: 1 }))).toContain('wargreymon');
 });
 describe('dark branch', () => {
-  test('greymon -> skullgreymon needs high atk and kills, alongside metalgreymon', () => {
+  test('greymon -> skullgreymon needs high atk and near-deaths, alongside metalgreymon', () => {
     const p = progAt('greymon', 20); p.bonus.atk = 40; p.bonus.def = 20;
     expect(availableEvolutions(p, ctx())).toEqual(['metalgreymon']);
-    p.kills = 800; expect(availableEvolutions(p, ctx()).sort()).toEqual(['metalgreymon', 'skullgreymon']);
+    p.nearDeaths = 3; expect(availableEvolutions(p, ctx()).sort()).toEqual(['metalgreymon', 'skullgreymon']);
     p.bonus.def = -20; expect(availableEvolutions(p, ctx())).toEqual(['skullgreymon']);
   });
-  test('skullgreymon -> blackwargreymon', () => {
-    const p = progAt('skullgreymon', 35); p.bonus.atk = 40; p.kills = 2499;
-    expect(availableEvolutions(p, ctx())).toEqual([]);
-    p.kills = 2500; expect(availableEvolutions(p, ctx())).toEqual(['blackwargreymon']);
+  test('hint shows the missing near-deaths', () => {
+    const p = progAt('skullgreymon', 35); p.bonus.atk = 40; p.nearDeaths = 7;
+    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'next', to: 'blackwargreymon', missing: [{ kind: 'nearDeaths', need: 8 }] });
+    p.nearDeaths = 8; expect(availableEvolutions(p, ctx())).toEqual(['blackwargreymon']);
   });
-  test('wargrowlmon -> megidramon without the blue card', () => {
-    const p = progAt('wargrowlmon', 35); p.bonus.atk = 40; p.kills = 3000;
-    expect(availableEvolutions(p, ctx())).toEqual(['megidramon']);
+  test('growlmon -> blackwargrowlmon -> megidramon', () => {
+    const g = progAt('growlmon', 20); g.bonus.atk = 20; g.nearDeaths = 3;
+    expect(availableEvolutions(g, ctx())).toContain('blackwargrowlmon');
+    const b = progAt('blackwargrowlmon', 35); b.bonus.atk = 40; b.nearDeaths = 8;
+    expect(availableEvolutions(b, ctx())).toEqual(['megidramon']);
+  });
+  test('wargrowlmon -> megidramon without the blue card, but harder', () => {
+    const p = progAt('wargrowlmon', 35); p.bonus.atk = 40; p.nearDeaths = 11;
+    expect(availableEvolutions(p, ctx())).toEqual([]);
+    p.nearDeaths = 12; expect(availableEvolutions(p, ctx())).toEqual(['megidramon']);
   });
   test('evolving keeps the previous signature in the dark kits', () => {
-    const p = progAt('greymon', 20); p.bonus.atk = 40; p.kills = 800; p.slots[0]!.level = 3;
+    const p = progAt('greymon', 20); p.bonus.atk = 40; p.nearDeaths = 3; p.slots[0]!.level = 3;
     evolve(p, 'skullgreymon', ctx());
     expect(p.slots[0]).toMatchObject({ moveId: 'ground_zero', level: 3 });
     expect(p.slots.some((s, i) => i > 0 && s?.moveId === 'mega_flame')).toBe(true);

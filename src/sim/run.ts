@@ -13,7 +13,7 @@ import { availableEvolutions, evolve, EvoNotifier } from './evolution';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
-import { addXp, applyOffer, newPlayerProg, rollOffers, type LevelOffer, type PlayerProg } from './progression';
+import { addXp, applyOffer, newPlayerProg, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
 import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
@@ -243,6 +243,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   // phase
   if (r.debug.god) r.combat.hp = r.combat.maxHp;
   const playerDead = r.combat.hp <= 0;
+  trackNearDeath(r.prog, r.combat.hp, r.combat.maxHp);
   for (const pe of stepPhase(r.phase, { px: r.px, pz: r.pz, dt, killedMiniboss, collectedFragment, bossDead, playerDead })) {
     if (pe === 'missionProgress') ev.push({ type: 'missionProgress' });
     else if (pe === 'bossUnlocked') ev.push({ type: 'bossUnlocked' });

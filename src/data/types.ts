@@ -23,6 +23,8 @@ export interface EvoReq {
   unlocked?: string[];
   minPhase?: number;
   minKills?: number;
+  /** vezes na partida em que o HP caiu abaixo de 25% (ramo sombrio) */
+  minNearDeaths?: number;
 }
 export interface EvoEdge { to: string; req: EvoReq }
 export interface FormDef {

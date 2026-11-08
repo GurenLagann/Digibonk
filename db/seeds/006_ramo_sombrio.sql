@@ -1,14 +1,17 @@
 -- Ramo sombrio dos iniciais + evolução sem requisito de fase.
 --   Agumon:  Greymon -> SkullGreymon -> BlackWarGreymon (alternativa a MetalGreymon/WarGreymon)
---   Guilmon: WarGrowlmon -> Megidramon                    (alternativa a Gallantmon)
--- O ramo sombrio troca o equilíbrio de status do ramo "bom" por muito Ataque e muitos abates.
+--   Guilmon: Growlmon -> BlackWarGrowlmon -> Megidramon  (alternativa a WarGrowlmon/Gallantmon)
+--            WarGrowlmon -> Megidramon também existe, mais difícil
+-- Como no Digimon World: Next Order, o ramo sombrio vem do "descuido": muito Ataque e jogar no limite
+-- (vezes em que o HP caiu abaixo de 25%, coluna min_near_deaths da migration 003).
 
--- Evolução não depende mais da fase da partida (só nível, status, itens e abates).
+-- Evolução não depende mais da fase da partida (nível, status, itens, abates e quase-mortes).
 UPDATE evolutions SET min_phase = NULL WHERE min_phase IS NOT NULL;
 
 -- SkullGreymon já existia só como mini-chefe (o inimigo usa os números da tabela enemies);
 -- os status abaixo são os da forma jogável: canhão de vidro, muito Ataque e pouca Defesa.
 UPDATE digimon SET hp = 270, atk = 42, def = 18, spd = 20, brain = 8 WHERE id = 'skullgreymon';
+UPDATE digimon SET hp = 260, atk = 40, def = 20, spd = 22, brain = 10 WHERE id = 'blackwargrowlmon';
 
 INSERT INTO digimon (id, name, stage, attribute, element, hp, atk, def, spd, brain, growth_rate, size, color) VALUES
   ('blackwargreymon', 'BlackWarGreymon', 'ultimate', 'virus', 'dark', 370, 64, 36, 34, 22, 0.005, 2.2, 2829114),
@@ -29,7 +32,8 @@ INSERT INTO moves (id, name, element, pattern, damage, cooldown, reach, radius, 
 INSERT INTO forms (digimon_id, line, signature, ord) VALUES
   ('skullgreymon',    'agumon',  'ground_zero',      47),
   ('blackwargreymon', 'agumon',  'black_gaia_force', 48),
-  ('megidramon',      'guilmon', 'megiddo_flame',    49);
+  ('megidramon',      'guilmon', 'megiddo_flame',    49),
+  ('blackwargrowlmon', 'guilmon', 'atomic_blaster',  50);
 
 -- o kit inclui a assinatura da forma anterior, que assim passa para um espaço livre ao evoluir
 INSERT INTO form_kit (form_id, move_id, ord) VALUES
@@ -41,10 +45,15 @@ INSERT INTO form_kit (form_id, move_id, ord) VALUES
   ('blackwargreymon', 'great_tornado',  2),
   ('megidramon',      'atomic_blaster', 0),
   ('megidramon',      'hell_howling',   1),
-  ('megidramon',      'radiation_blade', 2);
+  ('megidramon',      'radiation_blade', 2),
+  ('blackwargrowlmon', 'pyro_blaster',  0),
+  ('blackwargrowlmon', 'radiation_blade', 1),
+  ('blackwargrowlmon', 'touch_of_evil', 2);
 
--- Ramo "bom" pede status equilibrados (MetalGreymon: Atq 30 e Def 22); o sombrio pede Atq alto e abates.
-INSERT INTO evolutions (id, from_form, to_form, min_level, min_hp, min_atk, min_def, min_spd, min_brain, min_phase, min_kills, ord) VALUES
-  ('greymon->skullgreymon',        'greymon',      'skullgreymon',    20, NULL, 38, NULL, NULL, NULL, NULL, 800,  1),
-  ('skullgreymon->blackwargreymon', 'skullgreymon', 'blackwargreymon', 35, NULL, 62, NULL, NULL, NULL, NULL, 2500, 0),
-  ('wargrowlmon->megidramon',      'wargrowlmon',  'megidramon',      35, NULL, 60, NULL, NULL, NULL, NULL, 3000, 1);
+-- Ramo "bom" pede status equilibrados (MetalGreymon: Atq 30 e Def 22); o sombrio pede Atq alto e quase-mortes.
+INSERT INTO evolutions (id, from_form, to_form, min_level, min_hp, min_atk, min_def, min_spd, min_brain, min_phase, min_kills, min_near_deaths, ord) VALUES
+  ('greymon->skullgreymon',             'greymon',          'skullgreymon',     20, NULL, 38, NULL, NULL, NULL, NULL, NULL, 3,  1),
+  ('skullgreymon->blackwargreymon',     'skullgreymon',     'blackwargreymon',  35, NULL, 62, NULL, NULL, NULL, NULL, NULL, 8,  0),
+  ('growlmon->blackwargrowlmon',        'growlmon',         'blackwargrowlmon', 20, NULL, 34, NULL, NULL, NULL, NULL, NULL, 3,  1),
+  ('blackwargrowlmon->megidramon',      'blackwargrowlmon', 'megidramon',       35, NULL, 60, NULL, NULL, NULL, NULL, NULL, 8,  0),
+  ('wargrowlmon->megidramon',           'wargrowlmon',      'megidramon',       35, NULL, 60, NULL, NULL, NULL, NULL, NULL, 12, 1);

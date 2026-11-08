@@ -24,6 +24,7 @@ export function reqText(req: EvoReq): string {
   for (const [k, v] of Object.entries(req.minStats ?? {})) parts.push(`${STAT_SHORT[k as keyof typeof STAT_SHORT] ?? k} ${v}`);
   if (req.minPhase) parts.push(`fase ${req.minPhase}`);
   if (req.minKills) parts.push(`${req.minKills} abates`);
+  if (req.minNearDeaths) parts.push(`${req.minNearDeaths}× HP abaixo de 25%`);
   for (const id of req.items ?? []) parts.push(ITEMS[id]?.name ?? CARDS[id]?.name ?? id);
   for (const id of req.unlocked ?? []) {
     const cf = PARTNERS.find(x => x.id === id)?.childForm;

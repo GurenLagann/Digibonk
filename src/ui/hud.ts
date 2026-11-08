@@ -27,6 +27,7 @@ export function evoMissingText(missing: EvoMissing[]): string {
       case 'item': return ITEMS[m.id]?.name ?? CARDS[m.id]?.name ?? m.id;
       case 'phase': return `Fase ${m.need}`;
       case 'kills': return `${m.need} abates`;
+      case 'nearDeaths': return `${m.need}× HP < 25%`;
     }
   }).join(' · ');
 }

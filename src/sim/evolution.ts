@@ -16,6 +16,7 @@ export function availableEvolutions(p: PlayerProg, ctx: EvoContext): string[] {
     if (req.unlocked && !req.unlocked.every(u => ctx.save.unlocked.includes(u))) return false;
     if (req.minPhase && ctx.phase < req.minPhase) return false;
     if (req.minKills && p.kills < req.minKills) return false;
+    if (req.minNearDeaths && p.nearDeaths < req.minNearDeaths) return false;
     return true;
   }).map(e => e.to);
 }
@@ -25,7 +26,8 @@ export type EvoMissing =
   | { kind: 'stat'; stat: StatKey; need: number }
   | { kind: 'item'; id: string }
   | { kind: 'phase'; need: number }
-  | { kind: 'kills'; need: number };
+  | { kind: 'kills'; need: number }
+  | { kind: 'nearDeaths'; need: number };
 export type EvoHint = { kind: 'final' } | { kind: 'none' } | { kind: 'next'; to: string; missing: EvoMissing[] };
 
 export function nextEvolutionHint(p: PlayerProg, ctx: EvoContext): EvoHint {
@@ -42,6 +44,7 @@ export function nextEvolutionHint(p: PlayerProg, ctx: EvoContext): EvoHint {
     for (const id of req.items ?? []) if (!p.items.includes(id)) missing.push({ kind: 'item', id });
     if (req.minPhase && ctx.phase < req.minPhase) missing.push({ kind: 'phase', need: req.minPhase });
     if (req.minKills && p.kills < req.minKills) missing.push({ kind: 'kills', need: req.minKills });
+    if (req.minNearDeaths && p.nearDeaths < req.minNearDeaths) missing.push({ kind: 'nearDeaths', need: req.minNearDeaths });
     if (!best || missing.length < best.missing.length) best = { to, missing };
   }
   return best ? { kind: 'next', ...best } : { kind: 'none' };
