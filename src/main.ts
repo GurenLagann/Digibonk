@@ -113,7 +113,7 @@ function announce(e: RunEvent) {
     case 'cardLeveled': toast(`${CARDS[e.cardId].name} subiu para Nv ${e.level}!`, 'rare'); break;
     case 'itemFound': toast(`${ITEMS[e.itemId].name}!`, 'rare'); break;
     case 'partnerUnlocked': toast(`Ovo encontrado! ${FORMS[e.partnerId]?.name ?? e.partnerId} desbloqueado!`, 'rare'); break;
-    case 'evolutionAvailable': toast('Digievolução disponível! Aperte E', 'rare'); break;
+    case 'evolutionAvailable': break; // o painel "Próx. evolução" do HUD acende no lugar do aviso
     case 'bossUnlocked': toast('Missão cumprida! O chefe foi liberado', 'rare'); break;
     case 'bossStarted': toast('O chefe apareceu!', 'warn'); break;
     case 'minibossSpawned': toast('Um guardião apareceu!', 'warn'); break;

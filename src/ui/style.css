@@ -2,45 +2,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1020; fon
 #game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; }
 .hidden { display: none !important; }
-.hud { position: absolute; inset: 0; font-size: 14px; text-shadow: 0 1px 2px #000; }
-.hud .tl { position: absolute; left: 16px; top: 14px; width: 300px; display: flex; flex-direction: column; gap: 6px; }
-.hud .name { font-weight: 800; font-size: 18px; }
-.bar { position: relative; height: 18px; background: rgba(0,0,0,.55); border: 2px solid #111; border-radius: 9px; overflow: hidden; }
-.bar.small { height: 12px; }
-.bar span { position: absolute; inset: 0; text-align: center; font-size: 11px; line-height: 14px; font-weight: 700; }
-.bar.small span { line-height: 9px; font-size: 9px; }
-.fill { position: absolute; inset: 0 auto 0 0; width: 0; transition: width .1s; }
-.fill.hp { background: linear-gradient(#5aff7a, #22a04a); }
-.fill.xp { background: linear-gradient(#6ae8ff, #2a8ad8); }
-.fill.boss { background: linear-gradient(#ff6a6a, #b0202a); }
-.moves { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-.move { position: relative; height: 44px; background: rgba(10,14,40,.75); border: 2px solid #3a4a8a; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.move.slash { border-color: #ffd84a; }
-.move.empty { opacity: .45; }
-.move b { font-size: 9.5px; text-align: center; line-height: 1.1; z-index: 1; padding: 0 2px; }
-.move i { font-size: 9px; font-style: normal; opacity: .8; z-index: 1; }
-.move .cd { position: absolute; left: 0; bottom: 0; top: 0; background: rgba(0,0,0,.55); }
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.card { font-size: 10px; padding: 4px; background: rgba(40,30,10,.75); border: 2px solid #b8902a; border-radius: 6px; min-height: 24px; }
-.card.empty { opacity: .4; border-style: dashed; }
-.items { display: flex; flex-wrap: wrap; gap: 4px; }
-.item { font-size: 10px; padding: 2px 6px; background: #ffd84a; color: #2a1a00; border-radius: 10px; text-shadow: none; font-weight: 700; }
-.hud .tc { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); text-align: center; }
-.phase { font-size: 13px; opacity: .9; }
-.timer { font-size: 30px; font-weight: 900; letter-spacing: 1px; }
-.timer.over { color: #ff4a4a; animation: pulse .6s infinite alternate; font-size: 22px; }
-@keyframes pulse { to { transform: scale(1.08); } }
-.mission { font-size: 14px; background: rgba(0,0,0,.45); padding: 3px 10px; border-radius: 10px; margin-top: 2px; }
-.bossbar { position: absolute; left: 50%; bottom: 24px; width: min(600px, 70vw); transform: translateX(-50%); text-align: center; }
-.bossbar .bar { height: 20px; }
-.bossbar span { font-weight: 800; font-size: 16px; }
-.evo { position: absolute; right: 16px; top: 16px; background: linear-gradient(90deg, #ff9a2e, #ffd84a); color: #2a1200; text-shadow: none; padding: 8px 14px; border-radius: 12px; font-weight: 800; animation: pulse .5s infinite alternate; }
-.arrow { position: absolute; left: 50%; top: 50%; font-size: 34px; color: #ffd84a; transform-origin: center; }
-.toasts { position: absolute; right: 16px; top: 70px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-.toast { background: rgba(10,14,40,.85); border: 2px solid #3a4a8a; padding: 6px 12px; border-radius: 10px; font-weight: 700; transition: opacity .5s, transform .5s; }
-.toast.rare { border-color: #ffd84a; color: #ffe88a; }
-.toast.warn { border-color: #ff4a4a; color: #ffb0b0; }
-.toast.out { opacity: 0; transform: translateX(20px); }
 .backdrop { position: absolute; inset: 0; background: rgba(5,8,20,.6); display: flex; align-items: center; justify-content: center; pointer-events: auto; }
 .modal { background: #141a3a; border: 3px solid #5a6ad8; border-radius: 18px; padding: 20px 24px; max-width: min(900px, 92vw); text-align: center; box-shadow: 0 10px 40px #000a; }
 .modal h2 { margin: 0 0 4px; font-size: 26px; }
