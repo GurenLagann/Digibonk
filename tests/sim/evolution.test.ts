@@ -2,6 +2,7 @@ import { availableEvolutions, evolve, EvoNotifier, nextEvolutionHint, type EvoCo
 import { newPlayerProg } from '../../src/sim/progression';
 import { defaultSave } from '../../src/core/save';
 import { progAt } from '../helpers';
+import { FORMS } from '../../src/data/forms';
 
 const ctx = (o: { unlocked?: string[]; phase?: number } = {}): EvoContext =>
   ({ save: { ...defaultSave(), unlocked: o.unlocked ?? defaultSave().unlocked }, phase: o.phase ?? 1 });
@@ -28,10 +29,33 @@ test('paildramon blocked without wormmon unlocked', () => {
   expect(availableEvolutions(p, ctx())).not.toContain('paildramon');
   expect(availableEvolutions(p, ctx({ unlocked: ['agumon', 'veemon', 'guilmon', 'wormmon'] }))).toContain('paildramon');
 });
-test('minPhase gates ultimate', () => {
+test('no evolution depends on the run phase', () => {
+  for (const f of Object.values(FORMS)) for (const e of f.evolutions) expect(e.req.minPhase, `${f.id}->${e.to}`).toBeUndefined();
   const p = progAt('metalgreymon', 35); p.bonus.atk = 50;
-  expect(availableEvolutions(p, ctx({ phase: 3 }))).not.toContain('wargreymon');
-  expect(availableEvolutions(p, ctx({ phase: 4 }))).toContain('wargreymon');
+  expect(availableEvolutions(p, ctx({ phase: 1 }))).toContain('wargreymon');
+});
+describe('dark branch', () => {
+  test('greymon -> skullgreymon needs high atk and kills, alongside metalgreymon', () => {
+    const p = progAt('greymon', 20); p.bonus.atk = 40; p.bonus.def = 20;
+    expect(availableEvolutions(p, ctx())).toEqual(['metalgreymon']);
+    p.kills = 800; expect(availableEvolutions(p, ctx()).sort()).toEqual(['metalgreymon', 'skullgreymon']);
+    p.bonus.def = -20; expect(availableEvolutions(p, ctx())).toEqual(['skullgreymon']);
+  });
+  test('skullgreymon -> blackwargreymon', () => {
+    const p = progAt('skullgreymon', 35); p.bonus.atk = 40; p.kills = 2499;
+    expect(availableEvolutions(p, ctx())).toEqual([]);
+    p.kills = 2500; expect(availableEvolutions(p, ctx())).toEqual(['blackwargreymon']);
+  });
+  test('wargrowlmon -> megidramon without the blue card', () => {
+    const p = progAt('wargrowlmon', 35); p.bonus.atk = 40; p.kills = 3000;
+    expect(availableEvolutions(p, ctx())).toEqual(['megidramon']);
+  });
+  test('evolving keeps the previous signature in the dark kits', () => {
+    const p = progAt('greymon', 20); p.bonus.atk = 40; p.kills = 800; p.slots[0]!.level = 3;
+    evolve(p, 'skullgreymon', ctx());
+    expect(p.slots[0]).toMatchObject({ moveId: 'ground_zero', level: 3 });
+    expect(p.slots.some((s, i) => i > 0 && s?.moveId === 'mega_flame')).toBe(true);
+  });
 });
 test('notifier only reports new options', () => {
   const n = new EvoNotifier();

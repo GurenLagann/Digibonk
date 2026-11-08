@@ -2770,6 +2770,97 @@ export const MOVES: Record<string, MoveDef> = {
    "cooldown": 0.92
   },
   "color": 16767050
+ },
+ "ground_zero": {
+  "id": "ground_zero",
+  "name": "Ground Zero",
+  "element": "dark",
+  "pattern": "projectile",
+  "damage": 32,
+  "cooldown": 1.4,
+  "range": 16,
+  "radius": 1,
+  "count": 1,
+  "pierce": 4,
+  "speed": 12,
+  "description": "Dispara um míssil orgânico que atravessa vários inimigos em linha.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 10181046
+ },
+ "black_tornado": {
+  "id": "black_tornado",
+  "name": "Black Tornado",
+  "element": "dark",
+  "pattern": "beam",
+  "damage": 42,
+  "cooldown": 1.8,
+  "range": 12,
+  "radius": 1.2,
+  "duration": 0.4,
+  "description": "Gira como um tornado negro e perfura os inimigos à frente.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 4934507
+ },
+ "black_gaia_force": {
+  "id": "black_gaia_force",
+  "name": "Black Gaia Force",
+  "element": "dark",
+  "pattern": "area",
+  "damage": 64,
+  "cooldown": 2.2,
+  "range": 14,
+  "radius": 5,
+  "duration": 0.5,
+  "description": "Lança uma esfera de energia negra que explode em grande área.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 6950317
+ },
+ "megiddo_flame": {
+  "id": "megiddo_flame",
+  "name": "Megiddo Flame",
+  "element": "dark",
+  "pattern": "area",
+  "damage": 72,
+  "cooldown": 2.4,
+  "range": 15,
+  "radius": 5.5,
+  "duration": 0.6,
+  "description": "Chamas do apocalipse incineram uma grande área ao redor do alvo.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 11735598
+ },
+ "hell_howling": {
+  "id": "hell_howling",
+  "name": "Hell Howling",
+  "element": "dark",
+  "pattern": "aura",
+  "damage": 20,
+  "cooldown": 0.6,
+  "range": 4.5,
+  "radius": 4.5,
+  "description": "Um rugido infernal contínuo fere quem se aproximar.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 8024096
  }
 };
 export const FORMS: Record<string, FormDef> = {
@@ -2839,6 +2930,16 @@ export const FORMS: Record<string, FormDef> = {
       "def": 22
      }
     }
+   },
+   {
+    "to": "skullgreymon",
+    "req": {
+     "minLevel": 20,
+     "minStats": {
+      "atk": 38
+     },
+     "minKills": 800
+    }
    }
   ],
   "size": 1.5,
@@ -2872,8 +2973,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "atk": 55
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3108,8 +3208,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "spd": 50
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3219,8 +3318,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 38,
      "minStats": {
       "atk": 55
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3352,6 +3450,16 @@ export const FORMS: Record<string, FormDef> = {
      "items": [
       "blue_card"
      ]
+    }
+   },
+   {
+    "to": "megidramon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "atk": 60
+     },
+     "minKills": 3000
     }
    }
   ],
@@ -3517,8 +3625,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "spd": 40
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3649,8 +3756,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "brain": 36
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3781,8 +3887,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "def": 46
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3949,8 +4054,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "brain": 36
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -3985,8 +4089,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "spd": 40
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -4141,8 +4244,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "def": 48
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -4273,8 +4375,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "atk": 46
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -4404,8 +4505,7 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 35,
      "minStats": {
       "brain": 38
-     },
-     "minPhase": 4
+     }
     }
    }
   ],
@@ -4436,6 +4536,92 @@ export const FORMS: Record<string, FormDef> = {
   "evolutions": [],
   "size": 2.2,
   "color": 16767050
+ },
+ "skullgreymon": {
+  "id": "skullgreymon",
+  "name": "SkullGreymon",
+  "stage": "perfect",
+  "line": "agumon",
+  "attribute": "virus",
+  "element": "dark",
+  "baseStats": {
+   "hp": 270,
+   "atk": 42,
+   "def": 18,
+   "spd": 20,
+   "brain": 8
+  },
+  "growthRate": 0.005,
+  "signature": "ground_zero",
+  "kit": [
+   "mega_flame",
+   "touch_of_evil",
+   "tail_whip"
+  ],
+  "evolutions": [
+   {
+    "to": "blackwargreymon",
+    "req": {
+     "minLevel": 35,
+     "minStats": {
+      "atk": 62
+     },
+     "minKills": 2500
+    }
+   }
+  ],
+  "size": 2.2,
+  "color": 11037416
+ },
+ "blackwargreymon": {
+  "id": "blackwargreymon",
+  "name": "BlackWarGreymon",
+  "stage": "ultimate",
+  "line": "agumon",
+  "attribute": "virus",
+  "element": "dark",
+  "baseStats": {
+   "hp": 370,
+   "atk": 64,
+   "def": 36,
+   "spd": 34,
+   "brain": 22
+  },
+  "growthRate": 0.005,
+  "signature": "black_gaia_force",
+  "kit": [
+   "ground_zero",
+   "black_tornado",
+   "great_tornado"
+  ],
+  "evolutions": [],
+  "size": 2.2,
+  "color": 2829114
+ },
+ "megidramon": {
+  "id": "megidramon",
+  "name": "Megidramon",
+  "stage": "ultimate",
+  "line": "guilmon",
+  "attribute": "virus",
+  "element": "dark",
+  "baseStats": {
+   "hp": 420,
+   "atk": 68,
+   "def": 32,
+   "spd": 26,
+   "brain": 14
+  },
+  "growthRate": 0.005,
+  "signature": "megiddo_flame",
+  "kit": [
+   "atomic_blaster",
+   "hell_howling",
+   "radiation_blade"
+  ],
+  "evolutions": [],
+  "size": 2.4,
+  "color": 9116186
  }
 };
 export const CARDS: Record<string, CardDef> = {

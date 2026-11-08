@@ -22,7 +22,8 @@ test('every enemy and boss has a sprite source', () => {
 });
 test('forms without a sprite are only from the unlockable partner lines (sprites em avaliação → placeholder)', () => {
   const unlockable = new Set(['gabumon', 'patamon', 'tentomon', 'gatomon', 'wormmon', 'armadillomon', 'terriermon', 'renamon']);
-  expect(Object.values(FORMS).filter(f => !hasSheet(f.id) && !unlockable.has(f.line)).map(f => f.id)).toEqual([]);
+  const darkBranch = new Set(['blackwargreymon', 'megidramon']); // ramo sombrio: aguardando sprites
+  expect(Object.values(FORMS).filter(f => !hasSheet(f.id) && !unlockable.has(f.line) && !darkBranch.has(f.id)).map(f => f.id)).toEqual([]);
 });
 test('moving with walk frames cycles walk1..walk4', () => {
   const frames: Role[] = ['walk1', 'walk2', 'walk3', 'walk4', 'idle1', 'idle2', 'attack', 'hurt'];
