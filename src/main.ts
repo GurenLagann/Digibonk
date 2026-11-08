@@ -43,7 +43,7 @@ if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: ren
 const boards = new Billboards(scene, camera, sprites);
 const vfx = new Vfx(scene);
 const hud = mountHud(ui);
-mountToasts(ui);
+mountToasts(hud.toastHost); // coluna da direita do HUD, abaixo do painel de abates
 
 let run: RunState | null = null;
 let lastPartner = 'agumon';

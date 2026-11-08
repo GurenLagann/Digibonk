@@ -33,13 +33,6 @@ export function evoMissingText(missing: EvoMissing[]): string {
   }).join(' · ');
 }
 
-/** sigla curta para o quadradinho do golpe/carta: iniciais (2–3) ou as 3 primeiras letras de uma palavra só */
-function abbr(name: string): string {
-  const words = name.split(/[\s-]+/).filter(Boolean);
-  const s = words.length > 1 ? words.slice(0, 3).map(w => w[0]).join('') : name.slice(0, 3);
-  return s.toUpperCase();
-}
-
 /** 1284 → "1.284" */
 function fmtInt(n: number): string { return String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
 
@@ -78,14 +71,14 @@ export function mountHud(root: HTMLElement) {
 
   // ── baixo centro: golpes | cartas
   const moveRow = h('div', { class: 'hud-slots' }), cardRow = h('div', { class: 'hud-slots' });
-  const moveEls = Array.from({ length: T.MOVE_SLOTS }, () => {
-    const cd = h('div', { class: 'hud-cd' }), label = h('span'), lvl = h('b');
-    const el = h('div', { class: 'hud-slot hud-move' }, cd, label, lvl); moveRow.append(el); return { el, cd, label, lvl };
-  });
-  const cardEls = Array.from({ length: T.PASSIVE_SLOTS }, () => {
-    const label = h('span'), lvl = h('b');
-    const el = h('div', { class: 'hud-slot hud-card' }, label, lvl); cardRow.append(el); return { el, label, lvl };
-  });
+  // cada golpe/carta: coluna com o quadrado (nível + recarga) e o nome inteiro embaixo
+  const slot = (cls: string, withCd: boolean) => {
+    const cd = h('div', { class: 'hud-cd' }), lvl = h('b'), nm = h('span', { class: 'hud-sname' });
+    const el = h('div', { class: `hud-slot ${cls}` }, h('div', { class: 'hud-box' }, withCd && cd, lvl), nm);
+    return { el, cd, lvl, nm };
+  };
+  const moveEls = Array.from({ length: T.MOVE_SLOTS }, () => { const e = slot('hud-move', true); moveRow.append(e.el); return e; });
+  const cardEls = Array.from({ length: T.PASSIVE_SLOTS }, () => { const e = slot('hud-card', false); cardRow.append(e.el); return e; });
   const bottom = h('div', { class: 'b2-panel hud-bottom' },
     h('div', {}, h('div', { class: 'b2-label' }, 'Golpes'), moveRow),
     h('div', { class: 'hud-div' }),
@@ -96,13 +89,19 @@ export function mountHud(root: HTMLElement) {
   const bossBar = h('div', { class: 'hud-boss hidden' }, bossName, h('div', { class: 'b2-bar' }, bossFill));
   const arrow = h('div', { class: 'hud-arrow hidden' }, '➤');
 
-  const hud = h('div', { class: 'hud' }, partner, top, right, bossBar, bottom, arrow);
+  // coluna da direita: painel + avisos (toast.ts monta em toastHost) — empilhados, sem sobreposição
+  const toastHost = h('div', { class: 'hud-toasthost' });
+  const hud = h('div', { class: 'hud' }, partner, top,
+    h('div', { class: 'hud-rcol' }, right, toastHost),
+    h('div', { class: 'hud-bcol' }, bossBar, bottom), arrow);
   root.append(hud);
 
   let formKey = '', itemKey = '', evoKey = '', mode: TimerMode = 'normal';
 
   return {
     el: hud,
+    /** onde os avisos (toasts) são montados: logo abaixo do painel da direita */
+    toastHost,
     update(run: RunState) {
       const p = run.prog, c = run.combat, f = FORMS[p.formId];
       const ph = run.phase, m = ph.mission;
@@ -157,14 +156,14 @@ export function mountHud(root: HTMLElement) {
         const e = moveEls[i];
         e.el.classList.toggle('empty', !s);
         e.el.classList.toggle('sig', !!s && s.moveId === f.signature);
-        if (!s) { setText(e.label, ''); setText(e.lvl, ''); setH(e.cd, 0); return; }
-        setText(e.label, abbr(MOVES[s.moveId].name)); setText(e.lvl, String(s.level));
+        if (!s) { setText(e.nm, ''); setText(e.lvl, ''); setH(e.cd, 0); return; }
+        setText(e.nm, MOVES[s.moveId].name); setText(e.lvl, String(s.level));
         const total = moveCooldown(p, s); setH(e.cd, total > 0 ? (c.cooldowns[i] ?? 0) / total : 0);
       });
       p.passives.forEach((id, i) => {
         const e = cardEls[i];
         e.el.classList.toggle('empty', !id);
-        setText(e.label, id ? abbr(CARDS[id].name) : ''); setText(e.lvl, id ? String(p.cardLevels[id] ?? 1) : '');
+        setText(e.nm, id ? CARDS[id].name : ''); setText(e.lvl, id ? String(p.cardLevels[id] ?? 1) : '');
       });
 
       const boss = ph.bossId !== null ? run.pool.get(ph.bossId) : undefined;

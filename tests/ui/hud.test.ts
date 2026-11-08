@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import { defaultSave } from '../../src/core/save';
 import { BOSSES } from '../../src/data/enemies';
+import { CARDS } from '../../src/data/cards';
+import { FORMS } from '../../src/data/forms';
+import { MOVES } from '../../src/data/moves';
 import { T } from '../../src/data/tuning';
 import { createRun, type RunState } from '../../src/sim/run';
 import { evoMissingText, mountHud } from '../../src/ui/hud';
@@ -57,15 +60,32 @@ test('top centre: phase label, mode class on the bar, timer and the same mission
   expect(q('.hud-mission').textContent).toBe('Chefe liberado — vá ao altar');
 });
 
-test('bottom panel: 4 moves (signature marked) and 3 cards', () => {
-  const { q } = setup();
+test('bottom panel: 4 moves (signature marked, full name under the slot) and 3 cards', () => {
+  const { q, run, hud } = setup();
   const bottom = q('.hud-bottom');
   const moves = bottom.querySelectorAll('.hud-move');
   expect(moves.length).toBe(4);
   expect(moves[0].classList.contains('sig')).toBe(true);
-  expect(moves[0].querySelector('b')!.textContent).toBe('1');
+  expect(moves[0].querySelector('.hud-box b')!.textContent).toBe('1');
+  expect(moves[0].querySelector('.hud-sname')!.textContent).toBe(MOVES[FORMS.agumon.signature].name);
   expect(moves[1].classList.contains('empty')).toBe(true);
-  expect(bottom.querySelectorAll('.hud-card').length).toBe(3);
+  expect(moves[1].querySelector('.hud-sname')!.textContent).toBe('');
+  const cards = bottom.querySelectorAll('.hud-card');
+  expect(cards.length).toBe(3);
+  const cardId = Object.keys(CARDS)[0];
+  run.prog.passives[0] = cardId; run.prog.cardLevels[cardId] = 2; hud.update(run);
+  expect(cards[0].querySelector('.hud-sname')!.textContent).toBe(CARDS[cardId].name);
+  expect(cards[0].querySelector('.hud-box b')!.textContent).toBe('2');
+  expect(cards[0].classList.contains('empty')).toBe(false);
+});
+
+test('boss bar sits in the bottom column above the moves panel; toasts host sits under the right panel', () => {
+  const { q, hud } = setup();
+  const col = q('.hud-bcol');
+  expect([...col.children].map(c => c.className.split(' ')[0])).toEqual(['hud-boss', 'b2-panel']);
+  const rcol = q('.hud-rcol');
+  expect(rcol.children[0]).toBe(q('.hud-right'));
+  expect(rcol.children[1]).toBe(hud.toastHost);
 });
 
 test('right panel: kills and next evolution with what is missing', () => {
