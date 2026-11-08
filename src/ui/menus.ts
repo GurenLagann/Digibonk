@@ -1,7 +1,6 @@
 import { ACTIONS, DEFAULT_BINDINGS, type Action, type Input } from '../core/input';
 import { storeSave, type SaveData } from '../core/save';
 import type { App } from '../app';
-import { h } from './dom';
 import { showChoice, type Modal } from './modal';
 
 const ACTION_NAMES: Record<Action, string> = {
@@ -43,13 +42,21 @@ export function showSettings(root: HTMLElement, input: Input, save: SaveData, st
 }
 void ACTIONS; void DEFAULT_BINDINGS;
 
+export const CREDITS_TEXT = [
+  'DigiBonk é um projeto de fã, gratuito, sem fins lucrativos e sem vínculo com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.',
+  'Sprites do Digimon World 3 (Agumon, Veemon, Guilmon, Bakemon, Guardromon): rips de Ragey e Artzei no The Spriters Resource.',
+  'Sprites de V-pet: extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo humulos.com.',
+  'Folhas geradas no ChatGPT: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon e Gallantmon.',
+  'Folhas geradas no Google Gemini: Agumon e Guilmon.',
+  'Inspiração: PokéBonk (a referência principal), Megabonk e Digimon World 1.',
+  'Se você é detentor de direitos e quer a remoção de algum material, abra uma issue no repositório.',
+].join('\n\n');
+
 export function showCredits(root: HTMLElement, back: () => void) {
   return showChoice(root, {
     title: 'Créditos e aviso legal',
-    subtitle: 'DigiBonk é um fan-game gratuito, sem fins lucrativos e não oficial. Digimon e todos os nomes, personagens e golpes relacionados © Akiyoshi Hongo / Toei Animation / Bandai. Não afiliado nem endossado pelos detentores dos direitos. Sprites provisórios (placeholders) gerados pelo próprio jogo.',
+    subtitle: CREDITS_TEXT,
     options: [],
     extra: { title: 'Voltar', onPick: back },
   });
 }
-
-export function overlayTitle(root: HTMLElement) { root.append(h('div', { class: 'title-bg' })); }

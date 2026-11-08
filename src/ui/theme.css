@@ -150,7 +150,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .b2-screen *, .b2-screen *::before, .b2-screen *::after, .b2-btn, .b2-bar > i,
-  .hud *, .hud *::before, .hud *::after, .toast {
+  .cm-screen *, .hud *, .hud *::before, .hud *::after, .toast {
     animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
   }
 }
@@ -513,3 +513,31 @@
 .res-unlock > .b2-label { color: #ffb36b; }
 .res-unl { display: flex; align-items: center; gap: calc(8 * var(--u)); margin-top: calc(4 * var(--u)); font-style: italic; font-size: calc(14 * var(--u)); }
 .res-unl canvas { width: calc(48 * var(--u)); height: calc(48 * var(--u)); }
+
+/* ── pausa, controles e créditos (showChoice, src/ui/modal.ts): escala com a janela ── */
+.cm-screen {
+  --u: clamp(1px, min(100vw / 960, 100vh / 560), 2.4px);
+  display: flex; align-items: center; justify-content: center; background: rgba(3, 8, 18, .72);
+}
+.cm-panel {
+  display: flex; flex-direction: column; gap: calc(10 * var(--u)); align-items: stretch;
+  width: min(calc(560 * var(--u)), 92vw); max-height: 92vh; padding: calc(18 * var(--u)) calc(22 * var(--u));
+}
+.cm-panel .b2-title { font-size: calc(26 * var(--u)); text-align: center; }
+.cm-sub { margin: 0; font-size: max(13px, calc(13 * var(--u))); color: var(--b2-text-dim); white-space: pre-line; overflow-y: auto; min-height: 0; text-align: left; }
+.cm-list { display: flex; flex-direction: column; gap: calc(8 * var(--u)); overflow-y: auto; min-height: 0; padding: 4px; }
+.cm-opt {
+  all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: var(--b2-sp-3);
+  min-height: max(44px, calc(40 * var(--u))); padding: calc(6 * var(--u)) calc(14 * var(--u));
+  background: rgba(7, 26, 48, .7); border: 1px solid var(--b2-line); border-radius: var(--b2-corner-sm);
+  color: var(--b2-text); font-family: var(--b2-font); font-size: max(14px, calc(15 * var(--u)));
+}
+.cm-opt .cm-text { flex: 1; display: flex; flex-direction: column; }
+.cm-opt b { font-weight: 800; }
+.cm-opt small { font-size: max(11px, calc(12 * var(--u))); color: var(--b2-text-dim); }
+.cm-opt:hover { border-color: var(--b2-cyan); }
+.cm-opt:focus-visible { outline: 2px solid var(--b2-cyan); outline-offset: 2px; }
+.cm-opt.b2-sel { background: rgba(255, 138, 31, .16); }
+.cm-extra { align-self: center; font-size: max(14px, calc(15 * var(--u))); }
+.cm-extra .cm-text { display: contents; }
+.cm-extra.b2-sel { border-color: var(--b2-orange); box-shadow: 0 0 14px rgba(255, 138, 31, .6); }

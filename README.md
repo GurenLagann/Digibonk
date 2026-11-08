@@ -189,7 +189,8 @@ DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Band
 - **Sprites do Digimon World 3** (Agumon, Veemon, Guilmon, Bakemon, Guardromon): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
-- **Folhas do Greymon e do MetalGreymon:** geradas com o Google Gemini a partir de descrições dos personagens.
+- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon e Gallantmon.
+- **Folhas geradas no Google Gemini:** Agumon e Guilmon.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
 Se você é detentor de direitos e quer a remoção de algum material, abra uma *issue*.

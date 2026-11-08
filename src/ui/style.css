@@ -2,20 +2,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1020; fon
 #game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; }
 .hidden { display: none !important; }
-.backdrop { position: absolute; inset: 0; background: rgba(5,8,20,.6); display: flex; align-items: center; justify-content: center; pointer-events: auto; }
-.modal { background: #141a3a; border: 3px solid #5a6ad8; border-radius: 18px; padding: 20px 24px; max-width: min(900px, 92vw); text-align: center; box-shadow: 0 10px 40px #000a; }
-.modal h2 { margin: 0 0 4px; font-size: 26px; }
-.modal .sub { margin: 0 0 14px; opacity: .85; }
-.choices { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.choices.rows { flex-direction: column; }
-.choice { all: unset; box-sizing: border-box; cursor: pointer; width: 230px; min-height: 110px; padding: 12px; background: #202a5a; border: 3px solid #3a4a8a; border-radius: 12px; display: flex; flex-direction: column; gap: 6px; color: #fff; text-align: left; }
-.choice.sel { border-color: #ffd84a; background: #2a3570; transform: translateY(-3px); }
-.choice .tag { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9ab0ff; }
-.choice strong { font-size: 16px; }
-.choice small { font-size: 12px; opacity: .85; }
-.choice.extra { width: auto; min-height: 0; margin-top: 12px; text-align: center; display: inline-flex; padding: 8px 20px; }
-.modal .sub { white-space: pre-line; }
-.title-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(20,30,80,.3), rgba(5,8,20,.85)); }
 
 /* painel de debug (dev) */
 .dbg-panel { position: fixed; top: 8px; right: 8px; width: 300px; max-height: calc(100vh - 16px); overflow-y: auto; z-index: 50;

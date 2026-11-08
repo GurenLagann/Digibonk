@@ -19,14 +19,21 @@ export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
   current?.close();
   const all = spec.extra ? [...spec.options, spec.extra] : spec.options;
   let sel = 0, closed = false;
-  const cards = all.map((o, i) => h('button', { class: 'choice' + (o === spec.extra ? ' extra' : ''), onclick: () => pick(i), onmouseenter: () => select(i) },
-    o.tag ? h('span', { class: 'tag' }, o.tag) : null, h('strong', {}, (i < 3 && o !== spec.extra ? `${i + 1}. ` : '') + o.title), o.body ? h('small', {}, o.body) : null));
-  const panel = h('div', { class: 'modal' }, h('h2', {}, spec.title), spec.subtitle ? h('p', { class: 'sub' }, spec.subtitle) : null,
-    h('div', { class: spec.columns === false ? 'choices rows' : 'choices' }, ...cards.filter((_, i) => all[i] !== spec.extra)),
+  const cards = all.map((o, i) => {
+    const isExtra = o === spec.extra;
+    const key = isExtra ? 'Esc' : i < 3 ? String(i + 1) : null;
+    return h('button', { class: isExtra ? 'b2-btn secondary cm-extra' : 'cm-opt', type: 'button', onclick: () => pick(i), onmouseenter: () => select(i) },
+      o.tag ? h('span', { class: 'b2-label' }, o.tag) : null,
+      h('span', { class: 'cm-text' }, h('b', {}, o.title), o.body ? h('small', {}, o.body) : null),
+      key ? h('span', { class: 'b2-key' }, key) : null);
+  });
+  const panel = h('div', { class: 'b2-panel tick cm-panel' }, h('h2', { class: 'b2-title' }, spec.title),
+    spec.subtitle ? h('p', { class: 'cm-sub' }, spec.subtitle) : null,
+    spec.options.length ? h('div', { class: 'cm-list' + (spec.columns === false ? ' rows' : '') }, ...cards.filter((_, i) => all[i] !== spec.extra)) : null,
     spec.extra ? cards[cards.length - 1] : null);
-  const back = h('div', { class: 'backdrop' }, panel);
+  const back = h('div', { class: 'b2-screen cm-screen' }, panel);
   root.append(back);
-  function select(i: number) { if (!all.length) return; sel = (i + all.length) % all.length; cards.forEach((c, j) => c.classList.toggle('sel', j === sel)); }
+  function select(i: number) { if (!all.length) return; sel = (i + all.length) % all.length; cards.forEach((c, j) => c.classList.toggle('b2-sel', j === sel)); }
   function pick(i: number) { if (closed) return; const o = all[i]; if (!o) return; m.close(); o.onPick(); }
   select(0);
   const m: Modal = {
@@ -39,7 +46,8 @@ export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
       if (input.pressed('opt1') && spec.options[0]) return pick(0);
       if (input.pressed('opt2') && spec.options[1]) return pick(1);
       if (input.pressed('opt3') && spec.options[2]) return pick(2);
-      if (input.pressed('cancel') && spec.extra) return pick(all.length - 1);
+      // Esc está ligado a `pause` e Backspace a `cancel`: "voltar" aceita os dois
+      if ((input.pressed('cancel') || input.pressed('pause')) && spec.extra) return pick(all.length - 1);
       if (input.pressed('confirm')) pick(sel);
     },
   };
