@@ -304,6 +304,7 @@
 .hud-evoport canvas { width: 100%; height: 100%; }
 .hud-evoinfo { display: flex; flex-direction: column; min-width: 0; font-size: calc(11 * var(--u)); }
 .hud-evoname { font-style: italic; font-weight: 800; overflow-wrap: anywhere; line-height: 1.15; }
+.hud-evoname.long { font-size: .82em; letter-spacing: -.01em; }
 .hud-evotext { color: var(--b2-text-dim); }
 .hud-right.ready { border-color: var(--b2-orange); box-shadow: 0 0 18px rgba(255, 138, 31, .55), inset 0 0 14px rgba(255, 138, 31, .18); }
 .hud-right.ready::before { /* brilho pulsando só em opacidade (sem repintar sombra a cada quadro) */
@@ -477,6 +478,9 @@
   border-radius: calc(16 * var(--u)) calc(4 * var(--u)); background: radial-gradient(circle, rgba(255, 138, 31, .2), transparent 70%); }
 .evo-art canvas { width: calc(128 * var(--u)); height: calc(128 * var(--u)); }
 .evo-card .evo-name { font-size: calc(20 * var(--u)); color: #fff; }
+/* nomes longos (BlackWarGrowlmon) cabem numa linha em vez de quebrar no meio */
+.evo-name.long { font-size: calc(13 * var(--u)); }
+.evo-card .evo-name.long { font-size: calc(15 * var(--u)); }
 .evo-chips { display: flex; gap: calc(4 * var(--u)); justify-content: center; flex-wrap: wrap; }
 .evo-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(3 * var(--u)); }
 .evo-stat { display: grid; grid-template-columns: calc(30 * var(--u)) 1fr calc(76 * var(--u)); gap: calc(6 * var(--u)); align-items: center; font-size: calc(12 * var(--u)); }

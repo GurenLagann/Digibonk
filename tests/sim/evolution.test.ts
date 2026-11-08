@@ -43,7 +43,7 @@ describe('dark branch', () => {
   });
   test('hint shows the missing near-deaths', () => {
     const p = progAt('skullgreymon', 35); p.bonus.atk = 40; p.nearDeaths = 7;
-    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'next', to: 'blackwargreymon', missing: [{ kind: 'nearDeaths', need: 8 }] });
+    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'next', to: 'blackwargreymon', missing: [{ kind: 'nearDeaths', need: 8, have: 7 }] });
     p.nearDeaths = 8; expect(availableEvolutions(p, ctx())).toEqual(['blackwargreymon']);
   });
   test('growlmon -> blackwargrowlmon -> megidramon', () => {

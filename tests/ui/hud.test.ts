@@ -132,6 +132,7 @@ test('evoMissingText formats every kind', () => {
   expect(evoMissingText([{ kind: 'stat', stat: 'hp', need: 1 }, { kind: 'stat', stat: 'def', need: 2 }, { kind: 'stat', stat: 'spd', need: 3 }, { kind: 'stat', stat: 'brain', need: 4 }]))
     .toBe('Vida 1 · Def 2 · Vel 3 · Cér 4');
   expect(evoMissingText([{ kind: 'phase', need: 3 }, { kind: 'kills', need: 500 }])).toBe('Fase 3 · 500 abates');
+  expect(evoMissingText([{ kind: 'nearDeaths', need: 8, have: 7 }])).toBe('HP < 25%: 7/8×');
 });
 
 test('evolve hint shows the bound key label from the getter', () => {

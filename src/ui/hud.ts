@@ -27,7 +27,7 @@ export function evoMissingText(missing: EvoMissing[]): string {
       case 'item': return ITEMS[m.id]?.name ?? CARDS[m.id]?.name ?? m.id;
       case 'phase': return `Fase ${m.need}`;
       case 'kills': return `${m.need} abates`;
-      case 'nearDeaths': return `${m.need}× HP < 25%`;
+      case 'nearDeaths': return `HP < 25%: ${m.have}/${m.need}×`;
     }
   }).join(' · ');
 }
@@ -147,7 +147,9 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
         evoPort.replaceChildren(...(to ? [portrait(to, { size: 36, silhouette: !ready })] : []));
         evoPort.classList.toggle('hidden', !to);
       }
-      setText(evoName, hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—' : FORMS[to]?.name ?? to);
+      const evoLabel = hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—' : FORMS[to]?.name ?? to;
+      setText(evoName, evoLabel);
+      evoName.classList.toggle('long', evoLabel.length > 12); // ex.: BlackWarGreymon não quebra no meio
       setText(evoText, ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : '');
 
       // golpes e cartas
