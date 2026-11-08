@@ -1,0 +1,1 @@
+ALTER TABLE moves ADD COLUMN description TEXT NOT NULL DEFAULT '';

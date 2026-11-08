@@ -1,4 +1,5 @@
 import { validateData, reachableStages } from '../../src/data/validate';
+import { MOVES } from '../../src/data/moves';
 import { FORMS } from '../../src/data/forms';
 import { PARTNERS } from '../../src/data/partners';
 import { BOSSES } from '../../src/data/enemies';
@@ -17,3 +18,9 @@ test('armor forms are dead ends', () => {
 });
 test('gallantmon needs blue card', () =>
   expect(FORMS.wargrowlmon.evolutions.find(e => e.to === 'gallantmon')!.req.items).toContain('blue_card'));
+test('todo golpe tem descrição curta', () => {
+  for (const m of Object.values(MOVES)) {
+    expect.soft(m.description, m.id).toMatch(/\S/);
+    expect.soft(m.description.length, m.id).toBeLessThanOrEqual(90);
+  }
+});

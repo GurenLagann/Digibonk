@@ -30,7 +30,7 @@ export function exportGameData(db: Db) {
   const MOVES = Object.fromEntries(all('SELECT * FROM moves ORDER BY ord').map(m => [m.id, {
     id: m.id, name: m.name, element: m.element, pattern: m.pattern, damage: m.damage, cooldown: m.cooldown, range: m.reach,
     radius: opt(m.radius), count: opt(m.count), pierce: opt(m.pierce), speed: opt(m.speed), duration: opt(m.duration),
-    maxLevel: m.max_level, perLevel: { damage: m.dmg_per_level, cooldown: m.cd_per_level }, color: m.color,
+    description: m.description, maxLevel: m.max_level, perLevel: { damage: m.dmg_per_level, cooldown: m.cd_per_level }, color: m.color,
   }]));
 
   const kit = group('SELECT form_id, move_id FROM form_kit ORDER BY form_id, ord', 'form_id', 'move_id');

@@ -21,8 +21,8 @@ test('forms keep every game field except the old fixed growth, and gain typing +
   expect(Object.keys(g.FORMS)).toEqual(Object.keys(before.FORMS));
 });
 
-test('moves, items, partners are identical (moves gain an element)', () => {
-  for (const [id, m] of Object.entries(before.MOVES) as [string, any][]) expect(strip(g.MOVES[id], ['element']), id).toEqual(m);
+test('moves, items, partners are identical (moves gain an element and a description)', () => {
+  for (const [id, m] of Object.entries(before.MOVES) as [string, any][]) expect(strip(g.MOVES[id], ['element', 'description']), id).toEqual(m);
   expect(g.ITEMS).toEqual(before.ITEMS);
   expect(g.PARTNERS).toEqual(before.PARTNERS);
 });

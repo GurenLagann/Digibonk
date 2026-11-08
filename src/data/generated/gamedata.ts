@@ -13,6 +13,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Cospe uma bola de fogo no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -29,6 +30,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Arranha os inimigos à frente com garras afiadas em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -46,6 +48,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Explode uma rajada de fogo em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -64,6 +67,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Dispara bolas de fogo contra os inimigos mais próximos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -82,6 +86,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Lança uma bola de fogo enorme que atravessa os inimigos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -98,6 +103,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Investe com os chifres num golpe em cone à frente.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -114,6 +120,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.5,
   "range": 3.2,
   "radius": 3.2,
+  "description": "Gira a cauda numa aura contínua que fere quem chega perto.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -132,6 +139,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Dispara mísseis de fogo que explodem nos inimigos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -149,6 +157,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Perfura os inimigos com um raio de aço em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -167,6 +176,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Anéis de metal giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -184,6 +194,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Libera uma explosão colossal de fogo em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -201,6 +212,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Dispara um raio giratório de vento em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -217,6 +229,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.6,
   "range": 4,
   "radius": 4,
+  "description": "Cria um redemoinho de vento contínuo ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -234,6 +247,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 16,
   "radius": 1.4,
   "duration": 0.4,
+  "description": "Corta os inimigos com um raio de luz em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -251,6 +265,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 16,
   "radius": 6,
   "duration": 0.5,
+  "description": "Dispara um canhão de gelo que explode em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -269,6 +284,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 4,
   "count": 4,
   "duration": 3,
+  "description": "Esferas de luz giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -285,6 +301,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.2,
   "radius": 3.2,
+  "description": "Dá uma cabeçada nos inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -302,6 +319,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 7,
   "radius": 0.4,
   "speed": 16,
+  "description": "Lança um soco veloz que voa até o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -319,6 +337,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 6,
   "radius": 2,
   "duration": 0.3,
+  "description": "Soca o chão e fere os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -336,6 +355,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Atira um raio de luz em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -352,6 +372,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Morde com força os inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -370,6 +391,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 2,
   "speed": 16,
+  "description": "Lança um projétil de luz em forma de X contra o inimigo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -387,6 +409,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.9,
   "duration": 0.3,
+  "description": "Sopra uma flecha de fogo em linha reta, atravessando inimigos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -403,6 +426,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 1,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Desfere um soco poderoso nos inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -421,6 +445,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.8,
   "pierce": 3,
   "speed": 18,
+  "description": "Lança lâminas de vento no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -438,6 +463,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Dispara um raio de luz dracônico em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -454,6 +480,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.5,
   "range": 4,
   "radius": 4,
+  "description": "Asas de vento giram numa aura contínua ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -471,6 +498,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 16,
   "radius": 1.4,
   "duration": 0.4,
+  "description": "Dispara um raio de luz brilhante em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -489,6 +517,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3.5,
   "count": 3,
   "duration": 3,
+  "description": "Lâminas de luz giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -507,6 +536,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "pierce": 2,
   "speed": 18,
+  "description": "Lança um foguete de fogo no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -525,6 +555,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.5,
   "count": 3,
   "speed": 14,
+  "description": "Arremessa um soco flamejante contra o inimigo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -542,6 +573,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 3.5,
   "duration": 0.4,
+  "description": "Descarrega um trovão azul em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -558,6 +590,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 4,
   "radius": 4,
+  "description": "Corta os inimigos à frente com uma lâmina elétrica, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -576,6 +609,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.5,
   "count": 4,
   "speed": 17,
+  "description": "Atira projéteis de aço contra os inimigos mais próximos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -592,6 +626,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 4,
   "radius": 4,
+  "description": "Espeta os inimigos à frente com ferrões, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -609,6 +644,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 18,
   "radius": 1.5,
   "duration": 0.4,
+  "description": "Dispara um raio laser de luz em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -626,6 +662,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 15,
   "radius": 6,
   "duration": 0.5,
+  "description": "Libera uma explosão de luz em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -643,6 +680,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Lança uma esfera de fogo no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -659,6 +697,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Quebra rochas num golpe de terra em cone à frente.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -677,6 +716,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 2.5,
   "count": 1,
   "duration": 3,
+  "description": "Presas rubras giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -695,6 +735,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Dispara uma rajada de fogo contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -711,6 +752,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 4,
   "radius": 4,
+  "description": "Corta os inimigos à frente com um golpe dracônico em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -728,6 +770,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 3,
   "duration": 0.4,
+  "description": "Expele chamas em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -745,6 +788,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 1.1,
   "duration": 0.4,
+  "description": "Dispara um raio atômico de fogo em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -761,6 +805,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 4.5,
   "radius": 4.5,
+  "description": "Fatia os inimigos à frente com uma lâmina de fogo, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -778,6 +823,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 16,
   "radius": 1.3,
   "duration": 0.4,
+  "description": "Atravessa os inimigos com uma lança de luz, em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -795,6 +841,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Golpeia em área ao redor com a espada real de luz.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -811,6 +858,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.5,
   "range": 4,
   "radius": 4,
+  "description": "Um escudo de luz contínuo ao redor fere quem se aproximar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -828,6 +876,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Cospe uma pequena bola de gelo no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -846,6 +895,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.6,
   "pierce": 1,
   "speed": 12,
+  "description": "Lança uma teia pegajosa no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -862,6 +912,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Golpeia os inimigos à frente com a pata elétrica, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -880,6 +931,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 5,
   "speed": 16,
+  "description": "Lança uma saraivada de cristais de gelo nos inimigos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -897,6 +949,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 1,
   "duration": 0.3,
+  "description": "Dispara um raio de luz do destino em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -914,6 +967,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1,
   "duration": 0.3,
+  "description": "Uiva um raio de gelo em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -931,6 +985,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 3,
   "duration": 0.4,
+  "description": "Descarrega choques elétricos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -947,6 +1002,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 4,
   "radius": 4,
+  "description": "Chicoteia os inimigos à frente com trepadeiras, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -964,6 +1020,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "speed": 22,
   "duration": 0.6,
+  "description": "Toca os inimigos à frente com garras sombrias, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -982,6 +1039,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.6,
   "count": 8,
   "speed": 9,
+  "description": "Lança projéteis sombrios no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -999,6 +1057,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 4,
   "duration": 1,
+  "description": "Faz raios rubros de trevas explodirem em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1016,6 +1075,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 16,
   "radius": 1.2,
   "duration": 2,
+  "description": "Estica um chicote de fogo em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1034,6 +1094,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.8,
   "count": 4,
   "speed": 12,
+  "description": "Arremessa espadas sombrias contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1050,6 +1111,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Cutuca os inimigos à frente com o chifre, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1067,6 +1129,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Sopra uma rajada de gelo em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1085,6 +1148,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Avança em investida contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1103,6 +1167,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Lança uma chama gelada no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1119,6 +1184,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Esmaga os inimigos à frente com uma pancada, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1137,6 +1203,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Dispara garras de gelo contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1154,6 +1221,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Chuta uma onda de impacto em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1171,6 +1239,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 3.5,
   "duration": 0.4,
+  "description": "Uiva e congela o ar, ferindo os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1188,6 +1257,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Sopra um frio mortal que fere os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1207,6 +1277,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Arremessa machados de gelo no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1224,6 +1295,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Dispara uma garra de gelo em linha reta, atravessando inimigos.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1241,6 +1313,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Sopra bolhas explosivas no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1257,6 +1330,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Mergulha sobre os inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1274,6 +1348,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Bate as asas e fere os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1292,6 +1367,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Lança bolhas giratórias de vento no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1308,6 +1384,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Golpeia os inimigos à frente com o cajado, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1324,6 +1401,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.5,
   "range": 3.2,
   "radius": 3.2,
+  "description": "Uma aura sagrada contínua ao redor fere quem se aproximar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1341,6 +1419,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 3.5,
   "duration": 0.4,
+  "description": "Abre um portal de luz que fere os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1358,6 +1437,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Corta os inimigos com um raio da espada sagrada, em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1376,6 +1456,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Anéis sagrados giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1394,6 +1475,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 4,
   "count": 4,
   "duration": 3,
+  "description": "Sete esferas de luz giram ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1413,6 +1495,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Lança estrelas de luz contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1430,6 +1513,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Libera uma explosão de luz sagrada em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1446,6 +1530,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Soca duas vezes os inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1463,6 +1548,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Solta faíscas elétricas em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1481,6 +1567,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Dispara faíscas elétricas no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1499,6 +1586,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Atira uma descarga elétrica no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1515,6 +1603,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Espeta os inimigos à frente com o chifre, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1533,6 +1622,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Dispara uma rajada elétrica do chifre contra o inimigo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1550,6 +1640,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Dispara um raio elétrico em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1568,6 +1659,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Anéis de raios giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1585,6 +1677,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Libera uma explosão elétrica gigante em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1602,6 +1695,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Dispara um raio elétrico potente em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1621,6 +1715,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Atira uma enorme descarga elétrica no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1638,6 +1733,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Uiva uma onda de luz contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1654,6 +1750,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Arranha os inimigos à frente com as garras, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1671,6 +1768,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Late e libera uma onda de luz em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1689,6 +1787,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Avança em investida contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1706,6 +1805,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 11,
   "radius": 3,
   "duration": 0.4,
+  "description": "Brilha com o olho de gato e fere os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1722,6 +1822,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Soca com a pata felina os inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1740,6 +1841,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Dispara flechas celestiais contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1758,6 +1860,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Amuletos de luz giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1775,6 +1878,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 3.5,
   "duration": 0.4,
+  "description": "Faz chover flechas sagradas em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1792,6 +1896,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Arremessa uma lança de luz em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1811,6 +1916,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Lança cristais de luz no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1829,6 +1935,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 4,
   "count": 4,
   "duration": 3,
+  "description": "Auréolas de luz giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1846,6 +1953,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Lança fios de seda que prendem e ferem os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1862,6 +1970,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Investe contra os inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1880,6 +1989,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Dispara uma chuva de folhas no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1896,6 +2006,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.9,
   "range": 3.5,
   "radius": 3.5,
+  "description": "Perfura os inimigos à frente com espinhos, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1913,6 +2024,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 11,
   "radius": 3,
   "duration": 0.4,
+  "description": "Faz uma explosão de pólen lunar em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1931,6 +2043,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Lança um espinho letal no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1948,6 +2061,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Dispara um ferrão de joia em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1966,6 +2080,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Um enxame real gira ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -1983,6 +2098,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Corta o espaço com um raio sombrio em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2000,6 +2116,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Faz tesouras sombrias cortarem tudo em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2018,6 +2135,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 4,
   "count": 4,
   "duration": 3,
+  "description": "Um enxame sombrio gira ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2035,6 +2153,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Arremessa fragmentos de carapaça no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2051,6 +2170,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Dá um golpe ascendente nos inimigos à frente, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2068,6 +2188,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Lança lama que explode em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2086,6 +2207,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Rola a armadura contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2104,6 +2226,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Arremessa uma martelada de terra no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2121,6 +2244,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 11,
   "radius": 3,
   "duration": 0.4,
+  "description": "Esmaga o chão e fere os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2139,6 +2263,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Lança bombas de terra no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2156,6 +2281,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Dispara um raio de luz da justiça em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2174,6 +2300,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Anéis de terra giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2191,6 +2318,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Corta com um raio de lâmina de aço em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2208,6 +2336,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Gira lâminas de aço que ferem os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2227,6 +2356,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Dispara penas de metal contra o inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2244,6 +2374,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 0.5,
   "speed": 14,
+  "description": "Dispara uma rajada de vento no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2261,6 +2392,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 2.5,
   "duration": 0.4,
+  "description": "Cria um tornado que fere os inimigos em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2277,6 +2409,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Golpeia os inimigos à frente com socos, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2295,6 +2428,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Gira as orelhas e lança vento no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2313,6 +2447,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Atira um laser de aço no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2330,6 +2465,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 11,
   "radius": 3,
   "duration": 0.4,
+  "description": "Dispara balas de aço em área ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2347,6 +2483,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 10,
   "radius": 0.8,
   "duration": 0.3,
+  "description": "Dispara um raio triplo de luz em linha reta.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2365,6 +2502,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Metralha o inimigo mais próximo com projéteis de aço.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2383,6 +2521,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Anéis dourados de luz giram ao redor do parceiro.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2402,6 +2541,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Despeja uma saraivada de projéteis de aço no inimigo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2419,6 +2559,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Lança mísseis de aço que explodem em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2436,6 +2577,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 1.2,
   "duration": 0.4,
+  "description": "Desfere um golpe potente em linha reta à frente.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2452,6 +2594,7 @@ export const MOVES: Record<string, MoveDef> = {
   "cooldown": 0.8,
   "range": 3,
   "radius": 3,
+  "description": "Golpeia os inimigos à frente com a pata, em cone.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2470,6 +2613,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.4,
   "count": 3,
   "speed": 13,
+  "description": "Chuta uma onda de impacto no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2488,6 +2632,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.7,
   "pierce": 1,
   "speed": 15,
+  "description": "Lança chamas das caudas de raposa no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2505,6 +2650,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 11,
   "radius": 3,
   "duration": 0.4,
+  "description": "Gira uma roda de fogo que fere os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2523,6 +2669,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 0.9,
   "count": 2,
   "speed": 13,
+  "description": "Lança talismãs de luz no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2540,6 +2687,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 12,
   "radius": 3.5,
   "duration": 0.4,
+  "description": "Libera mil feitiços de luz em área ao redor.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2558,6 +2706,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 3,
   "count": 2,
   "duration": 3,
+  "description": "Talismãs de luz giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2575,6 +2724,7 @@ export const MOVES: Record<string, MoveDef> = {
   "range": 14,
   "radius": 5,
   "duration": 0.5,
+  "description": "Levanta um vento de ametista que fere os inimigos em área.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2594,6 +2744,7 @@ export const MOVES: Record<string, MoveDef> = {
   "count": 3,
   "pierce": 2,
   "speed": 15,
+  "description": "Lança um golpe espiritual de luz no inimigo mais próximo.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,
@@ -2612,6 +2763,7 @@ export const MOVES: Record<string, MoveDef> = {
   "radius": 4,
   "count": 4,
   "duration": 3,
+  "description": "Esferas de cristal giram ao redor do parceiro, ferindo quem tocar.",
   "maxLevel": 5,
   "perLevel": {
    "damage": 1.25,

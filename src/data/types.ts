@@ -8,6 +8,8 @@ export type ElementId = 'fire' | 'water' | 'plant' | 'ice' | 'electric' | 'earth
 
 export interface MoveDef {
   id: string; name: string; element: ElementId; pattern: MovePattern;
+  /** uma frase em pt-BR sobre o que o golpe faz no jogo */
+  description: string;
   damage: number; cooldown: number; range: number;
   radius?: number; count?: number; pierce?: number; speed?: number; duration?: number;
   maxLevel: number;
