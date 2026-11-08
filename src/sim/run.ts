@@ -5,7 +5,7 @@ import { BOSSES, MINIBOSSES } from '../data/enemies';
 import { ITEMS } from '../data/items';
 import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
-import { gainItem, levelUpOwnedCard, offerPassive, replacePassive, slashIntoSlot } from './cards';
+import { gainItem, levelUpOwnedCard, maxedCards, offerPassive, replacePassive, slashIntoSlot } from './cards';
 import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
@@ -120,7 +120,7 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
 function lootRoll(r: RunState, alsoOwned: string[] = []): { kind: 'card' | 'item' | 'heal'; ref?: string } {
   const owned = [...r.prog.items, ...alsoOwned];
   const forced = r.debug.forceItems ? eligibleItems(r.partnerId, r.save, owned) : [];
-  return forced.length ? { kind: 'item', ref: r.rng.pick(forced).id } : rollChest(r.partnerId, r.save, owned, r.phase.phase, r.rng);
+  return forced.length ? { kind: 'item', ref: r.rng.pick(forced).id } : rollChest(r.partnerId, r.save, owned, r.phase.phase, r.rng, maxedCards(r.prog));
 }
 
 function spawnPickup(r: RunState, x: number, z: number, roll: { kind: 'card' | 'item' | 'heal'; ref?: string }) {
@@ -200,13 +200,14 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
         }
         continue;
       }
-      if (e.miniboss) { killedMiniboss = true; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng)); }
+      if (e.miniboss) { killedMiniboss = true; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
       const drop = dropOnKill(e, r.rng);
       if (drop.xp > 0) r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z, kind: 'xp', value: drop.xp });
       if (drop.extra === 'heal') spawnPickup(r, e.x + 0.6, e.z, { kind: 'heal' });
       if (drop.extra === 'card') {
-        const cards = eligibleCards(r.partnerId).filter(c => c.kind !== 'rare');
-        spawnPickup(r, e.x + 0.6, e.z, { kind: 'card', ref: r.rng.weighted(cards, c => c.weight).id });
+        const maxed = maxedCards(r.prog);
+        const cards = eligibleCards(r.partnerId).filter(c => c.kind !== 'rare' && !maxed.includes(c.id));
+        if (cards.length) spawnPickup(r, e.x + 0.6, e.z, { kind: 'card', ref: r.rng.weighted(cards, c => c.weight).id });
       }
     }
   }

@@ -24,7 +24,8 @@ export function eligibleCards(partnerId: string): CardDef[] {
   return CARD_LIST.filter(c => c.kind !== 'rare' || (c.forPartners ?? []).includes(partnerId));
 }
 
-export function rollChest(partnerId: string, save: SaveData, owned: string[], phase: number, rng: Rng): ChestRoll {
+/** maxed: cartas que o jogador já tem no nível máximo (ficam fora do sorteio) */
+export function rollChest(partnerId: string, save: SaveData, owned: string[], phase: number, rng: Rng, maxed: string[] = []): ChestRoll {
   const r = rng.next();
   if (r < 0.2) return { kind: 'heal' };
   if (r < 0.38) {
@@ -34,8 +35,8 @@ export function rollChest(partnerId: string, save: SaveData, owned: string[], ph
     if (eggs.length && r < 0.2 + 0.02) return { kind: 'item', ref: rng.pick(eggs).id };
     if (others.length && r >= 0.22) return { kind: 'item', ref: rng.pick(others).id };
   }
-  const cards = eligibleCards(partnerId).filter(c => c.kind !== 'rare' || (phase >= 4 && !owned.includes(c.id)));
-  return { kind: 'card', ref: rng.weighted(cards, c => c.weight).id };
+  const cards = eligibleCards(partnerId).filter(c => !maxed.includes(c.id) && (c.kind !== 'rare' || (phase >= 4 && !owned.includes(c.id))));
+  return cards.length ? { kind: 'card', ref: rng.weighted(cards, c => c.weight).id } : { kind: 'heal' };
 }
 
 export function dropOnKill(enemy: Pick<Enemy, 'xp'>, rng: Rng): { xp: number; extra?: 'heal' | 'card' } {

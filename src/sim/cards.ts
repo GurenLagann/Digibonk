@@ -1,4 +1,4 @@
-import { CARD_MAX_LEVEL, CARDS } from '../data/cards';
+import { CARD_LIST, CARD_MAX_LEVEL, CARDS } from '../data/cards';
 import { MOVES } from '../data/moves';
 import type { PlayerProg } from './progression';
 
@@ -14,6 +14,8 @@ export function offerPassive(p: PlayerProg, cardId: string): CardResult {
 export function replacePassive(p: PlayerProg, slot: number | null, cardId: string): void {
   if (slot === null) return;
   if (slot < 0 || slot >= p.passives.length) throw new Error(`bad passive slot ${slot}`);
+  const old = p.passives[slot];
+  if (old && old !== cardId) delete p.cardLevels[old]; // se a carta voltar, recomeça do nível 1
   p.passives[slot] = cardId;
 }
 
@@ -47,4 +49,13 @@ export function levelUpOwnedCard(p: PlayerProg, cardId: string): 'leveled' | 'ma
     slot.level++; return 'leveled';
   }
   return null;
+}
+
+/** cartas que o jogador já tem no nível máximo: pegar outra cópia não faria nada */
+export function maxedCards(p: PlayerProg): string[] {
+  return CARD_LIST.filter(c => {
+    if (c.kind === 'passive') return p.passives.includes(c.id) && (p.cardLevels[c.id] ?? 1) >= CARD_MAX_LEVEL;
+    if (c.kind === 'slash' && c.moveId) return p.slots.some(s => s?.fromCard && s.moveId === c.moveId && s.level >= MOVES[c.moveId].maxLevel);
+    return false;
+  }).map(c => c.id);
 }
