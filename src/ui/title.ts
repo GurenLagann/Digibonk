@@ -2,7 +2,6 @@ import type { App } from '../app';
 import type { SaveData } from '../core/save';
 import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
-import { portrait } from './portrait';
 
 export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void }
 
@@ -33,7 +32,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
         h('img', { class: 'title-logo-img', src: './ui/logo.webp', alt: 'DigiBonk', draggable: 'false' }),
         h('div', { class: 'b2-label' }, 'Survivor de Digimon · fan-game não oficial')),
       els[0], h('div', { class: 'title-grid' }, ...els.slice(1))),
-    h('div', { class: 'title-hero' }, portrait('wargreymon', { size: 256 })),
+    h('div', { class: 'title-hero' }, h('img', { class: 'title-hero-img', src: './ui/digital-world.webp', alt: 'Mundo Digital', draggable: 'false' })),
     h('div', { class: 'b2-panel tick title-progress' }, h('div', { class: 'b2-label' }, 'Seu progresso'),
       row('Vitórias', rec.wins), row('Partidas', rec.runs), row('Parceiros', `${unlocked} / ${total}`)),
     h('div', { class: 'b2-label title-legal' }, 'Digimon © Akiyoshi Hongo / Toei / Bandai · não afiliado'));

@@ -162,7 +162,7 @@
 .title-logo-img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 18px rgba(0, 217, 255, .35)); user-select: none; }
 .title-logo .b2-label { margin-top: var(--b2-sp-2); }
 .title-hero { flex: 1 1 0; display: flex; justify-content: center; align-items: center; min-width: 0; filter: drop-shadow(0 0 18px rgba(0, 217, 255, .4)); }
-.title-hero canvas, .title-hero img { width: clamp(220px, 30vw, 760px); height: auto; aspect-ratio: 1; image-rendering: pixelated; }
+.title-hero-img { width: 100%; max-width: clamp(320px, 50vw, 1300px); max-height: 82vh; height: auto; object-fit: contain; user-select: none; }
 .title-play { width: 100%; height: clamp(72px, 9vh, 140px); font-size: clamp(28px, 2.3vw, 60px); }
 .title-play.b2-sel { outline: 3px solid #fff; outline-offset: 3px; }
 .title-play .b2-key { font-size: clamp(12px, 1vw, 24px); padding: .1em .45em; }
