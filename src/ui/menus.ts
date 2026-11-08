@@ -1,11 +1,8 @@
 import { ACTIONS, DEFAULT_BINDINGS, type Action, type Input } from '../core/input';
 import { storeSave, type SaveData } from '../core/save';
-import { FORMS } from '../data/forms';
 import type { App } from '../app';
-import type { RunState } from '../sim/run';
-import { fmtTime, h } from './dom';
+import { h } from './dom';
 import { showChoice, type Modal } from './modal';
-import { MOVES } from '../data/moves';
 
 const ACTION_NAMES: Record<Action, string> = {
   up: 'Mover p/ cima', down: 'Mover p/ baixo', left: 'Mover p/ esquerda', right: 'Mover p/ direita',
@@ -22,21 +19,6 @@ export function showPause(root: HTMLElement, onResume: () => void, onSettings: (
       { title: 'Desistir', body: 'Conta como derrota', onPick: onQuit },
     ],
     extra: { title: 'Continuar', onPick: onResume },
-  });
-}
-
-export function showResults(root: HTMLElement, run: RunState, onAgain: () => void, onMenu: () => void) {
-  const win = run.ended === 'victory';
-  const path = run.prog.path.map(id => FORMS[id]?.name ?? id).join(' → ');
-  const unlocked = run.unlockedThisRun.map(id => FORMS[id]?.name ?? id).join(', ');
-  return showChoice(root, {
-    title: win ? 'Vitória!' : 'Derrota',
-    subtitle: `Fase ${run.phase.phase}/5 · Tempo ${fmtTime(run.time)} · Abates ${run.prog.kills} · Nível ${run.prog.level}` +
-      `\nCaminho evolutivo: ${path}` + (unlocked ? `\nNovos parceiros: ${unlocked}` : ''),
-    options: [
-      { title: 'Jogar de novo', body: 'Mesmo parceiro', onPick: onAgain },
-      { title: 'Menu', onPick: onMenu },
-    ],
   });
 }
 
