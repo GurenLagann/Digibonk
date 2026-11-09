@@ -38,7 +38,7 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
   });
 
   const kit = [
-    ...p.slots.filter(s => s !== null).map(s => `${MOVES[s!.moveId]?.name ?? s!.moveId} Nv ${s!.level}`),
+    ...p.slots.filter(s => s !== null).map(s => `${MOVES[s!.moveId]?.name ?? s!.moveId}${s!.jogress ? ` × ${MOVES[s!.jogress.moveId]?.name ?? s!.jogress.moveId}` : ''} Nv ${s!.level}`),
     ...p.passives.filter((c): c is string => !!c).map(c => `${CARDS[c]?.name ?? c} Nv ${p.cardLevels[c] ?? 1}`),
   ];
 

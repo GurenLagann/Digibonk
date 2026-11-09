@@ -20,6 +20,7 @@ import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showBlindEvolve, showEvolve } from './ui/evolve';
 import { autoGainText, mountHud } from './ui/hud';
 import { showRelicChoice } from './ui/relics';
+import { showJogressChoice } from './ui/jogress';
 import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
@@ -123,6 +124,7 @@ function announce(e: RunEvent) {
     case 'digiData': toast('Digi Data coletado'); break;
     case 'autoGain': break; // somados num aviso só, no loop
     case 'revived': toast('Reviveu com a relíquia!', 'rare'); break;
+    case 'jogressReady': toast('Um Terminal Jogress apareceu no mapa!', 'rare'); break;
     case 'portalOpened': toast('Uma Distorção Digital se abriu! Entre em 30 s', 'rare'); break;
     case 'zoneEnter': toast('Distorção Digital! Sobreviva às ondas', 'warn'); break;
     case 'zoneWave': if (e.wave > 1) toast(`Onda ${e.wave}`); break;
@@ -159,6 +161,7 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
   }
   if (input.pressed('pause')) { pause(); return; }
   if (run.relicOffer) { showRelicChoice(ui, run); return; }
+  if (run.jogressOffer) { showJogressChoice(ui, run, name => toast(`Jogress! ${name}`, 'rare')); return; }
   if (run.blindChoice) { showBlindEvolve(ui, run, id => toast(`Nova forma liberada! ${FORMS[id].name}`, 'rare')); return; }
   if (run.offers) { showLevelUp(ui, run); return; }
   if (run.pendingCard) { showCardChoice(ui, run); return; }

@@ -204,3 +204,11 @@ describe('Zona Digital no HUD', () => {
     expect(q('.hud-items .hud-relic')).not.toBeNull();
   });
 });
+test('golpe Jogress aparece com os dois nomes e moldura própria', () => {
+  const { run, hud, q } = setup();
+  run.prog.slots[0] = { moveId: 'baby_flame', level: 5, fromCard: false, jogress: { moveId: 'sharp_claws', level: 5 } };
+  hud.update(run);
+  const slot = q('.hud-move');
+  expect(slot.textContent).toContain('Baby Flame × Sharp Claws');
+  expect(slot.classList.contains('jogress')).toBe(true);
+});

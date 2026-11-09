@@ -40,6 +40,7 @@ export class MapView {
   private portals: THREE.Group[] = [];
   private exitPortal: THREE.Group;
   private inZone = false;
+  private terminal: THREE.Group;
   private altar: THREE.Group;
   private altarRing: THREE.Mesh;
   private points: THREE.Mesh[] = [];
@@ -98,6 +99,16 @@ export class MapView {
     scene.add(this.arena);
     this.exitPortal = this.makePortal(0x5ae8ff);
     this.exitPortal.visible = false;
+
+    // Terminal Jogress: duas hélices (laranja e ciano) girando sobre uma base
+    this.terminal = new THREE.Group();
+    const tBase = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 0.25, 12), new THREE.MeshLambertMaterial({ color: 0x24324a }));
+    tBase.position.y = 0.12;
+    const h1 = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.12, 6, 24), new THREE.MeshBasicMaterial({ color: 0xff8a3d }));
+    const h2 = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.12, 6, 24), new THREE.MeshBasicMaterial({ color: 0x1fd6ff }));
+    h1.position.y = h2.position.y = 1.5; h2.rotation.y = Math.PI / 2;
+    this.terminal.add(tBase, h1, h2); this.terminal.visible = false;
+    scene.add(this.terminal);
   }
 
   /** anel vertical girando sobre um disco brilhante */
@@ -130,6 +141,9 @@ export class MapView {
     const ex = run.zone?.exit;
     this.exitPortal.visible = !!ex && run.relicOffer === null;
     if (ex) { this.exitPortal.position.set(ex.x, 0, ex.z); this.exitPortal.rotation.y = time * 1.8; }
+    const js = run.jogressSpot;
+    this.terminal.visible = !!js && !run.zone;
+    if (js) { this.terminal.position.set(js.x, 0, js.z); this.terminal.rotation.y = time * 2; this.terminal.children[1].rotation.x = time * 3; }
     // dentro da arena: céu e nevoeiro escuros
     const z = !!run.zone;
     if (z !== this.inZone) {

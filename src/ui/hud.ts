@@ -181,8 +181,9 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
         const e = moveEls[i];
         e.el.classList.toggle('empty', !s);
         e.el.classList.toggle('sig', !!s && s.moveId === f.signature);
+        e.el.classList.toggle('jogress', !!s?.jogress);
         if (!s) { setText(e.nm, ''); setText(e.lvl, ''); setH(e.cd, 0); return; }
-        setText(e.nm, MOVES[s.moveId].name); setText(e.lvl, String(s.level));
+        setText(e.nm, s.jogress ? `${MOVES[s.moveId].name} × ${MOVES[s.jogress.moveId]?.name ?? s.jogress.moveId}` : MOVES[s.moveId].name); setText(e.lvl, String(s.level));
         const total = moveCooldown(p, s); setH(e.cd, total > 0 ? (c.cooldowns[i] ?? 0) / total : 0);
       });
       p.passives.forEach((id, i) => {
@@ -199,6 +200,7 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       let target: { x: number; z: number } | null = null;
       if (run.zone) target = run.zone.exit;
       else if (run.portals.length) target = run.portals[0]; // portal da Distorção some em 30 s: vem antes
+      else if (run.jogressSpot) target = run.jogressSpot;
       else if (ph.bossUnlocked && !ph.bossActive) target = ph.bossAltar;
       else if (!m.done && m.kind === 'activate') target = m.points.filter(q => q.charge < 1).sort((a, b) => Math.hypot(a.x - run.px, a.z - run.pz) - Math.hypot(b.x - run.px, b.z - run.pz))[0] ?? null;
       else if (!m.done && m.kind === 'collect') {
