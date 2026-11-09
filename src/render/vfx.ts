@@ -3,7 +3,7 @@ import { MOVES } from '../data/moves';
 import type { Area } from '../sim/combat';
 import type { RunEvent, RunState } from '../sim/run';
 
-const PICKUP_COLORS: Record<string, number> = { xp: 0x4af0ff, card: 0xf0f0ff, item: 0xffd84a, heal: 0xff6a9a, fragment: 0xb06aff };
+const PICKUP_COLORS: Record<string, number> = { xp: 0x4af0ff, card: 0xf0f0ff, item: 0xffd84a, heal: 0xff6a9a, fragment: 0xb06aff, digidata: 0x3cff8a };
 
 class Instanced {
   mesh: THREE.InstancedMesh; private i = 0; private m = new THREE.Matrix4(); private c = new THREE.Color();

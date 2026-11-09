@@ -3,6 +3,9 @@ import type { Stage } from './types';
 export const T = {
   PHASE_SECONDS: 600,
   PHASES: 5,
+  /** Digi Data por fase (sorteado entre os dois, limitado ao que ainda dá para revelar) */
+  DIGIDATA_PER_PHASE_MIN: 1,
+  DIGIDATA_PER_PHASE_MAX: 2,
   MOVE_SLOTS: 4,
   PASSIVE_SLOTS: 3,
   MAX_ENEMIES: 600,

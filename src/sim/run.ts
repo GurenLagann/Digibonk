@@ -10,7 +10,7 @@ import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier } from './evolution';
-import { discover, edgeId, knownAvailable, secretAvailable } from './discovery';
+import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, type Reveal } from './discovery';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
@@ -27,7 +27,7 @@ export type RunEvent =
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
   | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
-  | { type: 'formDiscovered'; formId: string };
+  | { type: 'formDiscovered'; formId: string } | { type: 'digiData' };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -44,6 +44,10 @@ export interface RunState {
   offers: LevelOffer[] | null; pendingCard: string | null;
   /** 2+ evoluções secretas ao mesmo tempo: o jogador escolhe às cegas (ids de forma) */
   blindChoice: string[] | null;
+  /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
+  dataRng: Rng;
+  /** requisitos revelados por Digi Data nesta partida (mostrados no resultado) */
+  digiDataThisRun: Reveal[];
   /** chefes de fase e guardiões derrotados nesta partida */
   stats: { bosses: number; guardians: number };
   /** true quando `finish` superou o bestPhase deste parceiro */
@@ -63,7 +67,30 @@ function setupPhase(r: RunState, n: number) {
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
   r.chests = placeChests(n, r.rng);
   if (r.phase.mission.kind === 'collect') for (const p of r.phase.mission.points) r.pickups.push({ id: r.nextPickupId++, x: p.x, z: p.z, kind: 'fragment', value: 1 });
+  placeDigiData(r);
   syncHp(r); r.combat.hp = r.combat.maxHp;
+}
+
+/** Digi Data da fase: em pontos aleatórios longe do início, só enquanto houver requisito para revelar */
+function placeDigiData(r: RunState) {
+  const n = Math.min(r.dataRng.int(T.DIGIDATA_PER_PHASE_MIN, T.DIGIDATA_PER_PHASE_MAX), drawPool(r.save).length);
+  const lim = T.MAP_HALF - 8;
+  for (let placed = 0, tries = 0; placed < n && tries < 1000; tries++) {
+    const x = (r.dataRng.next() * 2 - 1) * lim, z = (r.dataRng.next() * 2 - 1) * lim;
+    if (Math.hypot(x, z) < 15) continue;
+    r.pickups.push({ id: r.nextPickupId++, x, z, kind: 'digidata', value: 0 });
+    placed++;
+  }
+}
+
+/** coleta de Digi Data: sorteia e grava um requisito oculto (o jogador só vê no resultado) */
+function collectDigiData(r: RunState, ev: RunEvent[]) {
+  ev.push({ type: 'digiData' });
+  const pool = drawPool(r.save);
+  if (!pool.length) return;
+  const got = r.dataRng.pick(pool);
+  reveal(r.save, got); r.digiDataThisRun.push(got);
+  persist(r);
 }
 
 /** @internal usado por sim/debug */
@@ -86,7 +113,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null,
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -231,6 +258,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul);
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
     else if (p.kind === 'fragment') collectedFragment = true;
+    else if (p.kind === 'digidata') collectDigiData(r, ev);
     else if (p.kind === 'card' && p.ref) {
       // one choice at a time: a second card that needs a choice waits on the ground
       if (r.pendingCard !== null && needsChoice(r, p.ref)) r.pickups.push(p);

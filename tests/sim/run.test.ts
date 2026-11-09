@@ -170,3 +170,36 @@ describe('evoluções secretas na partida', () => {
     expect(ev.some(e => e.type === 'evolutionAvailable')).toBe(true);
   });
 });
+
+describe('Digi Data', () => {
+  const data = (r: RunState) => r.pickups.filter(p => p.kind === 'digidata');
+  test('save vazio: 1 a 2 dados por fase, longe do início', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const r = createRun(opts({ seed }));
+      expect(data(r).length).toBeGreaterThanOrEqual(T.DIGIDATA_PER_PHASE_MIN);
+      expect(data(r).length).toBeLessThanOrEqual(T.DIGIDATA_PER_PHASE_MAX);
+      for (const d of data(r)) expect(Math.hypot(d.x, d.z)).toBeGreaterThanOrEqual(15);
+    }
+  });
+  test('nada para revelar: nenhum dado surge', () => {
+    const o = opts(); discoverAll(o.save);
+    expect(data(createRun(o))).toEqual([]);
+  });
+  test('coletar revela um requisito e grava na hora', () => {
+    const storage = fakeStorage({}); const r = createRun(opts({ storage }));
+    const d = data(r)[0]; d.x = r.px; d.z = r.pz;
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(ev).toContainEqual({ type: 'digiData' });
+    expect(r.digiDataThisRun).toHaveLength(1);
+    const { edge, key } = r.digiDataThisRun[0];
+    expect(loadSave(storage).revealedReqs[edge]).toContain(key);
+  });
+  test('sorteio vazio na coleta: só o aviso, sem linha no resultado', () => {
+    const r = createRun(opts());
+    discoverAll(r.save);
+    const d = data(r)[0]; d.x = r.px; d.z = r.pz;
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(ev).toContainEqual({ type: 'digiData' });
+    expect(r.digiDataThisRun).toEqual([]);
+  });
+});
