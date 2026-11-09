@@ -105,6 +105,13 @@
       "t": "Ficha de dano por golpe",
       "p": "A partida registra o dano de cada golpe (os dois do Jogress separados). A pausa mostra total, % e dano por segundo dos últimos 15 s; o resultado mostra a lista do maior para o menor.",
       "f": "src/sim/damage.ts · src/ui/damage.ts"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Tela inicial em cartões",
+      "p": "Menu no estilo de cartões do PokéBonk (organização, não arte): barra de progresso, Jogar grande, Parceiros e Recordes, atalhos e o painel Seus parceiros, sobre a paisagem digital. Responsivo do celular à tela grande.",
+      "f": "src/ui/title.ts · public/ui/menu-bg.webp"
     }
   ],
   "proximos": [
