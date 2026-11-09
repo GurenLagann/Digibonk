@@ -10,7 +10,7 @@ import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier } from './evolution';
-import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, type Reveal } from './discovery';
+import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
@@ -305,7 +305,8 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   // evolução: secreta cumprida evolui sozinha (ou abre a escolha às cegas); conhecida só avisa
   const ctx = { save: r.save, phase: r.phase.phase };
-  const secret = secretAvailable(r.prog, ctx);
+  // espera a escolha de carta deste tick fechar antes de trocar de forma
+  const secret = r.pendingCard === null ? secretAvailable(r.prog, ctx) : [];
   if (secret.length === 1) {
     doEvolve(r, secret[0]); ev.push({ type: 'formDiscovered', formId: secret[0] });
     return ev;
@@ -343,6 +344,9 @@ export function doEvolve(r: RunState, formId: string): void {
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
 }
+
+/** save como o HUD deve ver: sem as pistas de Digi Data desta partida (essas só aparecem no resultado) */
+export function hudSave(r: RunState): SaveData { return withoutReveals(r.save, r.digiDataThisRun); }
 
 /** escolha às cegas: evolui para a opção `index` e devolve a forma (null se índice inválido) */
 export function chooseBlind(r: RunState, index: number): string | null {

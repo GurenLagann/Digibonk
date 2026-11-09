@@ -4,6 +4,7 @@ import { createApp } from './app';
 import { createInput } from './core/input';
 import { createFixedLoop } from './core/loop';
 import { loadSave } from './core/save';
+import { sanitizeDiscovery } from './sim/discovery';
 import { CARD_LIST, CARDS } from './data/cards';
 import { ENEMIES } from './data/enemies';
 import { FORMS } from './data/forms';
@@ -34,6 +35,7 @@ const ui = document.getElementById('ui')!;
 const { renderer, scene, camera, resize } = createScene(canvas);
 addEventListener('resize', resize);
 const save = loadSave();
+sanitizeDiscovery(save); // descarta evoluções/pistas que não existem mais nos dados
 const input = createInput(window, () => (navigator.getGamepads ? [...navigator.getGamepads()] : []), save.bindings);
 const debug = import.meta.env.DEV ? new URLSearchParams(location.search).get('debug')?.split(',') ?? [] : [];
 

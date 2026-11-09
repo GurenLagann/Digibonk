@@ -7,7 +7,7 @@ import { T } from '../data/tuning';
 import { knownAvailable, visibleHint } from '../sim/discovery';
 import type { EvoMissing } from '../sim/evolution';
 import { xpToNext } from '../sim/progression';
-import type { RunState } from '../sim/run';
+import { hudSave, type RunState } from '../sim/run';
 import { moveCooldown } from '../sim/stats';
 import { h, STAT_SHORT } from './dom';
 import { timerView, type TimerMode } from './hudTimer';
@@ -137,7 +137,7 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
 
       // direita: abates + próxima evolução (retrato só muda com o alvo)
       setText(kills, fmtInt(p.kills));
-      const ctx = { save: run.save, phase: ph.phase };
+      const ctx = { save: hudSave(run), phase: ph.phase };
       // só evoluções descobertas aparecem; uma secreta com pistas vira "Greymon → ???" sem retrato
       const avail = knownAvailable(p, ctx), ready = avail.length > 0; // = canEvolve(run)
       const hint = visibleHint(p, ctx);

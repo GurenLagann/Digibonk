@@ -4,6 +4,7 @@
  */
 import type { SaveData } from '../core/save';
 import { FORMS } from '../data/forms';
+import { PARTNERS } from '../data/partners';
 import type { EvoEdge, EvoReq, StatKey, Stats } from '../data/types';
 import { availableEvolutions, type EvoContext, type EvoHint, type EvoMissing } from './evolution';
 import type { PlayerProg } from './progression';
@@ -92,14 +93,51 @@ export function visibleHint(p: PlayerProg, ctx: EvoContext): VisibleHint {
   return bestSecret ? { kind: 'secret', from: p.formId, ...bestSecret } : { kind: 'none' };
 }
 
-/** requisitos que um Digi Data ainda pode revelar neste save */
+/** formas alcançáveis a partir dos parceiros liberados (linhas de parceiros bloqueados ficam de fora) */
+function reachableForms(save: SaveData): Set<string> {
+  const seen = new Set<string>();
+  const stack = PARTNERS.filter(p => save.unlocked.includes(p.id)).map(p => p.childForm);
+  while (stack.length) {
+    const id = stack.pop()!;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    for (const e of FORMS[id]?.evolutions ?? []) stack.push(e.to);
+  }
+  return seen;
+}
+
+/** requisitos que um Digi Data ainda pode revelar neste save (só de linhas que o jogador consegue jogar) */
 export function drawPool(save: SaveData): Reveal[] {
   const out: Reveal[] = [];
+  const reach = reachableForms(save);
   for (const f of Object.values(FORMS)) for (const e of f.evolutions) {
     const edge = edgeId(f.id, e.to);
-    if (isDiscovered(save, edge) || !unlockedOk(save, e.req)) continue;
+    if (!reach.has(f.id) || isDiscovered(save, edge) || !unlockedOk(save, e.req)) continue;
     const rev = revealedKeys(save, edge);
     for (const key of reqKeys(e.req)) if (!rev.includes(key)) out.push({ edge, key });
   }
   return out;
+}
+
+/** cópia rasa do save sem as pistas dadas (as desta partida só aparecem no resultado e nas próximas) */
+export function withoutReveals(save: SaveData, hide: readonly Reveal[]): SaveData {
+  const revealedReqs: Record<string, string[]> = {};
+  for (const [edge, keys] of Object.entries(save.revealedReqs)) {
+    const left = keys.filter(k => !hide.some(h => h.edge === edge && h.key === k));
+    if (left.length) revealedReqs[edge] = left;
+  }
+  return { ...save, revealedReqs };
+}
+
+/** descarta arestas e chaves que não existem nos dados atuais (save antigo ou editado à mão) */
+export function sanitizeDiscovery(save: SaveData): void {
+  save.discoveredEvos = save.discoveredEvos.filter(id => !!findEdge(id));
+  const out: Record<string, string[]> = {};
+  for (const [id, keys] of Object.entries(save.revealedReqs)) {
+    const e = findEdge(id); if (!e) continue;
+    const valid = reqKeys(e.edge.req) as string[];
+    const ok = keys.filter(k => valid.includes(k));
+    if (ok.length) out[id] = ok;
+  }
+  save.revealedReqs = out;
 }

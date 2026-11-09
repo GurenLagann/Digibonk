@@ -1,4 +1,6 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, hudSave, type RunState } from '../../src/sim/run';
+import { visibleHint } from '../../src/sim/discovery';
+import { CARDS } from '../../src/data/cards';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
@@ -201,5 +203,29 @@ describe('Digi Data', () => {
     const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
     expect(ev).toContainEqual({ type: 'digiData' });
     expect(r.digiDataThisRun).toEqual([]);
+  });
+});
+
+describe('correções da revisão final', () => {
+  test('pista de Digi Data não aparece na dica durante a partida', () => {
+    const r = createRun(opts());
+    r.prog.level = 1;
+    r.save.unlocked = ['agumon'];
+    const d = r.pickups.find(p => p.kind === 'digidata')!; d.x = r.px; d.z = r.pz;
+    stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.digiDataThisRun.length).toBe(1);
+    expect(visibleHint(r.prog, { save: hudSave(r), phase: 1 })).toEqual({ kind: 'none' });
+  });
+  test('evolução secreta espera a escolha de carta pendente', () => {
+    const r = createRun(opts());
+    r.prog.level = 9; r.prog.bonus.atk = 20;
+    r.chests = [{ id: 1, x: r.px, z: r.pz, opened: false }];
+    // força o baú a dar uma carta slash (pede escolha)
+    r.debug.forceItems = false;
+    const slash = Object.values(CARDS).find(c => c.kind === 'slash')!;
+    r.pickups.push({ id: 9999, x: r.px, z: r.pz, kind: 'card', value: 0, ref: slash.id });
+    stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.pendingCard).not.toBeNull();
+    expect(r.prog.formId).toBe('agumon');
   });
 });

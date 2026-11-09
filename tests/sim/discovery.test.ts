@@ -1,6 +1,6 @@
 import { defaultSave } from '../../src/core/save';
 import {
-  discover, drawPool, edgeId, findEdge, isDiscovered, knownAvailable, reqKeys, reveal, revealedKeys, secretAvailable, visibleHint,
+  discover, drawPool, edgeId, sanitizeDiscovery, withoutReveals, findEdge, isDiscovered, knownAvailable, reqKeys, reveal, revealedKeys, secretAvailable, visibleHint,
 } from '../../src/sim/discovery';
 import type { EvoContext } from '../../src/sim/evolution';
 import { FORMS } from '../../src/data/forms';
@@ -79,4 +79,29 @@ test('drawPool: sem parceiro bloqueado, sem revelados, sem descobertas', () => {
   discover(s, 'greymon->skullgreymon');
   expect(drawPool(s).some(r => r.edge === 'greymon->skullgreymon')).toBe(false);
   expect(drawPool(discoverAll(defaultSave()))).toEqual([]);
+});
+
+describe('correções da revisão final', () => {
+  test('drawPool só usa linhas de parceiros liberados', () => {
+    const pool = drawPool(defaultSave());
+    expect(pool.some(r => r.edge.startsWith('gabumon->'))).toBe(false);
+    expect(pool.some(r => r.edge === 'agumon->greymon')).toBe(true);
+    const s = defaultSave(); s.unlocked.push('gabumon');
+    expect(drawPool(s).some(r => r.edge.startsWith('gabumon->'))).toBe(true);
+  });
+  test('withoutReveals esconde as pistas desta partida', () => {
+    const s = defaultSave();
+    reveal(s, { edge: 'agumon->greymon', key: 'level' }); reveal(s, { edge: 'agumon->greymon', key: 'stat:atk' });
+    const v = withoutReveals(s, [{ edge: 'agumon->greymon', key: 'level' }]);
+    expect(v.revealedReqs).toEqual({ 'agumon->greymon': ['stat:atk'] });
+    expect(s.revealedReqs['agumon->greymon']).toEqual(['level', 'stat:atk']);
+  });
+  test('sanitizeDiscovery descarta arestas e chaves desconhecidas', () => {
+    const s = defaultSave();
+    s.discoveredEvos = ['agumon->greymon', 'x->y'];
+    s.revealedReqs = { 'agumon->greymon': ['junk', 'level'], 'x->y': ['level'] };
+    sanitizeDiscovery(s);
+    expect(s.discoveredEvos).toEqual(['agumon->greymon']);
+    expect(s.revealedReqs).toEqual({ 'agumon->greymon': ['level'] });
+  });
 });
