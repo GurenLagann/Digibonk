@@ -11,6 +11,8 @@ export interface SaveData {
   discoveredEvos: string[];
   /** requisitos revelados por Digi Data, por aresta (chaves de ReqKey) */
   revealedReqs: Record<string, string[]>;
+  /** parceiro da última partida (tela inicial); '' = nenhum ainda */
+  lastPartner: string;
   records: { bestPhase: number; wins: number; runs: number };
   partnerRecords: Record<string, PartnerRecord>;
   currency: number;
@@ -18,7 +20,7 @@ export interface SaveData {
 }
 
 export function defaultSave(): SaveData {
-  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {} };
+  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {} };
 }
 
 const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x => typeof x === 'string') ? [...v] : null);
@@ -72,6 +74,7 @@ export function loadSave(storage?: Storage | null): SaveData {
     discovered: strArr(r.discovered) ?? d.discovered,
     discoveredEvos: strItems(r.discoveredEvos) ?? d.discoveredEvos,
     revealedReqs,
+    lastPartner: typeof r.lastPartner === 'string' ? r.lastPartner : d.lastPartner,
     records: { bestPhase: num(rec.bestPhase, 0), wins: num(rec.wins, 0), runs: num(rec.runs, 0) },
     partnerRecords,
     currency: num(r.currency, 0),

@@ -8,6 +8,12 @@ import { portrait } from './portrait';
 
 export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void }
 
+/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Controles, 4 Créditos) */
+const NAV = {
+  right: [1, 1, 2, 4, 4], left: [0, 0, 0, 3, 3],
+  down: [3, 2, 4, 3, 4], up: [0, 1, 1, 0, 2],
+};
+
 /** total de evoluções do jogo (para "Evoluções x / y") */
 const TOTAL_EVOS = Object.values(FORMS).reduce((n, f) => n + f.evolutions.length, 0);
 
@@ -16,7 +22,7 @@ const TOTAL_EVOS = Object.values(FORMS).reduce((n, f) => n + f.evolutions.length
  * ao lado, fileira de atalhos e o painel "Seus parceiros" (melhor resultado de cada um). Fundo: o Mundo Digital.
  * Setas percorrem os itens na ordem; confirm abre; opt1 joga.
  */
-export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: TitleNav, lastPartner = 'agumon'): Modal {
+export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: TitleNav, lastPartner = save.lastPartner || 'agumon'): Modal {
   const rec = save.records;
   const partners = app.partners();
   const unlocked = partners.filter(p => !p.locked);
@@ -50,14 +56,13 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
   const side = (cls: string, icon: string, title: string, sub: string, go: () => void) => item(h('button', { type: 'button', class: `tt-card tt-side ${cls}` },
     h('span', { class: 'tt-side-ico' }, icon), h('span', { class: 'tt-card-txt' }, h('b', {}, title), h('span', {}, sub))), go);
   const stack = h('div', { class: 'tt-stack' },
-    side('tt-partners', '🥚', 'Parceiros', `${unlocked.length} / ${partners.length} liberados`, nav.partners),
-    side('tt-evos', '🧬', 'Evoluções', `${evos} / ${TOTAL_EVOS} descobertas`, nav.partners));
+    side('tt-partners', '🥚', 'Parceiros', `${unlocked.length} / ${partners.length} liberados · evoluções e golpes`, nav.partners),
+    side('tt-records', '🏆', 'Recordes', `Melhor fase ${rec.bestPhase} · ${rec.wins} vitórias`, nav.records));
 
   // fileira de atalhos
   const tile = (icon: string, title: string, sub: string, color: string, go: () => void) => item(h('button', { type: 'button', class: 'tt-tile', style: `--tt-c:${color}` },
-    h('span', { class: 'tt-tile-ico' }, icon), h('b', {}, title), h('span', { class: 'b2-label' }, sub)), go);
+    h('span', { class: 'tt-tile-ico' }, icon), h('span', { class: 'tt-tile-txt' }, h('b', {}, title), h('span', { class: 'b2-label' }, sub))), go);
   const tiles = h('div', { class: 'tt-tiles' },
-    tile('🏆', 'Recordes', `Melhor fase ${rec.bestPhase}`, '#ffd43b', nav.records),
     tile('⚙', 'Controles', 'Teclado · controle', '#3d9bff', nav.settings),
     tile('ⓘ', 'Créditos', 'Aviso legal', '#9a7dff', nav.credits));
 
@@ -93,8 +98,11 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     close() { if (!closed) { closed = true; screen.remove(); } },
     handle(input) {
       if (closed) return;
-      if (input.pressed('right') || input.pressed('down')) select(sel + 1);
-      else if (input.pressed('left') || input.pressed('up')) select(sel - 1);
+      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes (ao lado); 3 Controles | 4 Créditos (embaixo)
+      if (input.pressed('right')) select(NAV.right[sel]);
+      else if (input.pressed('left')) select(NAV.left[sel]);
+      else if (input.pressed('down')) select(NAV.down[sel]);
+      else if (input.pressed('up')) select(NAV.up[sel]);
       if (input.pressed('opt1')) return items[0].go();
       if (input.pressed('confirm')) items[sel].go();
     },

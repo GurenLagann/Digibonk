@@ -73,7 +73,7 @@ describe('menu no estilo de cartões', () => {
   test('Jogar é o cartão grande; atalhos têm ícone, nome e número', () => {
     const { root } = setup();
     expect(root.querySelector('.tt-play')!.textContent).toContain('Jogar');
-    expect(root.querySelectorAll('.tt-tile').length).toBeGreaterThanOrEqual(3);
+    expect(root.querySelectorAll('.tt-tile').length).toBe(2); // Controles e Créditos; Recordes fica ao lado do Jogar
   });
   test('painel "Seus parceiros" lista os liberados, do melhor resultado para o pior', () => {
     const { root } = setup(s => { s.partnerRecords = { agumon: { runs: 3, wins: 0, bestPhase: 2 }, guilmon: { runs: 9, wins: 2, bestPhase: 5 } }; });
@@ -81,9 +81,21 @@ describe('menu no estilo de cartões', () => {
     expect(rows).toHaveLength(3); // iniciais liberados
     expect(rows[0]).toContain('Guilmon');
   });
-  test('setas percorrem os itens e confirm abre o selecionado', () => {
-    const { m, calls } = setup();
-    m.handle(press('right')); m.handle(press('confirm'));
-    expect(calls).toEqual(['partners']);
+  test('setas seguem a posição na tela: Jogar | Parceiros/Recordes; atalhos embaixo', () => {
+    const go = (...keys: string[]) => { const t = setup(); for (const k of keys) t.m.handle(press(k)); t.m.handle(press('confirm')); return t.calls[0]; };
+    expect(go('right')).toBe('partners');
+    expect(go('right', 'down')).toBe('records');
+    expect(go('down')).toBe('settings');
+    expect(go('down', 'right')).toBe('credits');
+    expect(go('down', 'up')).toBe('play');
+    expect(go('left')).toBe('play');
+    expect(go('right', 'down', 'down')).toBe('credits');
+    expect(go('right', 'left')).toBe('play');
+  });
+  test('cada cartão abre uma tela diferente', () => {
+    const { root } = setup();
+    const labels = [...root.querySelectorAll('.tt-card b, .tt-tile b')].map(e => e.textContent);
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(labels).not.toContain('Evoluções');
   });
 });

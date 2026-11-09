@@ -3,7 +3,7 @@ import './ui/theme.css';
 import { createApp } from './app';
 import { createInput } from './core/input';
 import { createFixedLoop } from './core/loop';
-import { loadSave } from './core/save';
+import { loadSave, storeSave } from './core/save';
 import { sanitizeDiscovery } from './sim/discovery';
 import { CARD_LIST, CARDS } from './data/cards';
 import { ENEMIES } from './data/enemies';
@@ -53,7 +53,7 @@ const hud = mountHud(ui, () => input.codesFor('evolve').map(prettyCode).join(' /
 mountToasts(hud.toastHost); // coluna da direita do HUD, abaixo do painel de abates
 
 let run: RunState | null = null;
-let lastPartner = 'agumon';
+let lastPartner = save.lastPartner || 'agumon';
 let events: RunEvent[] = [];
 let resultsAt = 0;
 
@@ -72,6 +72,7 @@ function openSettings(back: () => void = toTitle) { showSettings(ui, input, save
 
 function startRun(partnerId: string) {
   lastPartner = partnerId;
+  save.lastPartner = partnerId; storeSave(save);
   run = createRun({ partnerId, seed: (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0, save });
   resultsAt = 0;
   hud.el.classList.remove('hidden');

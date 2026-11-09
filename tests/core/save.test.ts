@@ -57,3 +57,11 @@ describe('evoluções secretas', () => {
     storeSave(d, s); expect(loadSave(s)).toEqual(d);
   });
 });
+
+test('último parceiro: padrão vazio, só aceita texto e faz round trip', () => {
+  expect(defaultSave().lastPartner).toBe('');
+  const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ lastPartner: 5 }) });
+  expect(loadSave(s).lastPartner).toBe('');
+  const t = fakeStorage({}); storeSave({ ...defaultSave(), lastPartner: 'guilmon' }, t);
+  expect(loadSave(t).lastPartner).toBe('guilmon');
+});
