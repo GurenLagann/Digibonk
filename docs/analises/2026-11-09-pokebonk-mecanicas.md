@@ -209,8 +209,8 @@ Legenda de esforço para o DigiBonk: **P** pequeno (horas), **M** médio (um pla
     - o painel "Próx. evolução" mira a forma da build;
     - as cartas que ajudam o caminho ganham um selo, como o "No seu plano";
     - na escolha entre evoluções descobertas, a da build já vem selecionada.
-  - Em aberto: decidir se o caminho também **altera o sorteio das cartas** (ex.: oferecer mais os status pedidos) ou se
-    só orienta.
+  - **Decisão do usuário:** o caminho **só orienta** (painel, selo nas cartas e seleção padrão). Não mexe no sorteio
+    das cartas. Esforço **P**.
 - **DigiBonk hoje:** nada. **Proposta P–M:** começar só com ★ e ✕ por parceiro. O ★ dobra o peso no sorteio da
   subida de nível e o ✕ tira do sorteio. É barato e combina com a raridade.
 
@@ -242,6 +242,7 @@ Legenda de esforço para o DigiBonk: **P** pequeno (horas), **M** médio (um pla
 | 7 | Digimon aliados (2.2) | G | Precisa de IA aliada. |
 | 8 | Ficha de dano por golpe na pausa e no resultado (5) | P | Ajuda a balancear tudo isso. |
 | 9 | ★/✕ por parceiro (6.3) | P–M | Dá controle sobre o sorteio; casa com a raridade. |
+| 9b | Caminho de digievolução na build, só orientação (6.3) | P | Dá um objetivo à partida sem facilitá-la; usa as evoluções secretas. |
 | 10 | Laboratório com moeda permanente (6.2) | M | Transforma atualizar, banir e 4ª opção em progressão; usa `save.currency`. |
 | 11 | Digimon Analyzer (6.1) | M | Vitrine das evoluções secretas e do Digi Data. |
 | 12 | Recordes locais por mapa e contra o relógio (6.4) | P | O ranking online fica para quando houver servidor. |
