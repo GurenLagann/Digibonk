@@ -4,13 +4,14 @@ import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
 import { createRun, type RunState } from '../../src/sim/run';
 import { effectiveStats } from '../../src/sim/stats';
-import { showEvolve } from '../../src/ui/evolve';
+import { canEvolve, showBlindEvolve, showEvolve } from '../../src/ui/evolve';
 import { activeModal } from '../../src/ui/modal';
+import { discoverAll } from '../helpers';
 
 const press = (...a: string[]) => ({ pressed: (x: string) => a.includes(x) } as unknown as Input);
 
 function agumonRun(): RunState {
-  const r = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: null });
+  const r = createRun({ partnerId: 'agumon', seed: 1, save: discoverAll(defaultSave()), storage: null });
   r.prog.level = 9; r.prog.bonus.atk = 6;
   r.prog.slots[0] = { moveId: 'baby_flame', level: 3, fromCard: false };
   return r;
@@ -75,7 +76,7 @@ test('cancel (e pause) chamam onDone(null) sem evoluir', () => {
 });
 
 test('com 2 caminhos (Veemon), setas trocam a opção e confirm evolui para a escolhida', () => {
-  const r = createRun({ partnerId: 'veemon', seed: 1, save: defaultSave(), storage: null });
+  const r = createRun({ partnerId: 'veemon', seed: 1, save: discoverAll(defaultSave()), storage: null });
   r.prog.level = 9; r.prog.bonus.atk = 6; r.prog.bonus.def = 6; r.prog.bonus.spd = 6;
   const root = document.createElement('div');
   const m = showEvolve(root, r, () => {});
@@ -94,7 +95,7 @@ test('com 2 caminhos (Veemon), setas trocam a opção e confirm evolui para a es
 
 test('opt1/opt2/opt3 escolhem o caminho e evoluem na hora; opção inexistente é ignorada; abas mostram 1/2/3', () => {
   const mk = () => {
-    const r = createRun({ partnerId: 'veemon', seed: 1, save: defaultSave(), storage: null });
+    const r = createRun({ partnerId: 'veemon', seed: 1, save: discoverAll(defaultSave()), storage: null });
     r.prog.level = 9; r.prog.bonus.atk = 6; r.prog.bonus.def = 6; r.prog.bonus.spd = 6;
     return r;
   };
@@ -107,4 +108,39 @@ test('opt1/opt2/opt3 escolhem o caminho e evoluem na hora; opção inexistente �
   const r3 = mk(); const m3 = showEvolve(document.createElement('div'), r3, () => {});
   m3.handle(press('opt3')); expect(r3.prog.formId).toBe('veemon'); expect(m3.closed).toBe(false);
   m3.handle(press('opt1')); expect(r3.prog.formId).toBe('exveemon');
+});
+
+test('save vazio: Greymon é secreto, a tela não oferece nada', () => {
+  const r = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: null });
+  r.prog.level = 9; r.prog.bonus.atk = 6;
+  expect(canEvolve(r)).toBe(false);
+  const root = document.createElement('div');
+  showEvolve(root, r, () => {});
+  expect(root.querySelector('.evo-card')).toBeNull();
+});
+
+test('escolha às cegas: só cartas "???", não cancela, opt2 evolui para a segunda', () => {
+  const r = createRun({ partnerId: 'veemon', seed: 1, save: defaultSave(), storage: null });
+  r.prog.level = 9; r.prog.bonus.atk = 6; r.prog.bonus.def = 6; r.prog.bonus.spd = 6;
+  r.blindChoice = ['exveemon', 'veedramon'];
+  const root = document.createElement('div');
+  const done: string[] = [];
+  const m = showBlindEvolve(root, r, id => done.push(id));
+  const txt = root.textContent ?? '';
+  expect(txt).not.toContain('ExVeemon'); expect(txt).not.toContain('Veedramon');
+  expect(root.querySelector('canvas')).toBeNull();
+  expect(root.querySelectorAll('.evo-mystery')).toHaveLength(2);
+  m.handle(press('cancel')); m.handle(press('pause'));
+  expect(m.closed).toBe(false);
+  m.handle(press('opt2'));
+  expect(r.prog.formId).toBe('veedramon'); expect(done).toEqual(['veedramon']); expect(m.closed).toBe(true);
+});
+
+test('escolha às cegas: setas e Enter', () => {
+  const r = createRun({ partnerId: 'veemon', seed: 1, save: defaultSave(), storage: null });
+  r.prog.level = 9; r.prog.bonus.atk = 6; r.prog.bonus.def = 6; r.prog.bonus.spd = 6;
+  r.blindChoice = ['exveemon', 'veedramon'];
+  const m = showBlindEvolve(document.createElement('div'), r, () => {});
+  m.handle(press('right')); m.handle(press('confirm'));
+  expect(r.prog.formId).toBe('veedramon');
 });

@@ -1,15 +1,16 @@
 import type { Input } from '../core/input';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
-import { availableEvolutions } from '../sim/evolution';
-import { doEvolve, type RunState } from '../sim/run';
+import { knownAvailable } from '../sim/discovery';
+import { chooseBlind, doEvolve, type RunState } from '../sim/run';
 import { effectiveStats } from '../sim/stats';
 import { h, STAGE_NAMES, STAT_SHORT } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 import { chip } from './theme';
 
-export function canEvolve(run: RunState) { return availableEvolutions(run.prog, { save: run.save, phase: run.phase.phase }).length > 0; }
+/** só evoluções já descobertas abrem a tela (as secretas evoluem sozinhas) */
+export function canEvolve(run: RunState) { return knownAvailable(run.prog, { save: run.save, phase: run.phase.phase }).length > 0; }
 
 const STAT_ROWS = (['hp', 'atk', 'def', 'spd'] as const).map(k => [k, STAT_SHORT[k]] as const);
 
@@ -51,7 +52,7 @@ function optionCard(run: RunState, formId: string): HTMLElement {
  */
 export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: string | null) => void): Modal {
   const cur = FORMS[run.prog.formId];
-  const forms = availableEvolutions(run.prog, { save: run.save, phase: run.phase.phase });
+  const forms = knownAvailable(run.prog, { save: run.save, phase: run.phase.phase });
   let sel = 0, closed = false;
 
   const slot = h('div', { class: 'evo-opt' });
@@ -103,6 +104,56 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
       if (input.pressed('cancel') || input.pressed('pause')) return refuse();
       for (const [a, i] of [['opt1', 0], ['opt2', 1], ['opt3', 2]] as const) {
         if (input.pressed(a) && i < forms.length) { select(i); return accept(); }
+      }
+      if (input.pressed('confirm')) accept();
+    },
+  };
+  setActiveModal(m);
+  return m;
+}
+
+/**
+ * Escolha às cegas: 2+ evoluções secretas cumpridas ao mesmo tempo. Uma carta "???" por opção, sem nada que
+ * identifique o destino. Não dá para recusar (os requisitos voltariam a disparar); 1/2/3 escolhem e confirmam.
+ */
+export function showBlindEvolve(root: HTMLElement, run: RunState, onDone: (formId: string) => void): Modal {
+  const n = run.blindChoice?.length ?? 0;
+  let sel = 0, closed = false;
+  const cards = Array.from({ length: n }, (_, i) => h('button', { type: 'button', class: 'b2-panel tick evo-card evo-mystery', onclick: () => { select(i); accept(); } },
+    h('span', { class: 'evo-q' }, '?'), h('span', { class: 'b2-key' }, String(i + 1))));
+  const screen = h('div', { class: 'b2-screen evo-screen evo-blind' },
+    h('div', { class: 'evo-head' },
+      h('h1', { class: 'b2-title evo-title' }, 'Digievolução!'),
+      h('div', { class: 'b2-label' }, 'Algo está despertando… escolha um caminho')),
+    h('div', { class: 'evo-mysteries' }, ...cards),
+    h('div', { class: 'evo-foot' },
+      h('button', { type: 'button', class: 'b2-btn evo-go', onclick: () => accept() },
+        h('span', { class: 'b2-btn-label' }, 'Digievoluir!'), h('span', { class: 'b2-key' }, 'Enter'))));
+  root.append(screen);
+
+  function select(i: number) {
+    if (!n) return;
+    sel = (i + n) % n;
+    cards.forEach((c, j) => c.classList.toggle('b2-sel', j === sel));
+  }
+  function accept() {
+    if (closed) return;
+    const id = chooseBlind(run, sel);
+    if (!id) return;
+    m.close();
+    onDone(id);
+  }
+  select(0);
+
+  const m: Modal = {
+    get closed() { return closed; },
+    close() { if (!closed) { closed = true; screen.remove(); } },
+    handle(input: Input) {
+      if (closed) return;
+      if (input.pressed('left') || input.pressed('up')) select(sel - 1);
+      if (input.pressed('right') || input.pressed('down')) select(sel + 1);
+      for (const [a, i] of [['opt1', 0], ['opt2', 1], ['opt3', 2]] as const) {
+        if (input.pressed(a) && i < n) { select(i); return accept(); }
       }
       if (input.pressed('confirm')) accept();
     },

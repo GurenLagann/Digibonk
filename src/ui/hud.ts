@@ -4,7 +4,8 @@ import { FORMS } from '../data/forms';
 import { ITEMS } from '../data/items';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
-import { availableEvolutions, nextEvolutionHint, type EvoMissing } from '../sim/evolution';
+import { knownAvailable, visibleHint } from '../sim/discovery';
+import type { EvoMissing } from '../sim/evolution';
 import { xpToNext } from '../sim/progression';
 import type { RunState } from '../sim/run';
 import { moveCooldown } from '../sim/stats';
@@ -137,8 +138,9 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       // direita: abates + próxima evolução (retrato só muda com o alvo)
       setText(kills, fmtInt(p.kills));
       const ctx = { save: run.save, phase: ph.phase };
-      const avail = availableEvolutions(p, ctx), ready = avail.length > 0; // = canEvolve(run)
-      const hint = nextEvolutionHint(p, ctx);
+      // só evoluções descobertas aparecem; uma secreta com pistas vira "Greymon → ???" sem retrato
+      const avail = knownAvailable(p, ctx), ready = avail.length > 0; // = canEvolve(run)
+      const hint = visibleHint(p, ctx);
       const to = ready ? avail[0] : hint.kind === 'next' ? hint.to : '';
       const ek = `${hint.kind}:${to}:${ready ? 1 : 0}`;
       if (ek !== evoKey) {
@@ -147,10 +149,12 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
         evoPort.replaceChildren(...(to ? [portrait(to, { size: 36, silhouette: !ready })] : []));
         evoPort.classList.toggle('hidden', !to);
       }
-      const evoLabel = hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—' : FORMS[to]?.name ?? to;
+      const evoLabel = ready ? FORMS[to]?.name ?? to : hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—'
+        : hint.kind === 'secret' ? `${FORMS[hint.from]?.name ?? hint.from} → ???` : FORMS[to]?.name ?? to;
       setText(evoName, evoLabel);
       evoName.classList.toggle('long', evoLabel.length > 12); // ex.: BlackWarGreymon não quebra no meio
-      setText(evoText, ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : '');
+      const secretText = hint.kind === 'secret' ? [evoMissingText(hint.missing), hint.hidden ? '???' : ''].filter(Boolean).join(' · ') : '';
+      setText(evoText, ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : secretText);
 
       // golpes e cartas
       p.slots.forEach((s, i) => {

@@ -481,6 +481,15 @@
 /* nomes longos (BlackWarGrowlmon) cabem numa linha em vez de quebrar no meio */
 .evo-name.long { font-size: calc(13 * var(--u)); }
 .evo-card .evo-name.long { font-size: calc(15 * var(--u)); }
+/* escolha às cegas: cartas "???" sem nada do destino */
+.evo-mysteries { display: flex; gap: calc(18 * var(--u)); justify-content: center; }
+.evo-card.evo-mystery {
+  flex-direction: column; justify-content: center; gap: calc(8 * var(--u));
+  width: calc(170 * var(--u)); height: calc(220 * var(--u)); cursor: pointer; color: var(--b2-text); font: inherit;
+}
+.evo-mystery .evo-q { font-size: calc(96 * var(--u)); font-weight: 900; line-height: 1; color: var(--b2-cyan); text-shadow: 0 0 calc(18 * var(--u)) var(--b2-cyan); }
+.evo-mystery.b2-sel .evo-q { animation: evo-q-pulse 1.2s ease-in-out infinite; }
+@keyframes evo-q-pulse { 50% { transform: scale(1.08); filter: brightness(1.4); } }
 .evo-chips { display: flex; gap: calc(4 * var(--u)); justify-content: center; flex-wrap: wrap; }
 .evo-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(3 * var(--u)); }
 .evo-stat { display: grid; grid-template-columns: calc(30 * var(--u)) 1fr calc(76 * var(--u)); gap: calc(6 * var(--u)); align-items: center; font-size: calc(12 * var(--u)); }

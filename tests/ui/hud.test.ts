@@ -7,10 +7,11 @@ import { MOVES } from '../../src/data/moves';
 import { T } from '../../src/data/tuning';
 import { createRun, type RunState } from '../../src/sim/run';
 import { evoMissingText, mountHud } from '../../src/ui/hud';
-import { fakeStorage } from '../helpers';
+import { discoverAll, fakeStorage } from '../helpers';
+import { reveal } from '../../src/sim/discovery';
 
-function setup(partnerId = 'agumon') {
-  const run = createRun({ partnerId, seed: 1, save: defaultSave(), storage: fakeStorage({}) });
+function setup(partnerId = 'agumon', save = discoverAll(defaultSave())) {
+  const run = createRun({ partnerId, seed: 1, save, storage: fakeStorage({}) });
   const root = document.createElement('div');
   const hud = mountHud(root);
   hud.update(run);
@@ -136,10 +137,31 @@ test('evoMissingText formats every kind', () => {
 });
 
 test('evolve hint shows the bound key label from the getter', () => {
-  const run = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: fakeStorage({}) });
+  const run = createRun({ partnerId: 'agumon', seed: 1, save: discoverAll(defaultSave()), storage: fakeStorage({}) });
   run.prog.level = 9; run.prog.bonus.atk = 6;
   const root = document.createElement('div');
   const hud = mountHud(root, () => 'Q');
   hud.update(run);
   expect(root.querySelector('.hud-evotext')!.textContent).toBe('Digievoluir [Q]');
+});
+
+describe('evoluções secretas no painel', () => {
+  test('save vazio: Agumon pronto não revela Greymon', () => {
+    const { run, hud, q } = setup('agumon', defaultSave());
+    run.prog.level = 9; run.prog.bonus.atk = 20; hud.update(run);
+    expect(q('.hud-right').textContent).not.toContain('Greymon');
+    expect(q('.hud-right canvas')).toBeNull();
+    expect(q('.hud-right').classList.contains('ready')).toBe(false);
+  });
+  test('secreta com pista: "Greymon → ???" sem retrato nem destino', () => {
+    const save = defaultSave(); reveal(save, { edge: 'greymon->skullgreymon', key: 'stat:atk' });
+    const { run, hud, q } = setup('agumon', save);
+    run.prog.formId = 'greymon'; run.prog.level = 20; run.prog.bonus.atk = 40; hud.update(run);
+    expect(q('.hud-evoname').textContent).toBe('Greymon → ???');
+    expect(q('.hud-evotext').textContent).toBe('???');
+    expect(q('.hud-right').textContent).not.toContain('SkullGreymon');
+    expect(q('.hud-right canvas')).toBeNull();
+    run.prog.bonus.atk = 0; hud.update(run);
+    expect(q('.hud-evotext').textContent).toMatch(/^Atq \d+ · \?\?\?$/);
+  });
 });
