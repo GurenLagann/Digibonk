@@ -77,7 +77,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
       h('span', { class: 'tt-rank-v' }, r.runs ? `Fase ${r.bestPhase} · ${r.wins}V` : 'sem partidas')))));
 
   const screen = h('div', { class: 'b2-screen tt-screen' },
-    h('img', { class: 'tt-bg', src: './ui/digital-world.webp', alt: '', draggable: 'false' }),
+    h('img', { class: 'tt-bg', src: './ui/menu-bg.webp', alt: '', draggable: 'false' }),
     top,
     h('div', { class: 'tt-body' },
       h('div', { class: 'tt-main' },

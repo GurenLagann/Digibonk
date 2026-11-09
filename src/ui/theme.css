@@ -158,14 +158,15 @@
 /* ── tela inicial (src/ui/title.ts): escala com a janela (clamp/vw) ── */
 .title-logo-img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 18px rgba(0, 217, 255, .35)); user-select: none; }
 /* ── tela inicial em cartões (src/ui/title.ts) ──
-   --s escala tudo pela menor proporção da janela (base 1280×760); o conteúdo fica centralizado na vertical. */
-.tt-screen { --s: clamp(.6px, min(100vw / 1280, 100vh / 760), 2.2px); display: flex; flex-direction: column; gap: calc(16 * var(--s));
+   --s escala tudo pela menor proporção da janela (base 1600×900); o conteúdo fica centralizado na vertical. */
+.tt-screen { --s: clamp(.55px, min(100vw / 1600, 100vh / 900), 1.7px); display: flex; flex-direction: column; gap: calc(16 * var(--s));
   padding: calc(14 * var(--s)) clamp(16px, 3vw, 64px) calc(34 * var(--s)); overflow: hidden; }
-.tt-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; opacity: .28;
-  filter: blur(3px) saturate(1.1); pointer-events: none; user-select: none; z-index: 0; }
-/* vinheta: escurece as bordas e a parte de baixo, onde a moldura da arte vira ruído */
+.tt-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
+  pointer-events: none; user-select: none; z-index: 0; }
+/* escurece de leve a esquerda (onde ficam os cartões) e a base, para o texto ler bem sobre a paisagem */
 .tt-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 35%, transparent 35%, rgba(3, 8, 18, .85) 100%), linear-gradient(180deg, transparent 55%, rgba(3, 8, 18, .7)); }
+  background: linear-gradient(90deg, rgba(3, 10, 24, .55), rgba(3, 10, 24, .15) 55%, rgba(3, 10, 24, .35)),
+    linear-gradient(180deg, rgba(3, 10, 24, .25), transparent 25%, transparent 70%, rgba(3, 10, 24, .55)); }
 .tt-top, .tt-body { position: relative; z-index: 1; }
 .tt-screen > .title-legal { position: absolute; z-index: 1; left: clamp(16px, 3vw, 64px); bottom: calc(12 * var(--s)); font-size: calc(11 * var(--s)); opacity: .6; }
 .tt-top { display: flex; justify-content: space-between; align-items: center; gap: calc(14 * var(--s)); flex-wrap: wrap;
@@ -181,10 +182,11 @@
   background: rgba(0, 217, 255, .08); border: 1px solid rgba(0, 217, 255, .25); }
 .tt-chip b { font: 800 calc(17 * var(--s)) var(--b2-mono); font-variant-numeric: tabular-nums; }
 .tt-chip .b2-label, .tt-me-txt .b2-label, .tt-tile .b2-label, .tt-rank .b2-label, .tt-logo .b2-label { font-size: calc(12 * var(--s)); }
-.tt-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(260px, 26vw, 560px); grid-template-rows: minmax(0, 1fr);
+.tt-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(240px, 24vw, 460px); grid-template-rows: minmax(0, 1fr);
   gap: calc(28 * var(--s)); align-items: center; }
 .tt-main { display: flex; flex-direction: column; gap: calc(18 * var(--s)); min-width: 0; }
-.tt-logo { max-width: calc(440 * var(--s)); }
+.tt-logo { max-width: min(calc(420 * var(--s)), 100%); }
+.tt-main { max-width: calc(980 * var(--s)); }
 .tt-logo .b2-label { margin-top: calc(4 * var(--s)); }
 .tt-row { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: calc(14 * var(--s)); }
 /* cartões inclinados (o texto volta reto por dentro); a seleção é só anel + brilho, sem mudar o tamanho */
@@ -238,7 +240,24 @@
 .tt-rank-row .b2-portrait { width: calc(32 * var(--s)); height: calc(32 * var(--s)); }
 .tt-rank-n { font: 900 calc(14 * var(--s)) var(--b2-mono); color: var(--b2-text-dim); text-align: center; }
 .tt-rank-v { font: 700 calc(13 * var(--s)) var(--b2-mono); color: var(--b2-text-dim); white-space: nowrap; }
-@media (max-width: 900px) { .tt-screen { overflow-y: auto; } .tt-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; } .tt-row { grid-template-columns: minmax(0, 1fr); } .tt-screen > .title-legal { position: static; } }
+/* telas médias: painel lateral mais estreito */
+@media (max-width: 1100px) { .tt-body { grid-template-columns: minmax(0, 1fr) clamp(220px, 30vw, 320px); } }
+/* telas estreitas (e celular): uma coluna com rolagem; a escala passa a seguir a largura */
+@media (max-width: 820px) {
+  .tt-screen { --s: clamp(.7px, 100vw / 820, 1px); overflow-y: auto; justify-content: flex-start; }
+  .tt-top { border-radius: calc(18 * var(--s)); }
+  .tt-chips { gap: calc(6 * var(--s)); }
+  .tt-chip { padding: calc(4 * var(--s)) calc(9 * var(--s)); }
+  .tt-body { flex: none; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; align-items: start; }
+  .tt-main { max-width: none; }
+  .tt-row { grid-template-columns: minmax(0, 1fr); }
+  .tt-stack { flex-direction: row; } .tt-side { min-height: calc(90 * var(--s)); }
+  .tt-rank { max-height: none; } .tt-rank-list { overflow: visible; }
+  .tt-screen > .title-legal { position: static; margin-top: auto; }
+}
+@media (max-width: 520px) { .tt-stack { flex-direction: column; } .tt-tiles { grid-template-columns: minmax(0, 1fr); } .tt-play .tt-card-txt b { font-size: 36px; } }
+/* janelas baixas: logo menor, sem subtítulo */
+@media (max-height: 620px) and (min-width: 821px) { .tt-logo { max-width: calc(300 * var(--s)); } .tt-logo .b2-label { display: none; } .tt-play { min-height: calc(130 * var(--s)); } }
 .title-legal { position: absolute; left: clamp(24px, 5vw, 96px); bottom: 18px; opacity: .6; }
 
 /* ── recordes (src/ui/records.ts) ── */
