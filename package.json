@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "sprites": "node --experimental-strip-types tools/sprites/build.ts",
+    "painel": "node --experimental-strip-types --disable-warning=ExperimentalWarning tools/painel/build.ts",
     "sprites:vpet": "node --experimental-strip-types tools/sprites/build-vpet.ts && node --experimental-strip-types tools/sprites/build-gemini.ts && node --experimental-strip-types tools/sprites/build-dw3.ts",
     "db:migrate": "node --experimental-strip-types --disable-warning=ExperimentalWarning tools/db/cli.ts migrate",
     "db:seed": "node --experimental-strip-types --disable-warning=ExperimentalWarning tools/db/cli.ts seed",

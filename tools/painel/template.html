@@ -1,0 +1,331 @@
+<title>Painel DigiBonk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: faixa de cabeçalho com números do repositório, depois seções empilhadas; a árvore de evolução usa 4 colunas
+   por estágio (Child → Adult → Perfect → Ultimate) que viram uma coluna só no celular. */
+:root {
+  --bg: #eef3f8; --panel: #ffffff; --panel2: #f5f8fc; --line: #d3dde8; --fg: #0e1c2c; --dim: #4f6276;
+  --accent: #e8650f; --accent-soft: #fde7d6; --cyan: #0083ad; --cyan-soft: #d8f1fa;
+  --ok: #1d8a4e; --ok-soft: #dcf3e5; --warn: #b26a00; --warn-soft: #fbedd2; --info: #4b6cb7; --info-soft: #e1e8f8;
+  --bad: #c0392b; --bad-soft: #f8dfdb; --dark: #6b3fa0; --dark-soft: #ece2f7;
+  --r1: #184f95; --r2: #2a78d6; --r3: #86b6ef; --r0: #c9d3de;
+  --display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'DejaVu Sans Mono', monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #07111d; --panel: #0d1d30; --panel2: #10233a; --line: #1f3a58; --fg: #e3f2ff; --dim: #93acc4;
+  --accent: #ff8a3d; --accent-soft: #3a2110; --cyan: #3fd2ff; --cyan-soft: #0b3346;
+  --ok: #4fd18b; --ok-soft: #10301f; --warn: #f2b14a; --warn-soft: #36270d; --info: #8fa9ef; --info-soft: #1a2546;
+  --bad: #ff7b6b; --bad-soft: #3a1612; --dark: #c29bf2; --dark-soft: #2a1a40;
+  --r1: #cde2fb; --r2: #5598e7; --r3: #1c5cab; --r0: #2a3e55; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #07111d; --panel: #0d1d30; --panel2: #10233a; --line: #1f3a58; --fg: #e3f2ff; --dim: #93acc4;
+  --accent: #ff8a3d; --accent-soft: #3a2110; --cyan: #3fd2ff; --cyan-soft: #0b3346;
+  --ok: #4fd18b; --ok-soft: #10301f; --warn: #f2b14a; --warn-soft: #36270d; --info: #8fa9ef; --info-soft: #1a2546;
+  --bad: #ff7b6b; --bad-soft: #3a1612; --dark: #c29bf2; --dark-soft: #2a1a40;
+  --r1: #cde2fb; --r2: #5598e7; --r3: #1c5cab; --r0: #2a3e55; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 400 15px/1.5 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; }
+h2 { font-size: 22px; font-weight: 700; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h2 small { font: 600 12px var(--body); color: var(--dim); letter-spacing: .06em; text-transform: uppercase; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.dim { color: var(--dim); }
+.mono { font-family: var(--mono); font-size: 12.5px; }
+section { display: flex; flex-direction: column; gap: 16px; }
+
+/* cabeçalho */
+.head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px 32px; align-items: end; }
+.head .kicker { font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.head p.lead { max-width: 62ch; color: var(--dim); margin-top: 6px; }
+.stamp { font-family: var(--mono); font-size: 12px; color: var(--dim); text-align: right; line-height: 1.7; }
+.stamp b { color: var(--fg); font-weight: 600; }
+.nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.num { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.num b { font: 700 28px var(--display); font-variant-numeric: tabular-nums; }
+.num span { font-size: 13px; color: var(--dim); }
+
+/* planos */
+.timeline { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.plan { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.plan .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plan .tag { font: 600 11px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.plan p { font-size: 14px; color: var(--dim); }
+.plan .file { font-family: var(--mono); font-size: 11.5px; color: var(--cyan); overflow-wrap: anywhere; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--body); padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.p-ok { color: var(--ok); background: var(--ok-soft); }
+.p-warn { color: var(--warn); background: var(--warn-soft); }
+.p-info { color: var(--info); background: var(--info-soft); }
+.p-bad { color: var(--bad); background: var(--bad-soft); }
+.p-cyan { color: var(--cyan); background: var(--cyan-soft); }
+.spill { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--body); color: var(--dim); }
+
+/* tabelas */
+.tbl-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 11.5px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); background: var(--panel2); }
+tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--mono); color: var(--dim); width: 42px; }
+.eff { font: 700 12px var(--mono); padding: 1px 8px; border-radius: 5px; border: 1px solid var(--line); }
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.box ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.box li { font-size: 14px; }
+
+/* sprites */
+.bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--dim); }
+
+/* árvore */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 600 13px var(--display); letter-spacing: .03em; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--fg); cursor: pointer; }
+.tab:hover { border-color: var(--cyan); }
+.tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.tab[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.tab small { font: 600 10px var(--body); opacity: .7; margin-left: 4px; }
+.tree { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.stage { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.stage > h3 { font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.node { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.node.dark { border-color: var(--dark); background: linear-gradient(var(--dark-soft), var(--panel) 60%); }
+.node .nm { font: 700 15.5px var(--display); overflow-wrap: anywhere; }
+.node .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.attr { font: 600 11px var(--mono); color: var(--dim); }
+.edges { display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--line); padding-top: 8px; }
+.edge { font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.edge .to { font-weight: 700; }
+.edge .to::before { content: "→ "; color: var(--accent); }
+.edge.darkedge .to::before { color: var(--dark); }
+.reqs { display: flex; flex-wrap: wrap; gap: 4px; }
+.req { font: 500 11.5px var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--panel2); border: 1px solid var(--line); }
+.req.nd { color: var(--dark); border-color: var(--dark); }
+.req.it { color: var(--cyan); border-color: var(--cyan); }
+.note { font-size: 12px; color: var(--dim); }
+.final { font: 600 11px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+
+/* dashboard */
+.dash { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; }
+.chart { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.chart h3 { font-size: 15px; }
+.chart .sub { font-size: 13px; color: var(--dim); margin-top: -6px; }
+.legend2 { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--dim); }
+.legend2 span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.s-none, .seg.s-none { background: repeating-linear-gradient(45deg, var(--r0) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--r0); }
+.s-done { background: var(--r1); } .s-adjust, .s-partial { background: var(--r2); } .s-idle { background: var(--r3); }
+.hrows { display: flex; flex-direction: column; gap: 7px; }
+.hrow { display: grid; grid-template-columns: 104px minmax(0, 1fr) 84px; align-items: center; gap: 10px; font-size: 13px; }
+.hrow .lbl { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hrow .val { font: 500 12px var(--mono); color: var(--dim); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.stack { display: flex; gap: 2px; height: 16px; }
+.seg { height: 100%; min-width: 3px; cursor: default; }
+.seg:first-child { border-radius: 4px 0 0 4px; } .seg:last-child { border-radius: 0 4px 4px 0; } .seg:only-child { border-radius: 4px; }
+.seg:hover, .col-seg:hover { filter: brightness(1.15); outline: 2px solid var(--fg); outline-offset: 1px; }
+.cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: end; height: 190px; padding-top: 8px; border-bottom: 1px solid var(--line); }
+.col { display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; position: relative; }
+.col-seg { width: 100%; }
+.col-seg:last-child { border-radius: 4px 4px 0 0; }
+.col .top { font: 600 12px var(--mono); color: var(--fg); text-align: center; margin-bottom: 4px; }
+.col-lbl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; font: 600 11.5px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); text-align: center; }
+details.tbl summary { cursor: pointer; font-size: 13px; color: var(--cyan); }
+details.tbl table { min-width: 0; font-size: 13px; margin-top: 8px; }
+details.tbl td, details.tbl th { padding: 5px 8px; }
+#tip { position: fixed; z-index: 20; pointer-events: none; background: var(--fg); color: var(--bg); font: 500 12.5px var(--body); padding: 6px 9px; border-radius: 6px; max-width: 260px; box-shadow: 0 4px 14px rgb(0 0 0 / .25); }
+.effs { display: flex; gap: 8px; flex-wrap: wrap; }
+/* miniaturas */
+.node .top { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; }
+.thumb { width: 56px; height: 56px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; }
+.thumb img { max-width: 48px; max-height: 48px; image-rendering: pixelated; }
+.thumb.miss { border-style: dashed; font: 700 13px var(--display); color: var(--dim); }
+@media (max-width: 860px) { .dash { grid-template-columns: minmax(0, 1fr); } }
+footer { font-size: 13px; color: var(--dim); border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 860px) { .tree { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .tree { grid-template-columns: minmax(0, 1fr); } .head { grid-template-columns: 1fr; } .stamp { text-align: left; } }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="kicker">DigiBonk · acompanhamento do desenvolvimento</div>
+      <h1>Painel DigiBonk</h1>
+      <p class="lead">Planos concluídos, o que vem a seguir, pendências conhecidas e as linhas de digievolução de cada parceiro com os requisitos e o estado dos sprites. Os dados das linhas saem do banco do jogo (<span class="mono">src/data/generated/gamedata.ts</span>).</p>
+    </div>
+    <div class="stamp">Atualizado em <b>__UPDATED__</b><br>branch <b>main</b> · <b>__HEAD__</b><br>GitHub em <b>__REMOTE__</b> (__AHEAD__ commits só local)</div>
+  </header>
+
+  <div class="nums" aria-label="Números do repositório">
+    <div class="num"><b id="nplans">6</b><span>planos concluídos</span></div>
+    <div class="num"><b>__TESTS__</b><span>testes passando</span></div>
+    <div class="num"><b>__COMMITS__</b><span>commits no main</span></div>
+    <div class="num"><b>11</b><span>parceiros (3 iniciais)</span></div>
+    <div class="num"><b>__FORMS__</b><span>formas jogáveis</span></div>
+    <div class="num"><b>__SPRITEDONE__/__FORMS__</b><span>formas com sprite completo</span></div>
+  </div>
+
+  <section aria-labelledby="s-dash">
+    <h2 id="s-dash">Visão geral <small>passe o mouse nas barras para ver os números</small></h2>
+    <div class="dash">
+      <div class="chart">
+        <h3>Sprites por linha de parceiro</h3>
+        <p class="sub">Quantas formas de cada linha já têm sprite pronto. Os iniciais vêm primeiro.</p>
+        <div class="legend2" id="leg"></div>
+        <div class="hrows" id="hrows"></div>
+        <details class="tbl"><summary>Ver como tabela</summary><div class="tbl-wrap" style="border:0"><table id="ptable"></table></div></details>
+      </div>
+      <div class="chart">
+        <h3>Sprites por estágio</h3>
+        <p class="sub">Onde está a falta de arte: as formas Perfect e Ultimate.</p>
+        <div class="cols" id="cols"></div>
+        <div class="col-lbl"><span>Child</span><span>Adult</span><span>Perfect</span><span>Ultimate</span></div>
+        <h3 style="margin-top:8px">Próximos passos por esforço</h3>
+        <div class="effs" id="effs"></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-plans">
+    <h2 id="s-plans">O que já foi feito <small>planos e entregas, em ordem</small></h2>
+    <div class="timeline" id="plans"></div>
+  </section>
+
+  <section aria-labelledby="s-next">
+    <h2 id="s-next">O que vem a seguir <small>a decidir · ordem recomendada</small></h2>
+    <p class="dim">Vem da análise de mecânicas do PokéBonk (<span class="mono">docs/analises/2026-11-09-pokebonk-mecanicas.md</span>). Esforço: <b>P</b> horas, <b>M</b> um plano de 4–6 tarefas, <b>G</b> grande. Nada aqui foi começado.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Mecânica</th><th>Esforço</th><th>Por quê</th></tr></thead>
+      <tbody id="next"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="s-pend">
+    <h2 id="s-pend">Pendências conhecidas</h2>
+    <div class="cols2">
+      <div class="box"><h3>Ajustes adiados (revisões de código)</h3><ul id="minors"></ul></div>
+      <div class="box"><h3>Balanceamento e decisões em aberto</h3><ul id="open"></ul></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-evo">
+    <h2 id="s-evo">Caminhos de digievolução <small>requisitos e sprite de cada forma</small></h2>
+    <p class="dim">No jogo, toda evolução começa secreta e só aparece depois de descoberta (plano 6). Aqui estão todas, para os devs. Bordas roxas marcam o ramo sombrio, que pede vezes com HP abaixo de 25%.</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="tree" id="tree"></div>
+  </section>
+  <div id="tip" hidden></div>
+
+  <footer>Gerado a partir do repositório <span class="mono">GurenLagann/Digibonk</span>. Fan-game sem fins lucrativos; Digimon pertence à Bandai/Toei.</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+const C = __CONTENT__;
+const h = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v); } for (const k of kids.flat()) if (k != null) e.append(k); return e; };
+const $ = id => document.getElementById(id);
+
+// ── conteúdo curado (tools/painel/conteudo.json)
+$('nplans').textContent = String(C.planos.filter(p => p.n.startsWith('Plano')).length);
+$('plans').append(...C.planos.map(p => h('article', { class: 'plan' },
+  h('div', { class: 'row' }, h('span', { class: 'tag' }, `${p.n} · ${p.d}`), h('span', { class: 'pill p-ok' }, p.n === 'Análise' ? 'feito' : 'concluído')),
+  h('h3', {}, p.t), h('p', {}, p.p), h('span', { class: 'file' }, p.f))));
+$('next').append(...C.proximos.map((r, i) => h('tr', {}, h('td', { class: 'n' }, String(i + 1)), h('td', {}, r[0]), h('td', {}, h('span', { class: 'eff' }, r[1])), h('td', { class: 'dim' }, r[2]))));
+$('minors').append(...C.ajustes.map(t => h('li', {}, t)));
+$('open').append(...C.abertos.map(t => h('li', {}, t)));
+
+// ── estados de sprite: rampa ordinal (completo → sem sprite)
+const ORDER = ['done', 'adjust', 'partial', 'idle', 'none'];
+const SPN = { done: 'completo', adjust: 'ajustar', partial: 'parcial', idle: 'só parado', none: 'sem sprite' };
+const forms = DATA.forms, total = Object.keys(forms).length;
+const present = ORDER.filter(k => Object.values(forms).some(f => f.sp.st === k));
+$('leg').append(...present.map(k => h('span', {}, h('i', { class: `sw s-${k}` }), SPN[k])));
+
+const tip = $('tip');
+function bindTip(el, text) {
+  el.setAttribute('aria-label', text); el.tabIndex = 0;
+  const show = ev => { tip.textContent = text; tip.hidden = false; const r = el.getBoundingClientRect(); const x = ev && ev.clientX ? ev.clientX : r.left + r.width / 2, y = ev && ev.clientY ? ev.clientY : r.top; tip.style.left = Math.min(innerWidth - 270, x + 12) + 'px'; tip.style.top = (y + 16) + 'px'; };
+  el.addEventListener('mousemove', show); el.addEventListener('focus', () => show()); el.addEventListener('click', show);
+  el.addEventListener('mouseleave', () => tip.hidden = true); el.addEventListener('blur', () => tip.hidden = true);
+}
+
+function lineOf(start) { const seen = [], q = [start]; while (q.length) { const id = q.shift(); if (seen.includes(id) || !forms[id]) continue; seen.push(id); for (const e of forms[id].ev) q.push(e.to); } return seen; }
+const SEASON = { adventure: 'Adventure', adventure02: 'Adventure 02', tamers: 'Tamers' };
+const partners = [...DATA.partners].sort((a, b) => (b.starter - a.starter));
+const rows = partners.map(p => { const ids = lineOf(p.childForm); const c = {}; for (const id of ids) c[forms[id].sp.st] = (c[forms[id].sp.st] || 0) + 1; return { p, ids, c, n: ids.length }; });
+
+$('hrows').append(...rows.map(r => {
+  const stack = h('div', { class: 'stack' });
+  for (const k of present) if (r.c[k]) {
+    const seg = h('div', { class: `seg s-${k}` }); seg.style.flex = String(r.c[k]);
+    const names = r.ids.filter(id => forms[id].sp.st === k).map(id => forms[id].n).join(', ');
+    bindTip(seg, `${forms[r.p.childForm].n} · ${SPN[k]}: ${r.c[k]} de ${r.n} — ${names}`);
+    stack.append(seg);
+  }
+  return h('div', { class: 'hrow' }, h('span', { class: 'lbl', title: forms[r.p.childForm].n }, forms[r.p.childForm].n), stack, h('span', { class: 'val' }, `${r.c.done || 0}/${r.n} prontos`));
+}));
+const pt = $('ptable');
+pt.append(h('thead', {}, h('tr', {}, h('th', {}, 'Linha'), ...present.map(k => h('th', {}, SPN[k])), h('th', {}, 'Total'))),
+  h('tbody', {}, ...rows.map(r => h('tr', {}, h('td', {}, forms[r.p.childForm].n), ...present.map(k => h('td', { class: 'mono' }, String(r.c[k] || 0))), h('td', { class: 'mono' }, String(r.n))))));
+
+const STAGES = [['child', 'Child'], ['adult', 'Adult'], ['perfect', 'Perfect'], ['ultimate', 'Ultimate']];
+const byStage = STAGES.map(([st, label]) => { const ids = Object.keys(forms).filter(id => forms[id].s === st); const c = {}; for (const id of ids) c[forms[id].sp.st] = (c[forms[id].sp.st] || 0) + 1; return { st, label, ids, c }; });
+const maxN = Math.max(...byStage.map(b => b.ids.length));
+$('cols').append(...byStage.map(b => {
+  const col = h('div', { class: 'col' }, h('div', { class: 'top' }, String(b.ids.length)));
+  for (const k of [...present].reverse()) if (b.c[k]) {
+    const seg = h('div', { class: `col-seg seg s-${k}` }); seg.style.height = `${(b.c[k] / maxN) * 85}%`;
+    bindTip(seg, `${b.label} · ${SPN[k]}: ${b.c[k]} de ${b.ids.length}`);
+    col.append(seg);
+  }
+  return col;
+}));
+const effCount = {}; for (const r of C.proximos) effCount[r[1]] = (effCount[r[1]] || 0) + 1;
+$('effs').append(...Object.entries(effCount).map(([e, n]) => h('div', { class: 'num', style: 'padding:10px 14px;flex:1;min-width:90px' }, h('b', { style: 'font-size:22px' }, String(n)), h('span', {}, `esforço ${e}`))));
+
+// ── árvore de evolução por parceiro
+const ATTR = { vaccine: 'Vacina', virus: 'Vírus', data: 'Dados', free: 'Livre' };
+const isDark = r => r.some(x => x.startsWith('HP<25%'));
+const darkForms = new Set(); for (const f of Object.values(forms)) for (const e of f.ev) if (isDark(e.r)) darkForms.add(e.to);
+function thumb(id) {
+  const f = forms[id];
+  if (!f.img) return h('div', { class: 'thumb miss', title: 'sem sprite' }, f.n.slice(0, 3).toUpperCase());
+  return h('div', { class: 'thumb' }, h('img', { src: f.img, alt: `Sprite de ${f.n}`, loading: 'lazy' }));
+}
+function render(pid) {
+  const p = DATA.partners.find(x => x.id === pid), ids = lineOf(p.childForm);
+  $('tree').replaceChildren(...STAGES.map(([st, label]) => h('div', { class: 'stage' }, h('h3', {}, label),
+    ...ids.filter(id => forms[id].s === st).map(id => {
+      const f = forms[id];
+      return h('div', { class: 'node' + (darkForms.has(id) ? ' dark' : '') },
+        h('div', { class: 'top' }, thumb(id), h('div', {},
+          h('div', { class: 'nm' }, f.n),
+          h('div', { class: 'meta' }, h('span', { class: 'attr' }, ATTR[f.a] || f.a), h('span', { class: 'spill', title: f.sp.note }, h('i', { class: `sw s-${f.sp.st}` }), SPN[f.sp.st])))),
+        h('div', { class: 'note' }, f.sp.note),
+        f.ev.length ? h('div', { class: 'edges' }, ...f.ev.map(e => h('div', { class: 'edge' + (isDark(e.r) ? ' darkedge' : '') },
+          h('span', { class: 'to' }, forms[e.to]?.n || e.to),
+          h('div', { class: 'reqs' }, ...e.r.map(r => h('span', { class: 'req' + (r.startsWith('HP<25%') ? ' nd' : /^(Nv|Atq|Def|Vel|Vida|Int|Fase|\d)/.test(r) ? '' : ' it') }, r))))))
+          : h('div', { class: 'final' }, 'forma final'));
+    }))));
+  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.id === pid));
+  try { localStorage.setItem('digibonk-painel-tab', pid); } catch {}
+}
+for (const p of partners) {
+  const b = h('button', { class: 'tab', role: 'tab', type: 'button', onclick: () => render(p.id) }, forms[p.childForm].n, h('small', {}, p.starter ? 'inicial' : SEASON[p.season]));
+  b.dataset.id = p.id; $('tabs').append(b);
+}
+let start = 'agumon'; try { const s = localStorage.getItem('digibonk-painel-tab'); if (s && DATA.partners.some(p => p.id === s)) start = s; } catch {}
+render(start);
+</script>

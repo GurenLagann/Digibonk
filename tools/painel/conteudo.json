@@ -1,0 +1,40 @@
+{
+  "atualizado": "09/11/2026",
+  "planos": [
+    { "n": "Plano 1", "d": "07/11", "t": "Motor jogável", "p": "Partida completa no navegador com Agumon, Veemon e Guilmon: 5 fases de 10 min, missão, chefe e hordas.", "f": "plans/2026-11-07-digibonk-plano-1-motor.md" },
+    { "n": "Plano 2", "d": "07/11", "t": "Sprites reais", "p": "Recortador automático das folhas de sprite; animação, espelhamento e 8 direções no jogo. Depois vieram as folhas do ChatGPT.", "f": "plans/2026-11-07-digibonk-plano-2-sprites.md" },
+    { "n": "Plano 3", "d": "07/11", "t": "Banco de dados", "p": "SQLite com migrations e seeds gera os dados do jogo. Crescimento de 0,5% por nível, vantagem de atributo e cartas com nível.", "f": "plans/2026-11-07-digibonk-plano-3-banco.md" },
+    { "n": "Plano 4", "d": "07/11", "t": "Parceiros desbloqueáveis", "p": "Os 8 parceiros liberados por ovo, cada um com a linha até o Mega.", "f": "plans/2026-11-07-digibonk-plano-4-parceiros.md" },
+    { "n": "Plano 5", "d": "08/11", "t": "Interface B2", "p": "Todas as telas e o HUD no estilo B2, cartas de level up estilo Tamers, descrição dos golpes e tela inicial com logo.", "f": "plans/2026-11-08-digibonk-plano-5-interface.md" },
+    { "n": "Extra", "d": "08/11", "t": "Ramo sombrio", "p": "SkullGreymon, BlackWarGreymon, BlackWarGrowlmon e Megidramon por quase-mortes (HP < 25%). Evolução deixou de depender da fase.", "f": "db/seeds/006_ramo_sombrio.sql" },
+    { "n": "Plano 6", "d": "08/11", "t": "Evoluções secretas e Digi Data", "p": "Evolução invisível até ser descoberta, evolução automática, escolha às cegas e pistas de Digi Data no resultado.", "f": "plans/2026-11-08-digibonk-plano-6-evolucoes-secretas.md" },
+    { "n": "Análise", "d": "09/11", "t": "Mecânicas do PokéBonk", "p": "Partida gravada e telas do menu lidas. Lista priorizada do que trazer para o DigiBonk.", "f": "analises/2026-11-09-pokebonk-mecanicas.md" }
+  ],
+  "proximos": [
+    ["Nível infinito com ganho automático de atributo", "P", "Acaba com telas inúteis no fim da partida."],
+    ["Raridade das cartas + atualizar, pular e banir", "P–M", "Cada nível vira uma decisão de verdade."],
+    ["\"Ficar como está\" com bônus (Maturidade)", "P", "Completa as evoluções secretas."],
+    ["Zona Digital com relíquias", "M", "Dá vida ao mapa e é a fonte natural de Digi Data."],
+    ["Jogress de golpes no nível máximo", "M", "Pico de poder da partida; combina com DNA Digivolution."],
+    ["Altares de risco e baús pagos", "M", "Escolhas no mapa."],
+    ["Digimon aliados", "G", "Precisa de IA aliada."],
+    ["Ficha de dano por golpe na pausa e no resultado", "P", "Ajuda a balancear tudo isso."],
+    ["★/✕ por parceiro nas builds", "P–M", "Controle sobre o sorteio; casa com a raridade."],
+    ["Caminho de digievolução na build (só orienta)", "P", "Objetivo para a partida sem facilitá-la. Decisão do usuário: não mexe no sorteio."],
+    ["Laboratório com moeda permanente", "M", "Transforma atualizar, banir e 4ª opção em progressão; usa save.currency."],
+    ["Digimon Analyzer", "M", "Vitrine das evoluções secretas e do Digi Data."],
+    ["Recordes locais por mapa e contra o relógio", "P", "Ranking online só quando houver servidor."]
+  ],
+  "ajustes": [
+    "Digi Data e baús podem cair dentro de obstáculos.",
+    "Cartas \"???\" da escolha às cegas vêm sempre na mesma ordem; embaralhar.",
+    "Forçar evolução pelo debug durante a escolha às cegas trava o jogo (só debug).",
+    "Árvore da seleção de parceiro não mostra o \"???\" final quando restam requisitos ocultos."
+  ],
+  "abertos": [
+    "Quase-mortes do ramo sombrio (3, 8 e 12) foram chute: calibrar jogando.",
+    "Digi Data só sorteia linhas de parceiros liberados (ajuste da revisão; o pedido original era \"qualquer\").",
+    "Vazamentos aceitos do design: \"Caminho Greymon\" revela que existe caminho até o Greymon; o número de cartas \"???\" revela quantas opções há.",
+    "Servidor para ranking online: decidido para depois (hoje é SQLite local)."
+  ]
+}
