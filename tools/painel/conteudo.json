@@ -84,14 +84,16 @@
       "t": "Zona Digital (Distorção)",
       "p": "Guardião derrotado abre um portal (30 s) para uma arena separada: 4 ondas do atributo e o guardião como Alfa (60 s). Vencer dá Digi Data e 1 de 3 relíquias (até 3 por partida). O mapa volta igual na saída.",
       "f": "src/sim/zone.ts · migration 005 · seed 008"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Jogress de golpes",
+      "p": "Com dois golpes no nível máximo surge um Terminal Jogress no mapa (desde a fase 1, uma vez por partida). O par vira um golpe num espaço só, os dois disparam com +25% de dano e o outro espaço fica livre.",
+      "f": "src/sim/jogress.ts · src/ui/jogress.ts"
     }
   ],
   "proximos": [
-    [
-      "Jogress de golpes no nível máximo",
-      "M",
-      "Pico de poder da partida; combina com DNA Digivolution."
-    ],
     [
       "Altares de risco e baús pagos",
       "M",
