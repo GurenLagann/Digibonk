@@ -43,6 +43,7 @@ export function exportGameData(db: Db) {
     const req = {
       minLevel: e.min_level, minStats: Object.keys(minStats).length ? minStats : undefined,
       items: nonEmpty(evoItems(e.id)), unlocked: nonEmpty(evoUnlocks(e.id)), minPhase: opt(e.min_phase), minKills: opt(e.min_kills),
+      minNearDeaths: opt(e.min_near_deaths),
     };
     if (!evolutions.has(e.from_form)) evolutions.set(e.from_form, []);
     evolutions.get(e.from_form)!.push({ to: e.to_form, req });
