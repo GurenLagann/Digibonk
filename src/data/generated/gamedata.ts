@@ -1,6 +1,6 @@
 // GERADO por tools/db/export.ts a partir de db/migrations + db/seeds — não editar à mão.
 // Para mudar dados: edite o seed (db/seeds) e rode `npm run db:build`.
-import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, MoveDef, PartnerDef } from '../types';
+import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, MoveDef, PartnerDef, RelicDef } from '../types';
 
 export const MOVES: Record<string, MoveDef> = {
  "baby_flame": {
@@ -5632,5 +5632,79 @@ export const ELEMENT_CHART: Record<ElementId, Record<ElementId, number>> = {
   "steel": 1,
   "water": 1,
   "wind": 1
+ }
+};
+export const RELICS: Record<string, RelicDef> = {
+ "relic_tag_courage": {
+  "id": "relic_tag_courage",
+  "name": "Etiqueta da Coragem",
+  "description": "Enquanto luta, o corpo se recupera devagar.",
+  "stat": "atk",
+  "statPct": 8,
+  "effect": "regen",
+  "value": 2
+ },
+ "relic_crest_reliance": {
+  "id": "relic_crest_reliance",
+  "name": "Brasão da Confiança",
+  "description": "Atrai os dados de longe.",
+  "stat": "def",
+  "statPct": 8,
+  "effect": "pickup",
+  "value": 1.5
+ },
+ "relic_crest_knowledge": {
+  "id": "relic_crest_knowledge",
+  "name": "Brasão do Conhecimento",
+  "description": "Aprende mais com cada batalha.",
+  "stat": "spd",
+  "statPct": 6,
+  "effect": "xp",
+  "value": 15
+ },
+ "relic_blue_card": {
+  "id": "relic_blue_card",
+  "name": "Card Azul Rachado",
+  "description": "Golpes mais fortes contra chefes e guardiões.",
+  "stat": "atk",
+  "statPct": 6,
+  "effect": "elite",
+  "value": 25
+ },
+ "relic_digiegg_hope": {
+  "id": "relic_digiegg_hope",
+  "name": "Casca do Digiovo da Esperança",
+  "description": "Uma vez por partida, revive com metade da vida.",
+  "stat": "hp",
+  "statPct": 10,
+  "effect": "revive",
+  "value": 0.5
+ },
+ "relic_digivice": {
+  "id": "relic_digivice",
+  "name": "Digivice Antigo",
+  "description": "Cada Distorção revela um Digi Data a mais.",
+  "stat": "spd",
+  "statPct": 6,
+  "effect": "digidata",
+  "value": 1
+ },
+ "relic_crest_friend": {
+  "id": "relic_crest_friend",
+  "name": "Brasão da Amizade",
+  "description": "O corpo se recupera mais rápido.",
+  "stat": "hp",
+  "statPct": 12,
+  "effect": "regen",
+  "value": 3
+ },
+ "relic_black_gear": {
+  "id": "relic_black_gear",
+  "name": "Engrenagem Negra",
+  "description": "Golpes muito mais fortes contra chefes e guardiões.",
+  "stat": "def",
+  "statPct": 6,
+  "effect": "elite",
+  "value": 35
  }
 };
