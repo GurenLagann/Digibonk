@@ -29,3 +29,13 @@ export function autoResolveModals(r: RunState) {
   if (r.pendingCard) resolveCard(r, { passiveSlot: null });
 }
 export const circleInput = (i: number) => ({ mx: Math.cos(i / 120), mz: Math.sin(i / 120) });
+
+import type { SaveData } from '../src/core/save';
+/** marca todas as arestas de evolução do jogo como descobertas (testes que não são sobre segredo) */
+export function discoverAll(save: SaveData): SaveData {
+  for (const f of Object.values(FORMS)) for (const e of f.evolutions) {
+    const id = `${f.id}->${e.to}`;
+    if (!save.discoveredEvos.includes(id)) save.discoveredEvos.push(id);
+  }
+  return save;
+}
