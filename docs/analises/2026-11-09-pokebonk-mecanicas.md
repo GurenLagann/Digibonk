@@ -200,6 +200,17 @@ Legenda de esforço para o DigiBonk: **P** pequeno (horas), **M** médio (um pla
   - Um selo "Para a sua fusão" marca o que alimenta uma fusão planejada.
 - Há vários planos por Pokémon, com Renomear, Duplicar e Esvaziar, e **compartilhar e importar por código**. A aba
   "Aluguel" usa builds de outros jogadores.
+- **Ideia do usuário (2026-11-09): caminho de digievolução na build.**
+  - O jogador escolhe na build do parceiro a linha que quer seguir (ex.: Agumon → Greymon → SkullGreymon →
+    BlackWarGreymon).
+  - Só entram arestas **descobertas**. As secretas aparecem como "Greymon → ???", com as pistas de Digi Data já
+    reveladas, para não estragar a surpresa.
+  - Na partida:
+    - o painel "Próx. evolução" mira a forma da build;
+    - as cartas que ajudam o caminho ganham um selo, como o "No seu plano";
+    - na escolha entre evoluções descobertas, a da build já vem selecionada.
+  - Em aberto: decidir se o caminho também **altera o sorteio das cartas** (ex.: oferecer mais os status pedidos) ou se
+    só orienta.
 - **DigiBonk hoje:** nada. **Proposta P–M:** começar só com ★ e ✕ por parceiro. O ★ dobra o peso no sorteio da
   subida de nível e o ✕ tira do sorteio. É barato e combina com a raridade.
 
