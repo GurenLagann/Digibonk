@@ -11,6 +11,7 @@ function actions(log: string[]): DebugActions {
     item: id => log.push('item:' + id), heal: () => log.push('heal'), killAll: () => log.push('kill'),
     god: () => (god = !god),
     doubleSpeed: () => false,
+    revealAll: () => log.push('reveal'), forgetAll: () => log.push('forget'),
   };
 }
 const btn = (root: HTMLElement, text: string) => [...root.querySelectorAll('button')].find(b => b.textContent === text)!;
@@ -43,4 +44,11 @@ test('double speed button shows its state', () => {
   mountDebugPanel(root, { ...actions([]), doubleSpeed: () => (on = !on) });
   btn(root, 'Velocidade 2×: não').click();
   expect(btn(root, 'Velocidade 2×: sim')).toBeTruthy();
+});
+
+test('botões de revelar e esquecer evoluções', () => {
+  const root = document.createElement('div'); const log: string[] = [];
+  mountDebugPanel(root, actions(log));
+  btn(root, 'Revelar todas as evoluções').click(); btn(root, 'Esquecer evoluções').click();
+  expect(log).toEqual(['reveal', 'forget']);
 });

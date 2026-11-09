@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 import { reqText, showPartnerSelect } from '../../src/ui/partnerSelect';
 import { defaultSave } from '../../src/core/save';
+import { discoverAll } from '../helpers';
+import { discover, reveal } from '../../src/sim/discovery';
 import { PARTNERS } from '../../src/data/partners';
 import { FORMS } from '../../src/data/forms';
 import { MOVES } from '../../src/data/moves';
@@ -10,11 +12,10 @@ const press = (...a: string[]) => ({ pressed: (x: string) => a.includes(x) } as 
 const SEASONS = ['adventure', 'adventure02', 'tamers'];
 const ordered = SEASONS.flatMap(s => PARTNERS.filter(p => p.season === s));
 
-function setup(mode: 'pick' | 'view' = 'pick', unlockedIds: string[] = ['agumon']) {
+function setup(mode: 'pick' | 'view' = 'pick', unlockedIds: string[] = ['agumon'], save = discoverAll(defaultSave())) {
   const picked: string[] = [];
   const list = ordered.map(p => ({ id: p.id, childForm: p.childForm, season: p.season, locked: !unlockedIds.includes(p.id) }));
   const app = { partners: () => list, pickPartner: (id: string) => { picked.push(id); return true; }, go: () => {} };
-  const save = defaultSave();
   const root = document.createElement('div');
   let back = 0;
   const m = showPartnerSelect(root, app as never, save, { mode, back: () => { back++; } });
@@ -104,4 +105,18 @@ test('requisitos nomeiam itens e parceiros liberados', () => {
   expect(d).toContain('Flamedramon · Nv 5 e Digiovo da Coragem');
   expect(d).toContain('Raidramon · Nv 5 e Digiovo da Amizade');
   expect(reqText({ minLevel: 42, items: ['fusion_garurumon'], unlocked: ['gabumon'] })).toContain('com Gabumon liberado');
+});
+
+describe('árvore de evoluções secreta', () => {
+  test('save vazio: Agumon não mostra Greymon nem o rótulo', () => {
+    const { detail } = setup('pick', ['agumon'], defaultSave());
+    expect(detail()).not.toContain('Greymon'); expect(detail()).not.toContain('Evolui em');
+  });
+  test('descoberta mostra como antes; secreta com pista mostra só a pista', () => {
+    const s = defaultSave(); reveal(s, { edge: 'agumon->greymon', key: 'level' });
+    expect(setup('pick', ['agumon'], s).detail()).toContain('→ ??? · Nv ' + FORMS.agumon.evolutions[0].req.minLevel);
+    expect(setup('pick', ['agumon'], s).detail()).not.toContain('Greymon');
+    discover(s, 'agumon->greymon');
+    expect(setup('pick', ['agumon'], s).detail()).toContain('Greymon · Nv');
+  });
 });

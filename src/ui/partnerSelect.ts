@@ -1,6 +1,8 @@
 import type { App } from '../app';
 import type { SaveData } from '../core/save';
 import { partnerRecord } from '../core/save';
+import { edgeId, isDiscovered, revealedKeys } from '../sim/discovery';
+import { reqKeyText } from './evoText';
 import { CARDS } from '../data/cards';
 import { FORMS } from '../data/forms';
 import { ITEMS } from '../data/items';
@@ -73,6 +75,13 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
     const stat = (k: keyof Stats) => h('div', { class: 'ps-stat' }, h('span', {}, STAT_NAMES[k]),
       h('div', { class: 'b2-bar' }, h('i', { style: `width:${Math.min(100, Math.round(f.baseStats[k] / STAT_MAX[k] * 100))}%` })), h('b', {}, String(f.baseStats[k])));
     const rec = (label: string, v: number) => h('div', { class: 'rec-stat' }, h('b', {}, String(v)), h('span', { class: 'b2-label' }, label));
+    // só caminhos descobertos aparecem inteiros; secreto com pista vira "→ ??? · pista"; sem pista, nada
+    const evoLines = f.evolutions.flatMap(e => {
+      const id = edgeId(f.id, e.to);
+      if (isDiscovered(save, id)) return [h('div', { class: 'ps-evo' }, `${FORMS[e.to]?.name ?? e.to} · ${reqText(e.req)}`)];
+      const rev = revealedKeys(save, id);
+      return rev.length ? [h('div', { class: 'ps-evo secret' }, `→ ??? · ${rev.map(k => reqKeyText(e.req, k)).join(' e ')}`)] : [];
+    });
     detail.append(
       h('div', { class: 'ps-id' },
         h('div', { class: 'b2-label' }, `${STAGE_NAMES[f.stage]} · ${SEASON_NAMES[p.season as keyof typeof SEASON_NAMES] ?? p.season}`),
@@ -83,8 +92,8 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
         h('div', { class: 'b2-label' }, 'Status base'), ...STAT_KEYS.map(stat),
         h('div', { class: 'b2-label' }, 'Golpe assinatura'), move(f.signature, true),
         h('div', { class: 'b2-label' }, 'Kit'), ...f.kit.map(k => move(k)),
-        f.evolutions.length ? h('div', { class: 'b2-label' }, 'Evolui em') : null,
-        ...f.evolutions.map(e => h('div', { class: 'ps-evo' }, `${FORMS[e.to]?.name ?? e.to} · ${reqText(e.req)}`)),
+        evoLines.length ? h('div', { class: 'b2-label' }, 'Evolui em') : null,
+        ...evoLines,
         h('div', { class: 'ps-rec' }, rec('Partidas', r.runs), rec('Vitórias', r.wins), rec('Melhor fase', r.bestPhase))));
   }
   function select(i: number) {

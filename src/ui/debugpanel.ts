@@ -10,6 +10,8 @@ export interface DebugActions {
   god(): boolean;
   /** alterna velocidade dobrada (para ver a corrida) e devolve o novo estado */
   doubleSpeed(): boolean;
+  /** marca todas as evoluções como descobertas / volta tudo a secreto (no save, sem precisar de partida) */
+  revealAll(): void; forgetAll(): void;
 }
 
 export function mountDebugPanel(root: HTMLElement, a: DebugActions): { el: HTMLElement; toggle(): void } {
@@ -25,7 +27,8 @@ export function mountDebugPanel(root: HTMLElement, a: DebugActions): { el: HTMLE
     section('Geral',
       b('+1 nível', () => a.levelUp()), b('Curar', () => a.heal()), b('Matar todos', () => a.killAll()),
       b('Invencível: não', btn => { btn.textContent = `Invencível: ${a.god() ? 'sim' : 'não'}`; }),
-      b('Velocidade 2×: não', btn => { btn.textContent = `Velocidade 2×: ${a.doubleSpeed() ? 'sim' : 'não'}`; })),
+      b('Velocidade 2×: não', btn => { btn.textContent = `Velocidade 2×: ${a.doubleSpeed() ? 'sim' : 'não'}`; }),
+      b('Revelar todas as evoluções', () => a.revealAll()), b('Esquecer evoluções', () => a.forgetAll())),
     section('Evoluir para', ...a.forms.map(f => b(f.name, () => a.evolve(f.id)))),
     section('Cartas', ...a.cards.map(c => b(c.name, () => a.card(c.id)))),
     section('Itens', ...a.items.map(i => b(i.name, () => a.item(i.id)))),

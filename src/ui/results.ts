@@ -9,6 +9,8 @@ import type { RunState } from '../sim/run';
 import { fmtTime, h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
+import { findEdge } from '../sim/discovery';
+import { pathLabel, reqKeyText } from './evoText';
 
 const num = (label: string, value: string, extra?: HTMLElement | null) =>
   h('div', { class: 'res-num' }, h('div', { class: 'b2-label' }, label), h('b', {}, value), extra ?? null);
@@ -44,6 +46,12 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
     return h('div', { class: 'res-unl' }, portrait(form, { size: 56 }), h('b', {}, FORMS[form]?.name ?? id));
   });
 
+  // pistas de Digi Data: só a forma de origem e o requisito, nunca o destino
+  const data = run.digiDataThisRun.flatMap(({ edge, key }) => {
+    const e = findEdge(edge);
+    return e ? [h('div', { class: 'res-dline' }, `${pathLabel(edge)} — ${reqKeyText(e.edge.req, key)}`)] : [];
+  });
+
   const btn = (label: string, key: string, cls: string, fn: () => void) =>
     h('button', { type: 'button', class: cls, onclick: () => choose(fn) }, h('span', { class: 'b2-btn-label' }, label), h('span', { class: 'b2-key' }, key));
 
@@ -64,6 +72,8 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
           num('Chefes', String(run.stats.bosses)),
           num('Guardiões', String(run.stats.guardians)),
           num('Melhor fase', String(rec.bestPhase), run.newRecord ? h('span', { class: 'res-rec' }, 'Novo recorde!') : null)),
+        data.length ? h('div', { class: 'b2-panel res-data' },
+          h('div', { class: 'b2-label' }, 'Digi Data'), ...data) : null,
         unlocked.length ? h('div', { class: 'b2-panel res-unlock' },
           h('div', { class: 'b2-label' }, 'Novo parceiro liberado!'), ...unlocked) : null)),
     h('div', { class: 'res-foot' },

@@ -124,3 +124,19 @@ test('botões clicáveis', () => {
   btns.find(b => b.textContent!.includes('Jogar de novo'))!.click();
   expect(calls).toEqual(['again']);
 });
+
+test('Digi Data: uma linha por dado, só com a forma de origem', () => {
+  const r = endedRun();
+  r.digiDataThisRun = [{ edge: 'greymon->skullgreymon', key: 'stat:atk' }];
+  const root = document.createElement('div');
+  showResults(root, r, () => {}, () => {});
+  const box = root.querySelector('.res-data')!;
+  expect(box.textContent).toContain('Digi Data');
+  expect(box.textContent).toContain('Caminho Greymon ② — Atq 38');
+  expect(root.textContent).not.toContain('SkullGreymon');
+});
+test('sem Digi Data, sem seção', () => {
+  const root = document.createElement('div');
+  showResults(root, endedRun(), () => {}, () => {});
+  expect(root.querySelector('.res-data')).toBeNull();
+});
