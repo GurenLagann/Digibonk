@@ -6,6 +6,7 @@ import { showChoice, type Modal } from './modal';
 const ACTION_NAMES: Record<Action, string> = {
   up: 'Mover p/ cima', down: 'Mover p/ baixo', left: 'Mover p/ esquerda', right: 'Mover p/ direita',
   confirm: 'Confirmar', cancel: 'Cancelar / Esperar', evolve: 'Digievoluir', pause: 'Pausar', opt1: 'Opção 1', opt2: 'Opção 2', opt3: 'Opção 3',
+  reroll: 'Level up: atualizar', skip: 'Level up: pular', ban: 'Level up: banir',
 };
 export const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^pad:b(\d+)$/, 'Controle botão $1').replace(/^Arrow/, 'Seta ');
 

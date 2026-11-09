@@ -1,5 +1,6 @@
-import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath, nothingToImprove, autoGain } from '../../src/sim/progression';
+import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath, nothingToImprove, autoGain, offerKey, RARITIES } from '../../src/sim/progression';
 import { createRng } from '../../src/core/rng';
+import { T } from '../../src/data/tuning';
 import { maxedProg } from '../helpers';
 
 test('xp curve grows', () => expect(xpToNext(10)).toBeGreaterThan(xpToNext(1)));
@@ -62,5 +63,37 @@ describe('nível infinito: ganho automático quando não há o que melhorar', ()
     expect(g.amount).toBe(g.stat === 'hp' ? 3 : 1);
     expect(p.bonus[g.stat]).toBe(g.amount);
     expect(p.pendingLevelUps).toBe(1);
+  });
+});
+
+describe('raridade das cartas', () => {
+  test('status, melhoria e carta têm raridade; golpe novo não', () => {
+    const p = newPlayerProg('agumon'); const r = createRng(7);
+    for (let i = 0; i < 200; i++) for (const o of rollOffers(p, r)) {
+      if (o.kind === 'learn') expect(o.rarity).toBeUndefined();
+      else expect(RARITIES).toContain(o.rarity);
+      if (o.kind === 'stat') expect(o.amount).toBe(T.RARITY.statAmount[o.rarity!]);
+    }
+  });
+  test('as raridades aparecem perto dos pesos (Comum mais, Lendário menos)', () => {
+    const p = newPlayerProg('agumon'); const r = createRng(11); const c: Record<string, number> = {};
+    for (let i = 0; i < 3000; i++) for (const o of rollOffers(p, r)) if (o.rarity) c[o.rarity] = (c[o.rarity] ?? 0) + 1;
+    expect(c.common).toBeGreaterThan(c.uncommon); expect(c.uncommon).toBeGreaterThan(c.rare); expect(c.rare).toBeGreaterThan(c.legendary);
+    expect(c.legendary).toBeGreaterThan(0);
+  });
+  test('melhoria rara sobe 2 níveis sem passar do máximo', () => {
+    const p = newPlayerProg('agumon');
+    applyOffer(p, { kind: 'upgrade', slot: 0, rarity: 'rare' }); expect(p.slots[0]!.level).toBe(3);
+    p.slots[0]!.level = 4; applyOffer(p, { kind: 'upgrade', slot: 0, rarity: 'legendary' }); expect(p.slots[0]!.level).toBe(5);
+  });
+  test('carta lendária entra no nível 3', () => {
+    const p = newPlayerProg('agumon');
+    applyOffer(p, { kind: 'card', cardId: 'card_hyper_speed', rarity: 'legendary' });
+    expect(p.passives[0]).toBe('card_hyper_speed'); expect(p.cardLevels.card_hyper_speed).toBe(3);
+  });
+  test('ofertas banidas não aparecem', () => {
+    const p = newPlayerProg('agumon'); const r = createRng(2);
+    const banned = new Set(['stat:atk', 'learn:sharp_claws']);
+    for (let i = 0; i < 200; i++) for (const o of rollOffers(p, r, banned)) expect(banned.has(offerKey(p, o))).toBe(false);
   });
 });

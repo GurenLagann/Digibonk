@@ -1,4 +1,5 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, rerollOffers, skipOffer, banOffer, type RunState } from '../../src/sim/run';
+import { offerKey } from '../../src/sim/progression';
 import { visibleHint } from '../../src/sim/discovery';
 import { CARDS } from '../../src/data/cards';
 import { newPhase } from '../../src/sim/phase';
@@ -252,4 +253,37 @@ test('a última melhoria escolhida não abre outra tela: os níveis restantes vi
   expect(r.offers).toBeNull();
   const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(ev.filter(e => e.type === 'autoGain')).toHaveLength(2);
+});
+
+describe('atualizar, pular e banir', () => {
+  const withOffers = () => { const r = createRun(opts()); r.prog.pendingLevelUps = 2; r.prog.level = 3; r.offers = rollOfferSet(r); return r; };
+  const rollOfferSet = (r: RunState) => { stepRun(r, { mx: 0, mz: 0 }, 1 / 60); return r.offers; };
+  test('começa com os usos do tuning', () => {
+    expect(createRun(opts()).levelTools).toEqual(T.LEVEL_TOOLS);
+  });
+  test('atualizar sorteia de novo e gasta um uso; sem usos não faz nada', () => {
+    const r = createRun(opts()); r.prog.pendingLevelUps = 1; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.offers).not.toBeNull();
+    for (let i = 0; i < T.LEVEL_TOOLS.reroll; i++) expect(rerollOffers(r)).toBe(true);
+    expect(r.levelTools.reroll).toBe(0);
+    const before = r.offers; expect(rerollOffers(r)).toBe(false); expect(r.offers).toBe(before);
+  });
+  test('pular consome o nível com o ganho automático e abre o próximo', () => {
+    const r = createRun(opts()); r.prog.pendingLevelUps = 2; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    const sum = () => Object.values(r.prog.bonus).reduce((a, b) => a + b, 0);
+    const s0 = sum(); const g = skipOffer(r);
+    expect(g).not.toBeNull(); expect(sum()).toBe(s0 + g!.amount);
+    expect(r.prog.pendingLevelUps).toBe(1); expect(r.offers).not.toBeNull();
+    expect(r.levelTools.skip).toBe(T.LEVEL_TOOLS.skip - 1);
+  });
+  test('banir tira a carta do sorteio pelo resto da partida e troca só ela', () => {
+    const r = createRun(opts()); r.prog.pendingLevelUps = 1; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    const [a, b, c] = r.offers!; const key = offerKey(r.prog, b);
+    expect(banOffer(r, 1)).toBe(true);
+    expect(r.banned).toContain(key);
+    expect(r.offers![0]).toEqual(a); expect(r.offers![2]).toEqual(c);
+    expect(offerKey(r.prog, r.offers![1])).not.toBe(key);
+    expect(r.levelTools.ban).toBe(T.LEVEL_TOOLS.ban - 1);
+    expect(banOffer(r, 0)).toBe(false);
+  });
 });

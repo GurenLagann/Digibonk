@@ -389,6 +389,23 @@
 .tc.upgrade { --c1: #3dff8a; --c2: #0e8a4a; }
 .tc.card { --c1: #c08cff; --c2: #5b2bd6; }
 .tc.stat { --c1: #ffd43b; --c2: #c27a00; }
+/* raridade: selo no canto e moldura mais viva (golpe novo não tem raridade) */
+.tc-rar { position: absolute; z-index: 3; top: calc(-9 * var(--u)); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  font: 900 calc(9 * var(--u))/1.6 var(--b2-font); letter-spacing: .12em; text-transform: uppercase; padding: 0 calc(8 * var(--u));
+  border-radius: 999px; color: #04121f; background: #cfe3ef; box-shadow: 0 0 calc(8 * var(--u)) rgba(0, 0, 0, .5); }
+.tc.rar-uncommon .tc-rar { background: #5be38f; }
+.tc.rar-rare .tc-rar { background: #4aa8ff; color: #fff; }
+.tc.rar-legendary .tc-rar { background: linear-gradient(90deg, #ffd43b, #ff8a3d); }
+.tc.rar-rare { box-shadow: 0 calc(10 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, .65), 0 0 calc(26 * var(--u)) #4aa8ff; }
+.tc.rar-legendary { box-shadow: 0 calc(10 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, .65), 0 0 calc(34 * var(--u)) #ffb03b; }
+.tc.rar-legendary .tc-face::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 220, 120, .22) 50%, transparent 65%) 0 0 / 250% 100%; animation: tc-holo 2.8s linear infinite; }
+@keyframes tc-holo { to { background-position: -250% 0; } }
+@media (prefers-reduced-motion: reduce) { .tc.rar-legendary .tc-face::before { animation: none; } }
+.tc-tools { gap: calc(10 * var(--u)); flex-wrap: wrap; }
+.tc-screen .tc-tool { font-size: calc(13 * var(--u)); min-height: max(40px, calc(34 * var(--u))); gap: calc(8 * var(--u)); }
+.tc-tool .tc-count { font: 900 calc(12 * var(--u)) var(--b2-mono); color: var(--b2-orange); }
+.tc-tool:disabled { opacity: .4; cursor: not-allowed; }
 .tc.sel { transform: translateY(calc(-10 * var(--u))) rotateX(4deg); outline: calc(3 * var(--u)) solid var(--b2-orange); outline-offset: calc(3 * var(--u));
   box-shadow: 0 calc(16 * var(--u)) calc(36 * var(--u)) rgba(0, 0, 0, .8), 0 0 calc(30 * var(--u)) var(--b2-orange); }
 .tc-face { position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden; border-radius: calc(7 * var(--u));

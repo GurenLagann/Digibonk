@@ -96,3 +96,40 @@ test('melhorar: só o golpe assinatura (slot 0) usa o sprite; os outros mostram 
   expect(cards[1].querySelector('canvas')).toBeNull();
   expect(cards[1].querySelector('.tc-glyph')).toBeTruthy();
 });
+
+describe('raridade e atualizar/pular/banir', () => {
+  const rarRun = () => { const r = levelUpRun(); r.offers = [{ kind: 'learn', moveId: 'spitfire_blast' }, { kind: 'upgrade', slot: 0, rarity: 'rare' }, { kind: 'stat', stat: 'atk', amount: 9, rarity: 'legendary' }]; return r; };
+  test('carta mostra o selo da raridade; golpe novo não tem', () => {
+    const root = document.createElement('div'); showLevelUp(root, rarRun());
+    const cards = [...root.querySelectorAll('.tc')];
+    expect(cards[0].querySelector('.tc-rar')).toBeNull();
+    expect(cards[1].classList.contains('rar-rare')).toBe(true);
+    expect(cards[1].querySelector('.tc-rar')!.textContent).toBe('Raro');
+    expect(cards[2].querySelector('.tc-rar')!.textContent).toBe('Lendário');
+    expect(cards[1].textContent).toContain('Nv 2 → 4'); // raro sobe 2 níveis
+  });
+  test('botões mostram os usos restantes', () => {
+    const root = document.createElement('div'); showLevelUp(root, rarRun());
+    const t = [...root.querySelectorAll('.tc-tool')].map(b => b.textContent);
+    expect(t).toEqual(['Atualizar2F', 'Pular2X', 'Banir1Z']);
+  });
+  test('atualizar fecha a tela com ofertas novas e gasta o uso; sem uso o botão fica desligado', () => {
+    const r = rarRun(); r.levelTools.reroll = 1;
+    const root = document.createElement('div'); const m = showLevelUp(root, r);
+    m.handle(fakeInput(['reroll']));
+    expect(m.closed).toBe(true); expect(r.levelTools.reroll).toBe(0); expect(r.offers).not.toBeNull();
+    const root2 = document.createElement('div'); const m2 = showLevelUp(root2, r);
+    expect((root2.querySelector('.tc-tool') as HTMLButtonElement).disabled).toBe(true);
+    m2.handle(fakeInput(['reroll'])); expect(m2.closed).toBe(false);
+  });
+  test('banir tira a carta selecionada', () => {
+    const r = rarRun(); const root = document.createElement('div'); const m = showLevelUp(root, r);
+    m.handle(fakeInput(['right'])); m.handle(fakeInput(['ban']));
+    expect(r.banned).toEqual(['upgrade:baby_flame']); expect(m.closed).toBe(true);
+  });
+  test('pular consome o nível', () => {
+    const r = rarRun(); const root = document.createElement('div'); const m = showLevelUp(root, r);
+    m.handle(fakeInput(['skip']));
+    expect(r.prog.pendingLevelUps).toBe(0); expect(r.offers).toBeNull(); expect(m.closed).toBe(true);
+  });
+});

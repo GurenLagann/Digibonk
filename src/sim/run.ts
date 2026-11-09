@@ -14,7 +14,7 @@ import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, wi
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
-import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
+import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, offerKey, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
 import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
@@ -46,6 +46,8 @@ export interface RunState {
   offers: LevelOffer[] | null; pendingCard: string | null;
   /** 2+ evoluções secretas ao mesmo tempo: o jogador escolhe às cegas (ids de forma) */
   blindChoice: string[] | null;
+  /** usos restantes de atualizar/pular/banir no level up e as ofertas banidas (offerKey) */
+  levelTools: { reroll: number; skip: number; ban: number }; banned: string[];
   /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
   dataRng: Rng;
   /** requisitos revelados por Digi Data nesta partida (mostrados no resultado) */
@@ -115,7 +117,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -321,7 +323,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     const level = r.prog.level - r.prog.pendingLevelUps + 1;
     ev.push({ type: 'autoGain', level, ...autoGain(r.prog, r.rng) });
   }
-  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng); ev.push({ type: 'levelUp' }); }
+  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng, new Set(r.banned)); ev.push({ type: 'levelUp' }); }
   syncHp(r);
   return ev;
 }
@@ -338,7 +340,7 @@ export function chooseOffer(r: RunState, index: number): void {
   applyOffer(r.prog, o);
   r.offers = null;
   // sem nada para melhorar, os níveis restantes viram ganho automático no próximo passo (stepRun)
-  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng);
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
   syncHp(r);
 }
 
@@ -351,6 +353,38 @@ export function doEvolve(r: RunState, formId: string): void {
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
+}
+
+/** level up: sorteia as cartas de novo (gasta um uso de Atualizar) */
+export function rerollOffers(r: RunState): boolean {
+  if (!r.offers || r.levelTools.reroll <= 0) return false;
+  r.levelTools.reroll--;
+  r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
+  return true;
+}
+
+/** level up: recusa o nível em troca do ganho automático pequeno (gasta um uso de Pular) */
+export function skipOffer(r: RunState): { level: number; stat: StatKey; amount: number } | null {
+  if (!r.offers || r.levelTools.skip <= 0) return null;
+  r.levelTools.skip--;
+  const level = r.prog.level - r.prog.pendingLevelUps + 1;
+  const g = autoGain(r.prog, r.rng);
+  r.offers = null;
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
+  syncHp(r);
+  return { level, ...g };
+}
+
+/** level up: tira a carta `index` do sorteio pelo resto da partida e troca só ela (gasta um uso de Banir) */
+export function banOffer(r: RunState, index: number): boolean {
+  const o = r.offers?.[index];
+  if (!r.offers || !o || r.levelTools.ban <= 0) return false;
+  r.levelTools.ban--;
+  r.banned.push(offerKey(r.prog, o));
+  const onTable = new Set([...r.banned, ...r.offers.map(x => offerKey(r.prog, x))]);
+  const repl = rollOffers(r.prog, r.rng, onTable)[0];
+  r.offers = repl ? r.offers.map((x, i) => (i === index ? repl : x)) : r.offers.filter((_, i) => i !== index);
+  return true;
 }
 
 /** save como o HUD deve ver: sem as pistas de Digi Data desta partida (essas só aparecem no resultado) */

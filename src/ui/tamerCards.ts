@@ -1,4 +1,4 @@
-import type { Input } from '../core/input';
+import type { Action, Input } from '../core/input';
 import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
@@ -11,11 +11,15 @@ export interface TamerCardSpec {
   typeLine: string; text: string;
   gains?: { label: string; from: string; to: string }[];
   pips?: { filled: number; next: boolean; max: number };
+  /** raridade da oferta (golpe novo não tem): muda a moldura e mostra o selo */
+  rarity?: { id: string; label: string };
 }
 export interface TamerCardsSpec {
   title: string; subtitle?: string;
   cards: (TamerCardSpec & { onPick(): void })[];
   extra?: { label: string; onPick(): void };
+  /** ações extras com usos limitados (level up: atualizar/pular/banir); `onUse` recebe a carta selecionada */
+  tools?: { label: string; action: Action; key: string; count: number; onUse(sel: number): void }[];
 }
 
 /** duração do "Card Slash!" (a carta passa pelo leitor) antes de aplicar a escolha */
@@ -29,7 +33,8 @@ function cardEl(c: TamerCardSpec, key: string | null): HTMLElement {
   const gains = (c.gains ?? []).map(g => h('div', { class: 'tc-gain' }, h('span', {}, g.label), ' ', g.from, ' → ', h('b', { class: 'up' }, g.to)));
   const pips = c.pips ? h('span', { class: 'tc-pips' },
     ...Array.from({ length: c.pips.max }, (_, i) => h('i', { class: i < c.pips!.filled ? 'f' : i === c.pips!.filled && c.pips!.next ? 'n' : '' }))) : h('span', {});
-  return h('div', { class: `tc ${c.kind}` },
+  return h('div', { class: `tc ${c.kind}${c.rarity ? ` rar-${c.rarity.id}` : ''}` },
+    c.rarity ? h('span', { class: 'tc-rar' }, c.rarity.label) : null,
     h('div', { class: 'tc-face' },
       h('div', { class: 'tc-top' }, h('span', { class: 'tc-name' }, c.name), h('span', { class: 'tc-lv' }, c.level)),
       art,
@@ -52,11 +57,18 @@ export function showTamerCards(root: HTMLElement, spec: TamerCardsSpec): Modal {
   });
   const extraBtn = spec.extra ? h('button', { type: 'button', class: 'b2-btn secondary tc-extra', onclick: () => discard() },
     h('span', { class: 'b2-btn-label' }, spec.extra.label), h('span', { class: 'b2-key' }, 'Esc')) : null;
+  const tools = (spec.tools ?? []).map(t => {
+    const b = h('button', { type: 'button', class: 'b2-btn secondary tc-tool', onclick: () => use(t) },
+      h('span', { class: 'b2-btn-label' }, t.label), h('b', { class: 'tc-count' }, String(t.count)), h('span', { class: 'b2-key' }, t.key)) as HTMLButtonElement;
+    b.disabled = t.count <= 0;
+    return b;
+  });
   const screen = h('div', { class: 'b2-screen tc-screen' },
     h('div', { class: 'tc-head' },
       spec.subtitle ? h('div', { class: 'b2-label tc-sub' }, spec.subtitle) : null,
       h('h1', { class: 'b2-title tc-title' }, spec.title)),
     h('div', { class: 'tc-row' }, ...slots),
+    tools.length ? h('div', { class: 'tc-foot-row tc-tools' }, ...tools) : null,
     extraBtn && h('div', { class: 'tc-foot-row' }, extraBtn));
   root.append(screen);
 
@@ -74,6 +86,10 @@ export function showTamerCards(root: HTMLElement, spec: TamerCardsSpec): Modal {
     slots[i].classList.add('tc-slash');
     slots[i].prepend(h('div', { class: 'tc-reader' }), h('div', { class: 'tc-slash-txt' }, 'Card Slash!'));
     timer = setTimeout(() => { timer = null; m.close(); c.onPick(); }, SLASH_MS);
+  }
+  function use(t: NonNullable<TamerCardsSpec['tools']>[number]) {
+    if (busy || closed || t.count <= 0) return;
+    m.close(); t.onUse(sel);
   }
   function discard() {
     if (busy || closed || !spec.extra) return;
@@ -93,6 +109,7 @@ export function showTamerCards(root: HTMLElement, spec: TamerCardsSpec): Modal {
       if (input.pressed('left') || input.pressed('up')) select(sel - 1);
       if (input.pressed('right') || input.pressed('down')) select(sel + 1);
       for (let i = 0; i < KEYS.length; i++) if (input.pressed(KEYS[i]) && spec.cards[i]) return pick(i);
+      for (const t of spec.tools ?? []) if (input.pressed(t.action)) return use(t);
       if ((input.pressed('cancel') || input.pressed('pause')) && spec.extra) return discard();
       if (input.pressed('confirm')) pick(sel);
     },

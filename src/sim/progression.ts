@@ -17,11 +17,25 @@ export interface PlayerProg {
   /** vezes em que o HP caiu abaixo de NEAR_DEATH_PCT; só volta a contar depois de curar acima de NEAR_DEATH_REARM */
   nearDeaths: number; nearDeathArmed: boolean;
 }
+export const RARITIES = ['common', 'uncommon', 'rare', 'legendary'] as const;
+export type Rarity = typeof RARITIES[number];
 export type LevelOffer =
-  | { kind: 'learn'; moveId: string }
-  | { kind: 'upgrade'; slot: number }
-  | { kind: 'stat'; stat: StatKey; amount: number }
-  | { kind: 'card'; cardId: string };
+  | { kind: 'learn'; moveId: string; rarity?: undefined }
+  | { kind: 'upgrade'; slot: number; rarity?: Rarity }
+  | { kind: 'stat'; stat: StatKey; amount: number; rarity?: Rarity }
+  | { kind: 'card'; cardId: string; rarity?: Rarity };
+
+/** identidade da oferta para banir: o golpe, o status ou a carta (não a raridade) */
+export function offerKey(p: PlayerProg, o: LevelOffer): string {
+  switch (o.kind) {
+    case 'learn': return `learn:${o.moveId}`;
+    case 'upgrade': return `upgrade:${p.slots[o.slot]?.moveId ?? o.slot}`;
+    case 'stat': return `stat:${o.stat}`;
+    case 'card': return `card:${o.cardId}`;
+  }
+}
+
+function rollRarity(rng: Rng): Rarity { return rng.weighted([...RARITIES], r => T.RARITY.weight[r]); }
 
 export const STAT_KEYS: readonly StatKey[] = ['hp', 'atk', 'def', 'spd', 'brain'];
 
@@ -72,7 +86,9 @@ export function autoGain(p: PlayerProg, rng: Rng): { stat: StatKey; amount: numb
   return { stat, amount };
 }
 
-export function rollOffers(p: PlayerProg, rng: Rng): LevelOffer[] {
+/** sorteia as ofertas do level up; `exclude` = chaves (offerKey) banidas ou já na mesa */
+export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string> = new Set()): LevelOffer[] {
+  const ok = (o: LevelOffer) => !exclude.has(offerKey(p, o));
   const f = FORMS[p.formId];
   const pool: LevelOffer[] = [];
   const slotted = new Set(p.slots.filter(Boolean).map(s => s!.moveId));
@@ -80,12 +96,12 @@ export function rollOffers(p: PlayerProg, rng: Rng): LevelOffer[] {
   p.slots.forEach((s, i) => { if (s && s.level < MOVES[s.moveId].maxLevel) pool.push({ kind: 'upgrade', slot: i }); });
   const out: LevelOffer[] = [];
   if (p.passives.some(c => c === null) && rng.next() < T.CARD_OFFER_CHANCE) {
-    const cards = CARD_LIST.filter(c => c.kind === 'passive' && !p.passives.includes(c.id));
+    const cards = CARD_LIST.filter(c => c.kind === 'passive' && !p.passives.includes(c.id) && !exclude.has(`card:${c.id}`));
     if (cards.length) out.push({ kind: 'card', cardId: rng.weighted(cards, c => c.weight).id });
   }
-  const stats = STAT_KEYS.map(stat => ({ kind: 'stat', stat, amount: T.STAT_OFFER_AMOUNT }) as LevelOffer);
+  const stats = STAT_KEYS.map(stat => ({ kind: 'stat', stat, amount: T.STAT_OFFER_AMOUNT }) as LevelOffer).filter(ok);
   // shuffle pool then fill; stats always available as candidates (lower priority)
-  const shuffled = [...pool];
+  const shuffled = pool.filter(ok);
   for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
   const statShuffled = [...stats];
   for (let i = statShuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [statShuffled[i], statShuffled[j]] = [statShuffled[j], statShuffled[i]]; }
@@ -94,7 +110,12 @@ export function rollOffers(p: PlayerProg, rng: Rng): LevelOffer[] {
   const fromPool = Math.min(shuffled.length, want - out.length - (shuffled.length >= want ? 1 : 0));
   out.push(...shuffled.slice(0, Math.max(0, fromPool)));
   for (const s of statShuffled) { if (out.length >= want) break; out.push(s); }
-  return out.slice(0, want);
+  // raridade: golpe novo não tem; status ganha a quantidade da raridade
+  return out.slice(0, want).map(o => {
+    if (o.kind === 'learn') return o;
+    const rarity = rollRarity(rng);
+    return o.kind === 'stat' ? { ...o, rarity, amount: T.RARITY.statAmount[rarity] } : { ...o, rarity };
+  });
 }
 
 export function applyOffer(p: PlayerProg, o: LevelOffer): void {
@@ -106,13 +127,17 @@ export function applyOffer(p: PlayerProg, o: LevelOffer): void {
     }
     case 'upgrade': {
       const s = p.slots[o.slot];
-      if (s && s.level < MOVES[s.moveId].maxLevel) s.level++;
+      if (s) s.level = Math.min(MOVES[s.moveId].maxLevel, s.level + T.RARITY.upgradeLevels[o.rarity ?? 'common']);
       break;
     }
     case 'stat': p.bonus[o.stat] += o.amount; break;
     case 'card': {
       const i = p.passives.findIndex(c => c === null);
-      if (i >= 0) p.passives[i] = o.cardId;
+      if (i >= 0) {
+        p.passives[i] = o.cardId;
+        const lv = T.RARITY.cardStartLevel[o.rarity ?? 'common'];
+        if (lv > 1) p.cardLevels[o.cardId] = lv;
+      }
       break;
     }
   }

@@ -1,5 +1,5 @@
-export type Action = 'up' | 'down' | 'left' | 'right' | 'confirm' | 'cancel' | 'evolve' | 'pause' | 'opt1' | 'opt2' | 'opt3';
-export const ACTIONS: readonly Action[] = ['up', 'down', 'left', 'right', 'confirm', 'cancel', 'evolve', 'pause', 'opt1', 'opt2', 'opt3'];
+export type Action = 'up' | 'down' | 'left' | 'right' | 'confirm' | 'cancel' | 'evolve' | 'pause' | 'opt1' | 'opt2' | 'opt3' | 'reroll' | 'skip' | 'ban';
+export const ACTIONS: readonly Action[] = ['up', 'down', 'left', 'right', 'confirm', 'cancel', 'evolve', 'pause', 'opt1', 'opt2', 'opt3', 'reroll', 'skip', 'ban'];
 
 export const DEFAULT_BINDINGS: Record<Action, string[]> = {
   up: ['KeyW', 'ArrowUp', 'pad:b12'],
@@ -13,6 +13,10 @@ export const DEFAULT_BINDINGS: Record<Action, string[]> = {
   opt1: ['Digit1'],
   opt2: ['Digit2'],
   opt3: ['Digit3'],
+  // level up: atualizar / pular / banir
+  reroll: ['KeyF', 'pad:b2'],
+  skip: ['KeyX', 'pad:b4'],
+  ban: ['KeyZ', 'pad:b5'],
 };
 
 export interface Input {

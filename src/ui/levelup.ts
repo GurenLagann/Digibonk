@@ -2,8 +2,11 @@ import { CARDS, CARD_MAX_LEVEL } from '../data/cards';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import type { CardStat, ElementId } from '../data/types';
-import { chooseOffer, type RunState } from '../sim/run';
-import type { LevelOffer, MoveSlot, PlayerProg } from '../sim/progression';
+import { banOffer, chooseOffer, rerollOffers, skipOffer, type RunState } from '../sim/run';
+import { T } from '../data/tuning';
+import { autoGainText } from './hud';
+import { toast } from './toast';
+import type { LevelOffer, MoveSlot, PlayerProg, Rarity } from '../sim/progression';
 import { effectiveStats, moveCooldown, outgoingDamage } from '../sim/stats';
 import { PATTERN_NAMES, STAT_NAMES } from './dom';
 import { ELEM_NAMES } from './theme';
@@ -61,7 +64,14 @@ export function passiveCard(id: string, level: number, typeLine: string, next = 
   };
 }
 
+const RARITY_NAMES: Record<Rarity, string> = { common: 'Comum', uncommon: 'Incomum', rare: 'Raro', legendary: 'Lendário' };
+
 function offerCard(run: RunState, o: LevelOffer): TamerCardSpec {
+  const spec = offerCardBase(run, o);
+  return o.rarity ? { ...spec, rarity: { id: o.rarity, label: RARITY_NAMES[o.rarity] } } : spec;
+}
+
+function offerCardBase(run: RunState, o: LevelOffer): TamerCardSpec {
   const p = run.prog;
   switch (o.kind) {
     case 'learn': {
@@ -75,10 +85,11 @@ function offerCard(run: RunState, o: LevelOffer): TamerCardSpec {
     }
     case 'upgrade': {
       const s = p.slots[o.slot]!; const m = MOVES[s.moveId];
+      const to = Math.min(m.maxLevel, s.level + T.RARITY.upgradeLevels[o.rarity ?? 'common']);
       return {
-        kind: 'upgrade', name: m.name, level: `Nv ${s.level} → ${s.level + 1}`, art: o.slot === 0 ? { formId: p.formId } : { glyph: ELEM_GLYPHS[m.element] },
+        kind: 'upgrade', name: m.name, level: `Nv ${s.level} → ${to}`, art: o.slot === 0 ? { formId: p.formId } : { glyph: ELEM_GLYPHS[m.element] },
         typeLine: `Melhorar · ${o.slot === 0 ? 'Assinatura' : ELEM_NAMES[m.element]}`, text: '',
-        gains: moveGains(p, s, { ...s, level: s.level + 1 }),
+        gains: moveGains(p, s, { ...s, level: to }),
         pips: { filled: s.level, next: true, max: m.maxLevel },
       };
     }
@@ -93,7 +104,7 @@ function offerCard(run: RunState, o: LevelOffer): TamerCardSpec {
     }
     case 'card': {
       const full = p.passives.filter(Boolean).length;
-      return passiveCard(o.cardId, 1, `Carta · Passiva · ${full}/${p.passives.length}`, true);
+      return passiveCard(o.cardId, T.RARITY.cardStartLevel[o.rarity ?? 'common'], `Carta · Passiva · ${full}/${p.passives.length}`, true);
     }
   }
 }
@@ -106,5 +117,11 @@ export function showLevelUp(root: HTMLElement, run: RunState) {
     title: 'Level up! Escolha uma carta',
     subtitle: `${FORMS[run.prog.formId]?.name ?? run.prog.formId} · Nv ${from} → ${from + 1}${more}`,
     cards: offers.map((o, i) => ({ ...offerCard(run, o), onPick: () => chooseOffer(run, i) })),
+    // as teclas mostradas são as padrão (F/X/Z); a tela reabre sozinha com as ofertas novas
+    tools: [
+      { label: 'Atualizar', action: 'reroll', key: 'F', count: run.levelTools.reroll, onUse: () => { rerollOffers(run); } },
+      { label: 'Pular', action: 'skip', key: 'X', count: run.levelTools.skip, onUse: () => { const g = skipOffer(run); if (g) toast(autoGainText([g])); } },
+      { label: 'Banir', action: 'ban', key: 'Z', count: run.levelTools.ban, onUse: sel => { banOffer(run, sel); } },
+    ],
   });
 }
