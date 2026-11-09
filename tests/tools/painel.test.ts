@@ -5,7 +5,7 @@ const info = (frames: string[]) => ({ file: 'x.png', frameW: 10, frameH: 10, fra
 
 test('spriteStatus: completo, ajustar, só parado e sem sprite', () => {
   expect(spriteStatus('agumon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'])).st).toBe('done');
-  expect(spriteStatus('wargreymon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'])).st).toBe('adjust');
+  expect(spriteStatus('omnimon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'])).st).toBe('adjust');
   expect(spriteStatus('gabumon', info(['idle1', 'idle2']))).toEqual({ st: 'idle', note: 'só parado (2 quadros)' });
   expect(spriteStatus('megidramon', undefined).st).toBe('none');
   expect(spriteStatus('x', info(['idle1', 'walk1'])).st).toBe('partial');

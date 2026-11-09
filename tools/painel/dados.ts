@@ -7,7 +7,7 @@ export type SpriteState = 'done' | 'adjust' | 'partial' | 'idle' | 'none';
 
 /** folhas que existem mas têm defeitos conhecidos (revisar quando as folhas novas chegarem) */
 export const SPRITE_ADJUST: Record<string, string> = {
-  wargreymon: 'diagonais da corrida', omnimon: 'diagonais da corrida', exveemon: 'diagonais da corrida',
+  omnimon: 'diagonais da corrida', exveemon: 'diagonais da corrida',
   gallantmon: 'linha de costas da corrida cortada',
 };
 
