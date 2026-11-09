@@ -63,14 +63,16 @@
       "t": "Nível infinito",
       "p": "Sem nada para melhorar (golpes no máximo, espaços cheios), cada nível dá um ganho automático pequeno de status, sem abrir a tela. Aviso único por instante.",
       "f": "src/sim/progression.ts (nothingToImprove, autoGain)"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Raridade + atualizar, pular e banir",
+      "p": "Cartas de level up com raridade (Comum 60%, Incomum 26%, Raro 11%, Lendário 3%) que aumenta status, níveis de golpe e nível inicial de carta. Atualizar (F), Pular (X) e Banir (Z) com 2/2/1 usos por partida; o Laboratório vai aumentar.",
+      "f": "src/sim/progression.ts · src/sim/run.ts · src/ui/levelup.ts"
     }
   ],
   "proximos": [
-    [
-      "Raridade das cartas + atualizar, pular e banir",
-      "P–M",
-      "Cada nível vira uma decisão de verdade."
-    ],
     [
       "\"Ficar como está\" com bônus (Maturidade)",
       "P",
@@ -137,6 +139,7 @@
     "Quase-mortes do ramo sombrio (3, 8 e 12) foram chute: calibrar jogando.",
     "Digi Data só sorteia linhas de parceiros liberados (ajuste da revisão; o pedido original era \"qualquer\").",
     "Vazamentos aceitos do design: \"Caminho Greymon\" revela que existe caminho até o Greymon; o número de cartas \"???\" revela quantas opções há.",
-    "Servidor para ranking online: decidido para depois (hoje é SQLite local)."
+    "Servidor para ranking online: decidido para depois (hoje é SQLite local).",
+    "Teclas mostradas nos botões de atualizar/pular/banir são as padrão (F/X/Z), mesmo se o jogador trocar a tecla."
   ]
 }
