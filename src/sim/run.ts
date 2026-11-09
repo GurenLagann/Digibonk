@@ -14,10 +14,11 @@ import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, wi
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
-import { addXp, applyOffer, newPlayerProg, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
+import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
 import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
+import type { StatKey } from '../data/types';
 
 export interface InputState { mx: number; mz: number }
 export type RunEvent =
@@ -27,7 +28,8 @@ export type RunEvent =
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
   | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
-  | { type: 'formDiscovered'; formId: string } | { type: 'digiData' };
+  | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
+  | { type: 'autoGain'; level: number; stat: StatKey; amount: number };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -314,6 +316,11 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   if (secret.length > 1) { r.blindChoice = secret; return ev; }
   const avail = knownAvailable(r.prog, ctx);
   if (r.evo.update(avail).length) ev.push({ type: 'evolutionAvailable', forms: avail });
+  // nível infinito: sem nada para melhorar, cada nível vira um ganho automático, sem abrir a tela
+  while (r.prog.pendingLevelUps > 0 && r.offers === null && nothingToImprove(r.prog)) {
+    const level = r.prog.level - r.prog.pendingLevelUps + 1;
+    ev.push({ type: 'autoGain', level, ...autoGain(r.prog, r.rng) });
+  }
   if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng); ev.push({ type: 'levelUp' }); }
   syncHp(r);
   return ev;
@@ -330,7 +337,8 @@ export function chooseOffer(r: RunState, index: number): void {
   const o = r.offers[index]; if (!o) return;
   applyOffer(r.prog, o);
   r.offers = null;
-  if (r.prog.pendingLevelUps > 0) r.offers = rollOffers(r.prog, r.rng);
+  // sem nada para melhorar, os níveis restantes viram ganho automático no próximo passo (stepRun)
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng);
   syncHp(r);
 }
 

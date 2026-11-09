@@ -1,4 +1,4 @@
-import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath } from '../../src/sim/progression';
+import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath, nothingToImprove, autoGain } from '../../src/sim/progression';
 import { createRng } from '../../src/core/rng';
 import { maxedProg } from '../helpers';
 
@@ -45,5 +45,22 @@ describe('trackNearDeath', () => {
   test('death does not count', () => {
     const p = newPlayerProg('agumon');
     expect(trackNearDeath(p, 0, 100)).toBe(false); expect(p.nearDeaths).toBe(0);
+  });
+});
+
+describe('nível infinito: ganho automático quando não há o que melhorar', () => {
+  const fullCards = (p: ReturnType<typeof newPlayerProg>) => { p.passives = ['card_greymon_horn', 'card_hyper_speed', 'card_hyper_speed']; return p; };
+  test('nothingToImprove só com golpes no máximo, espaços cheios e cartas cheias', () => {
+    expect(nothingToImprove(newPlayerProg('agumon'))).toBe(false);
+    expect(nothingToImprove(maxedProg('agumon'))).toBe(false); // ainda há espaço de carta
+    expect(nothingToImprove(fullCards(maxedProg('agumon')))).toBe(true);
+  });
+  test('autoGain soma um ganho pequeno num status sorteado e consome o nível pendente', () => {
+    const p = fullCards(maxedProg('agumon')); p.pendingLevelUps = 2;
+    const g = autoGain(p, createRng(3));
+    expect(['hp', 'atk', 'def', 'spd', 'brain']).toContain(g.stat);
+    expect(g.amount).toBe(g.stat === 'hp' ? 3 : 1);
+    expect(p.bonus[g.stat]).toBe(g.amount);
+    expect(p.pendingLevelUps).toBe(1);
   });
 });

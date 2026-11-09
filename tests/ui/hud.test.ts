@@ -6,7 +6,7 @@ import { FORMS } from '../../src/data/forms';
 import { MOVES } from '../../src/data/moves';
 import { T } from '../../src/data/tuning';
 import { createRun, type RunState } from '../../src/sim/run';
-import { evoMissingText, mountHud } from '../../src/ui/hud';
+import { autoGainText, evoMissingText, mountHud } from '../../src/ui/hud';
 import { discoverAll, fakeStorage } from '../helpers';
 import { reveal } from '../../src/sim/discovery';
 
@@ -164,4 +164,10 @@ describe('evoluções secretas no painel', () => {
     run.prog.bonus.atk = 0; hud.update(run);
     expect(q('.hud-evotext').textContent).toMatch(/^Atq \d+ · \?\?\?$/);
   });
+});
+
+test('autoGainText resume os ganhos automáticos do nível infinito', () => {
+  expect(autoGainText([{ level: 37, stat: 'atk', amount: 1 }])).toBe('Nv 37 · +1 Atq');
+  expect(autoGainText([{ level: 37, stat: 'hp', amount: 3 }, { level: 38, stat: 'atk', amount: 1 }, { level: 39, stat: 'atk', amount: 1 }]))
+    .toBe('Nv 37–39 · +3 Vida · +2 Atq');
 });

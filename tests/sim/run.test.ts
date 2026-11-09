@@ -1,4 +1,4 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, hudSave, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, type RunState } from '../../src/sim/run';
 import { visibleHint } from '../../src/sim/discovery';
 import { CARDS } from '../../src/data/cards';
 import { newPhase } from '../../src/sim/phase';
@@ -8,7 +8,7 @@ import { BOSSES } from '../../src/data/enemies';
 import { T } from '../../src/data/tuning';
 import { MINIBOSSES } from '../../src/data/enemies';
 import { MAP_OBSTACLES } from '../../src/sim/map';
-import { fakeStorage, autoResolveModals, circleInput, discoverAll } from '../helpers';
+import { fakeStorage, autoResolveModals, circleInput, discoverAll, maxedProg } from '../helpers';
 
 const opts = (o: { seed?: number; partnerId?: string; storage?: Storage } = {}) =>
   ({ partnerId: o.partnerId ?? 'agumon', seed: o.seed ?? 1, save: defaultSave(), storage: o.storage ?? fakeStorage({}) });
@@ -228,4 +228,28 @@ describe('correções da revisão final', () => {
     expect(r.pendingCard).not.toBeNull();
     expect(r.prog.formId).toBe('agumon');
   });
+});
+
+describe('nível infinito na partida', () => {
+  test('sem nada para melhorar, subir de nível não abre a tela e avisa o ganho', () => {
+    const r = createRun(opts());
+    const f = r.prog.formId, full = maxedProg(f);
+    r.prog.slots = full.slots; r.prog.passives = ['card_greymon_horn', 'card_hyper_speed', 'card_hyper_speed'];
+    r.prog.pendingLevelUps = 2; r.prog.level = 40;
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.offers).toBeNull();
+    expect(r.prog.pendingLevelUps).toBe(0);
+    expect(ev.filter(e => e.type === 'autoGain')).toHaveLength(2);
+  });
+});
+test('a última melhoria escolhida não abre outra tela: os níveis restantes viram ganho automático', () => {
+  const r = createRun(opts());
+  const full = maxedProg(r.prog.formId);
+  r.prog.slots = full.slots; r.prog.slots[3]!.level = 4; // falta 1 nível num golpe
+  r.prog.passives = ['card_greymon_horn', 'card_hyper_speed', 'card_hyper_speed'];
+  r.prog.pendingLevelUps = 3; r.offers = [{ kind: 'upgrade', slot: 3 }];
+  chooseOffer(r, 0);
+  expect(r.offers).toBeNull();
+  const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(ev.filter(e => e.type === 'autoGain')).toHaveLength(2);
 });

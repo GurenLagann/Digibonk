@@ -4,6 +4,7 @@ import { FORMS } from '../data/forms';
 import { ITEMS } from '../data/items';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
+import type { StatKey } from '../data/types';
 import { knownAvailable, visibleHint } from '../sim/discovery';
 import type { EvoMissing } from '../sim/evolution';
 import { xpToNext } from '../sim/progression';
@@ -31,6 +32,14 @@ export function evoMissingText(missing: EvoMissing[]): string {
       case 'nearDeaths': return `HP < 25%: ${m.have}/${m.need}×`;
     }
   }).join(' · ');
+}
+
+/** nível infinito: "Nv 37–39 · +3 Vida · +2 Atq" (ganhos do mesmo instante somados num aviso só) */
+export function autoGainText(gains: { level: number; stat: StatKey; amount: number }[]): string {
+  const lv = gains.map(g => g.level), lo = Math.min(...lv), hi = Math.max(...lv);
+  const sum = new Map<StatKey, number>();
+  for (const g of gains) sum.set(g.stat, (sum.get(g.stat) ?? 0) + g.amount);
+  return [lo === hi ? `Nv ${lo}` : `Nv ${lo}–${hi}`, ...[...sum].map(([k, v]) => `+${v} ${STAT_SHORT[k]}`)].join(' · ');
 }
 
 /** 1284 → "1.284" */

@@ -57,6 +57,21 @@ export function addXp(p: PlayerProg, amount: number): number {
   return gained;
 }
 
+/** golpes todos no máximo, sem espaço livre de golpe nem de carta: a subida de nível não tem escolha que valha a tela */
+export function nothingToImprove(p: PlayerProg): boolean {
+  if (p.passives.some(c => c === null)) return false;
+  if (p.slots.some(s => s === null)) return false;
+  return p.slots.every(s => s!.level >= MOVES[s!.moveId].maxLevel);
+}
+
+/** nível infinito: aplica um ganho pequeno num status sorteado e consome um nível pendente */
+export function autoGain(p: PlayerProg, rng: Rng): { stat: StatKey; amount: number } {
+  const stat = rng.pick(STAT_KEYS), amount = T.AUTO_GAIN[stat];
+  p.bonus[stat] += amount;
+  if (p.pendingLevelUps > 0) p.pendingLevelUps--;
+  return { stat, amount };
+}
+
 export function rollOffers(p: PlayerProg, rng: Rng): LevelOffer[] {
   const f = FORMS[p.formId];
   const pool: LevelOffer[] = [];

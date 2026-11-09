@@ -18,7 +18,7 @@ import { deathDuration, SpriteLibrary } from './render/sprites';
 import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './sim/run';
 import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showBlindEvolve, showEvolve } from './ui/evolve';
-import { mountHud } from './ui/hud';
+import { autoGainText, mountHud } from './ui/hud';
 import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
@@ -120,6 +120,7 @@ function announce(e: RunEvent) {
     case 'partnerUnlocked': toast(`Ovo encontrado! ${FORMS[e.partnerId]?.name ?? e.partnerId} desbloqueado!`, 'rare'); break;
     case 'formDiscovered': toast(`Nova forma liberada! ${FORMS[e.formId].name}`, 'rare'); break;
     case 'digiData': toast('Digi Data coletado'); break;
+    case 'autoGain': break; // somados num aviso só, no loop
     case 'evolutionAvailable': break; // o painel "Próx. evolução" do HUD acende no lugar do aviso
     case 'bossUnlocked': toast('Missão cumprida! O chefe foi liberado', 'rare'); break;
     case 'bossStarted': toast('O chefe apareceu!', 'warn'); break;
@@ -155,6 +156,8 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
   if (input.pressed('evolve') && canEvolve(run)) { showEvolve(ui, run, id => id && toast(`Digievoluiu para ${FORMS[id].name}!`, 'rare')); return; }
   const ev = stepRun(run, input.move(), dt);
   ev.forEach(announce);
+  const gains = ev.flatMap(e => (e.type === 'autoGain' ? [e] : []));
+  if (gains.length) toast(autoGainText(gains));
   events.push(...ev);
 });
 
