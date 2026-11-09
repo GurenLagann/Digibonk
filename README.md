@@ -4,7 +4,9 @@ Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra 
 
 ![Greymon no meio de uma horda](docs/screenshot.jpg)
 
-> **Status:** protótipo jogável. O motor, as 5 fases, as digievoluções, as cartas e os chefes já funcionam. Sprites, parceiros e equilíbrio ainda estão em andamento.
+> **Status:** protótipo jogável. O motor, as 5 fases, as digievoluções secretas, as cartas, a Zona Digital, o Jogress, os altares e os chefes já funcionam. Sprites e equilíbrio ainda estão em andamento.
+>
+> Acompanhamento para devs: o **painel** (`npm run painel` → `docs/painel/index.html`) mostra o que foi feito, o que falta e todas as linhas de evolução com os sprites.
 
 ## Inspiração: PokéBonk
 
@@ -31,11 +33,20 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
 
   Os ovos são raros nos baús. Pegar um libera o parceiro para sempre, mesmo que você perca a partida.
 - **Combate automático.** Cada Digimon tem espaços de ataque com o próprio kit (Pepper Breath, Spitfire Blast...). Você só se move, e os golpes saem sozinhos.
-- **Level up.** A cada nível você escolhe entre aprender um golpe novo, melhorar um golpe ou aumentar um atributo (Vida, Ataque, Defesa, Velocidade, Cérebro).
-- **Digievolução por escolha.** Quando os requisitos são cumpridos (nível, atributos, itens), aparece o aviso "Digievolução disponível!". Você aperta **E** quando quiser e escolhe o caminho. Algumas formas exigem itens especiais:
-  - os Digiovos da Coragem e da Amizade levam o Veemon a Flamedramon e Raidramon;
-  - os dados de fusão liberam Omnimon e Paildramon;
-  - o Blue Card leva o WarGrowlmon a Gallantmon.
+- **Level up em cartas.** A cada nível você escolhe entre aprender um golpe novo, melhorar um golpe ou aumentar um atributo (Vida, Ataque, Defesa, Velocidade, Cérebro).
+  - As cartas têm **raridade** (Comum, Incomum, Raro, Lendário): uma melhoria rara sobe 2 níveis, um status lendário dá +9, uma carta lendária já entra no nível 3.
+  - **Atualizar (F), Pular (X) e Banir (Z)** têm usos limitados por partida (2, 2 e 1). Banir tira a carta do sorteio até o fim da partida.
+  - **Nível infinito:** quando não sobra nada para melhorar, cada nível dá um ganho pequeno de status sozinho, sem abrir a tela.
+- **Digievoluções secretas.** No começo você não sabe como evoluir: as evoluções ficam escondidas até serem descobertas.
+  - Ao cumprir os requisitos de uma forma que você nunca viu, o parceiro **evolui sozinho** e aparece "Nova forma liberada!". Se duas secretas ficarem prontas juntas, você escolhe entre cartas **"???"** sem saber qual é qual.
+  - **Digi Data** aparecem no mapa. Cada um revela, no fim da partida, um requisito de alguma evolução ("Caminho Greymon ② — Atq 38"), sem dizer o destino.
+  - Formas já descobertas evoluem quando você quiser, com **E**.
+  - Itens especiais: os dados de fusão liberam Omnimon e Paildramon; o Blue Card leva o WarGrowlmon a Gallantmon; a Transcendent Sword leva o Imperialdramon FM ao Modo Paladino.
+  - **Ramo sombrio:** jogar no limite (vezes em que a vida cai abaixo de 25%) leva a SkullGreymon, BlackWarGreymon, BlackWarGrowlmon e Megidramon.
+- **Maturidade.** Na tela de evolução dá para **ficar na forma atual**: +12% de vida e dano, e o parceiro troca de caminho, seguindo só as evoluções que pedem Maturidade (WarGreymon → VictoryGreymon; Veemon maduro + Digiovos → Flamedramon, Raidramon e Magnamon).
+- **Zona Digital.** Derrotar um guardião abre por 30 s um portal para uma **arena separada**: 4 ondas e o próprio guardião como **Alfa**. Vencer dá um Digi Data e a escolha de uma **relíquia** (até 3 por partida), como regeneração, mais XP ou reviver uma vez.
+- **Jogress de golpes.** Com dois golpes no nível máximo, surge um Terminal Jogress no mapa: o par vira um golpe só, os dois disparam com +25% de dano e o outro espaço fica livre.
+- **Altares** (um de cada por fase): **Etemon** (Corrupção: mais inimigos e mais fortes, em troca de mais XP), **Datamon** (troca um status por outro) e **Desafio** (guardião mais forte que abre uma Distorção rara).
 - **Cartas do Digimon Tamers.** Há 3 espaços para cartas passivas, como Garras do Gatomon ou Armadura do Andromon. As cartas *Slash* substituem um dos seus ataques.
 - **5 fases de 10 minutos.** Cumpra a missão da fase para liberar o chefe (Devimon, Etemon, Myotismon, Kimeramon, Piedmon). Você pode enfrentá-lo ou continuar farmando. Se o tempo acabar, chegam as **hordas insanas**.
 
@@ -47,8 +58,9 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
 | Confirmar | Enter / Espaço | A |
 | Voltar | Backspace | B |
 | Digievoluir | E | Y |
-| Pausar | Esc | Start |
+| Pausar (mostra o dano de cada golpe) | Esc | Start |
 | Opções rápidas nos menus | 1, 2, 3 | — |
+| Level up: atualizar / pular / banir | F / X / Z | X / LB / RB |
 
 Os controles podem ser remapeados no menu **Controles**.
 
@@ -67,6 +79,7 @@ npm run dev        # http://localhost:5173
 | `npm run build` | checagem de tipos + build de produção em `dist/` |
 | `npm test` | testes (Vitest) |
 | `npm run sprites:vpet` | regera as tiras de sprite em `public/sprites/` |
+| `npm run painel` | gera o painel dos devs em `docs/painel/index.html` (`-- --sem-testes` para pular a contagem de testes) |
 
 ### Modo debug (só em desenvolvimento)
 
@@ -76,7 +89,8 @@ Abra `http://localhost:5173/?debug` e comece uma partida. Aparece um painel (**F
 - +1 nível;
 - dar qualquer carta ou item;
 - curar, ficar invencível e matar todos (inclui o chefe);
-- velocidade 2× (liga/desliga), para ver a troca de caminhada para corrida.
+- velocidade 2× (liga/desliga), para ver a troca de caminhada para corrida;
+- **revelar todas as evoluções** ou **esquecer evoluções** (zera as descobertas e as pistas do save).
 
 Também dá para combinar flags na URL: `?debug=xp10,items,spawn600` (10× XP, só itens nos baús, 600 inimigos de uma vez para testar desempenho).
 
@@ -130,9 +144,12 @@ src/
   ui/       HUD, menus, modais de escolha, painel de debug
 tools/sprites/  recorte das folhas de sprite → tiras + manifest.json
 tools/db/       executor de migrations/seeds e exportador banco → dados do jogo
+tools/painel/   gerador do painel dos devs (texto curado em conteudo.json)
 db/             migrations e seeds (SQL)
 tests/      testes da simulação, render e UI
-docs/superpowers/  documento de design e planos de implementação
+docs/superpowers/  documentos de design e planos de implementação
+docs/analises/     análises de referência (mecânicas do PokéBonk)
+docs/painel/       painel dos devs gerado
 ```
 
 A simulação (`src/sim`) não conhece Three.js nem o DOM. Isso permite testar uma partida inteira de forma determinística.
@@ -177,10 +194,13 @@ Os demais Digimon e os inimigos usam sprites de V-pet (Vital Bracelet / Pendulum
 
 ## Próximos passos
 
-- Sprites para as formas dos parceiros desbloqueáveis (hoje usam o placeholder).
-- Folhas de sprite completas para todas as formas jogáveis.
-- Loja entre partidas para comprar melhorias.
-- Retratos dos Digimon nos menus e tela de créditos.
+A lista completa e atualizada fica no painel dos devs (`npm run painel`). Os principais:
+
+- **Builds:** ★/✕ por parceiro (o que aparece mais ou nunca no level up) e caminho de evolução escolhido, que só orienta.
+- **Laboratório:** moeda permanente para melhorias entre partidas, com os baús pagos.
+- **Digimon Analyzer:** vitrine das evoluções descobertas e das pistas de Digi Data.
+- **Digimon aliados** e recordes locais por mapa e contra o relógio.
+- Sprites das formas que ainda usam o placeholder (BlackWarGreymon, Megidramon, VictoryGreymon, Magnamon e as linhas dos parceiros desbloqueáveis) e as diagonais que faltam.
 
 ## Créditos e aviso legal
 
@@ -189,7 +209,8 @@ DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Band
 - **Sprites do Digimon World 3** (Agumon, Veemon, Guilmon, Bakemon, Guardromon): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
-- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon e Gallantmon.
+- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
+- **Arte da tela inicial** (logo, Mundo Digital e a paisagem do fundo): imagens fornecidas pelo autor do projeto.
 - As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
