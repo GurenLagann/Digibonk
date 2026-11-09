@@ -7,6 +7,10 @@ export interface SaveData {
   version: 1;
   unlocked: string[];
   discovered: string[];
+  /** arestas de evolução já feitas alguma vez ("from->to") */
+  discoveredEvos: string[];
+  /** requisitos revelados por Digi Data, por aresta (chaves de ReqKey) */
+  revealedReqs: Record<string, string[]>;
   records: { bestPhase: number; wins: number; runs: number };
   partnerRecords: Record<string, PartnerRecord>;
   currency: number;
@@ -14,10 +18,12 @@ export interface SaveData {
 }
 
 export function defaultSave(): SaveData {
-  return { version: 1, unlocked: [...STARTERS], discovered: [], records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {} };
+  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {} };
 }
 
 const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x => typeof x === 'string') ? [...v] : null);
+/** como strArr, mas descarta só os itens inválidos */
+const strItems = (v: unknown): string[] | null => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : null);
 const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
 
 function storageOrGlobal(storage: Storage | null | undefined): Storage | null {
@@ -56,10 +62,16 @@ export function loadSave(storage?: Storage | null): SaveData {
       partnerRecords[k] = { runs: num(pr.runs, 0), wins: num(pr.wins, 0), bestPhase: num(pr.bestPhase, 0) };
     }
   }
+  const revealedReqs: Record<string, string[]> = {};
+  if (r.revealedReqs && typeof r.revealedReqs === 'object' && !Array.isArray(r.revealedReqs)) {
+    for (const [k, v] of Object.entries(r.revealedReqs as object)) { const keys = strItems(v); if (keys) revealedReqs[k] = keys; }
+  }
   return {
     version: 1,
     unlocked,
     discovered: strArr(r.discovered) ?? d.discovered,
+    discoveredEvos: strItems(r.discoveredEvos) ?? d.discoveredEvos,
+    revealedReqs,
     records: { bestPhase: num(rec.bestPhase, 0), wins: num(rec.wins, 0), runs: num(rec.runs, 0) },
     partnerRecords,
     currency: num(r.currency, 0),

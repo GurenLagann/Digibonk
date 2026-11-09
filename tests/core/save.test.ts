@@ -33,3 +33,27 @@ test('partnerRecords: default empty, validated per field, round trip', () => {
   expect(partnerRecord(d, 'veemon').bestPhase).toBe(4);
   expect(partnerRecord(d, 'nobody')).toEqual({ runs: 0, wins: 0, bestPhase: 0 });
 });
+describe('evoluções secretas', () => {
+  test('default: nada descoberto nem revelado', () => {
+    expect(defaultSave().discoveredEvos).toEqual([]);
+    expect(defaultSave().revealedReqs).toEqual({});
+  });
+  test('discoveredEvos descarta itens que não são texto', () => {
+    const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ discoveredEvos: ['agumon->greymon', 3] }) });
+    expect(loadSave(s).discoveredEvos).toEqual(['agumon->greymon']);
+  });
+  test('revealedReqs valida por aresta e por chave', () => {
+    const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ revealedReqs: { 'agumon->greymon': ['level', 7], x: 'lixo' } }) });
+    expect(loadSave(s).revealedReqs).toEqual({ 'agumon->greymon': ['level'] });
+  });
+  test('save antigo sem os campos carrega com tudo secreto', () => {
+    const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ unlocked: ['agumon'], discovered: ['agumon'] }) });
+    const d = loadSave(s);
+    expect(d.discoveredEvos).toEqual([]); expect(d.revealedReqs).toEqual({});
+  });
+  test('round trip', () => {
+    const s = fakeStorage({});
+    const d = { ...defaultSave(), discoveredEvos: ['agumon->greymon'], revealedReqs: { 'greymon->skullgreymon': ['stat:atk'] } };
+    storeSave(d, s); expect(loadSave(s)).toEqual(d);
+  });
+});
