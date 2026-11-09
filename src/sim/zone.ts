@@ -12,9 +12,11 @@ import type { Chest, Pickup } from './loot';
 import { RELIC_SLOTS } from './relics';
 import type { RunEvent, RunState } from './run';
 
-export interface Portal { x: number; z: number; attr: AttributeId; guardian: string; t: number }
+export interface Portal { x: number; z: number; attr: AttributeId; guardian: string; t: number;
+  /** Distorção rara (guardião do Altar do Desafio): onda extra, 4 relíquias e Digi Data a mais */
+  rare?: boolean }
 export interface ZoneState {
-  attr: AttributeId; guardian: string;
+  attr: AttributeId; guardian: string; rare: boolean;
   stage: 'waves' | 'alpha' | 'exit';
   wave: number; waveT: number;
   alphaId: number | null; alphaT: number;
@@ -27,7 +29,9 @@ const Z = () => T.ZONE;
 
 /** guardião derrotado no mapa: abre um portal no lugar dele */
 export function openPortal(r: RunState, e: Enemy, ev: RunEvent[]): void {
-  r.portals.push({ x: e.x, z: e.z, attr: e.attribute, guardian: e.def, t: Z().PORTAL_SECONDS });
+  const rare = r.challengeGuardianId === e.id;
+  if (rare) { r.challengeGuardianId = null; r.challengeArmed = false; }
+  r.portals.push({ x: e.x, z: e.z, attr: e.attribute, guardian: e.def, t: Z().PORTAL_SECONDS, rare });
   ev.push({ type: 'portalOpened', attr: e.attribute });
 }
 
@@ -47,7 +51,7 @@ export function stepPortals(r: RunState, dt: number, ev: RunEvent[]): void {
 
 function enterZone(r: RunState, p: Portal, ev: RunEvent[]) {
   r.zone = {
-    attr: p.attr, guardian: p.guardian, stage: 'waves', wave: 0, waveT: 0, alphaId: null, alphaT: 0, exit: null,
+    attr: p.attr, guardian: p.guardian, rare: !!p.rare, stage: 'waves', wave: 0, waveT: 0, alphaId: null, alphaT: 0, exit: null,
     saved: { pool: r.pool, pickups: r.pickups, chests: r.chests, px: r.px, pz: r.pz },
   };
   r.pool = new EnemyPool(); r.pickups = []; r.chests = [];
@@ -94,23 +98,23 @@ function spawnAlpha(r: RunState, ev: RunEvent[]) {
 }
 
 /** dentro da arena, depois do combate: ondas, Alfa, recompensa e saída. `reward` revela o Digi Data (run.ts) */
-export function stepZone(r: RunState, dt: number, ev: RunEvent[], reward: () => void): void {
+export function stepZone(r: RunState, dt: number, ev: RunEvent[], reward: (extra: number) => void): void {
   const z = r.zone!;
   if (z.stage === 'waves') {
     z.waveT += dt;
     if (r.pool.alive().length === 0 || z.waveT >= Z().WAVE_SECONDS) {
-      if (z.wave < Z().WAVES) nextWave(r, ev);
+      if (z.wave < Z().WAVES + (z.rare ? 1 : 0)) nextWave(r, ev);
       else if (r.pool.alive().length === 0) spawnAlpha(r, ev);
     }
   } else if (z.stage === 'alpha') {
     z.alphaT -= dt;
     const alpha = z.alphaId !== null ? r.pool.get(z.alphaId) : undefined;
     if (!alpha) {
-      reward();
+      reward(z.rare ? 1 : 0);
       const free = RELIC_LIST.filter(x => !r.prog.relics.includes(x.id));
       if (r.prog.relics.length < RELIC_SLOTS && free.length) {
         const pick: string[] = [];
-        while (pick.length < Math.min(3, free.length)) { const c = r.rng.pick(free).id; if (!pick.includes(c)) pick.push(c); }
+        while (pick.length < Math.min(z.rare ? 4 : 3, free.length)) { const c = r.rng.pick(free).id; if (!pick.includes(c)) pick.push(c); }
         r.relicOffer = pick;
       }
       finish(r, ev, true);

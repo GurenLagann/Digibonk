@@ -24,6 +24,12 @@ export const T = {
     WAVES: 4, WAVE_BASE: 8, WAVE_GROWTH: 4, WAVE_SECONDS: 15,
     ALPHA_SECONDS: 60, ALPHA_HP: 10, ALPHA_DMG: 1.5, ALPHA_SIZE: 1.1,
   },
+  /** Altares: Corrupção do Etemon (por nível), trocas do Datamon e guardião do Desafio */
+  ALTARS: {
+    CORRUPTION_MAX: 5, CORRUPTION_SPAWN: 0.15, CORRUPTION_POWER: 0.12, CORRUPTION_XP: 0.10,
+    TRADE_LOSE: 10, TRADE_GAINS: [12, 14, 16] as readonly number[],
+    CHALLENGE_HP: 1.6, CHALLENGE_DMG: 1.25,
+  },
   /** Jogress de golpes: bônus de dano dos dois golpes que dividem o espaço */
   JOGRESS_BONUS: 0.25,
   /** Maturidade (ficar na forma atual de vez): +12% de dano e de Vida máxima */

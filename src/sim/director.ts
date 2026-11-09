@@ -50,11 +50,14 @@ export function difficulty(phase: number, t: number) {
   return { spawnPerSec, hpMul, dmgMul };
 }
 
-export interface DirectorState { pool: EnemyPool; phase: number; t: number; acc: number; px: number; pz: number }
+export interface DirectorState { pool: EnemyPool; phase: number; t: number; acc: number; px: number; pz: number;
+  /** nível de Corrupção do Etemon (mais inimigos e mais fortes) */
+  corruption?: number }
 
 export function stepDirector(s: DirectorState, dt: number, rng: Rng): void {
   const d = difficulty(s.phase, s.t);
-  s.acc += d.spawnPerSec * dt;
+  const c = s.corruption ?? 0, power = 1 + c * T.ALTARS.CORRUPTION_POWER;
+  s.acc += d.spawnPerSec * (1 + c * T.ALTARS.CORRUPTION_SPAWN) * dt;
   const eligible = ENEMIES.filter(e => e.minPhase <= s.phase);
   while (s.acc >= 1) {
     s.acc -= 1;
@@ -66,6 +69,6 @@ export function stepDirector(s: DirectorState, dt: number, rng: Rng): void {
       if (Math.abs(x) <= T.MAP_HALF && Math.abs(z) <= T.MAP_HALF) break;
     }
     x = clamp(x, -T.MAP_HALF, T.MAP_HALF); z = clamp(z, -T.MAP_HALF, T.MAP_HALF);
-    s.pool.spawn(def, x, z, { hp: d.hpMul, dmg: d.dmgMul });
+    s.pool.spawn(def, x, z, { hp: d.hpMul * power, dmg: d.dmgMul * power });
   }
 }

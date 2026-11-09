@@ -24,6 +24,8 @@ export interface PlayerProg {
   matured: boolean;
   /** relíquias da Zona Digital equipadas (até 3; efeitos em sim/relics.ts) */
   relics: string[];
+  /** trocas do Datamon: % somado (ganho) ou tirado (perda) de cada status, multiplicando no fim */
+  statShift: Partial<Record<StatKey, number>>;
 }
 export const RARITIES = ['common', 'uncommon', 'rare', 'legendary'] as const;
 export type Rarity = typeof RARITIES[number];
@@ -56,7 +58,7 @@ export function newPlayerProg(formId: string): PlayerProg {
     formId, level: 1, xp: 0, bonus: { hp: 0, atk: 0, def: 0, spd: 0, brain: 0 },
     slots, passives: Array.from({ length: T.PASSIVE_SLOTS }, () => null), items: [],
     pendingLevelUps: 0, kills: 0, path: [formId], pathLevels: [1], cardLevels: {},
-    nearDeaths: 0, nearDeathArmed: true, matured: false, relics: [],
+    nearDeaths: 0, nearDeathArmed: true, matured: false, relics: [], statShift: {},
   };
 }
 

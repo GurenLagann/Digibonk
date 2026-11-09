@@ -20,6 +20,7 @@ import { effectiveStats } from './stats';
 import { clamp } from './vec';
 import { addRelic, relicEffects } from './relics';
 import { applyJogress, jogressPairs } from './jogress';
+import { placeAltars, rollTrades, type Altar, type AltarKind, type Trade } from './altars';
 import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
 import type { StatKey } from '../data/types';
 
@@ -58,6 +59,9 @@ export interface RunState {
   /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
   portals: Portal[]; zone: ZoneState | null; relicOffer: string[] | null;
   /** Jogress de golpes: Terminal no mapa, pares oferecidos (espaços) e se já foi usado nesta partida */
+  /** Altares: os da fase, a escolha aberta, Corrupção acumulada e o guardião do Desafio */
+  altars: Altar[]; altarOffer: { altarId: number; kind: AltarKind; trades?: Trade[] } | null; altarAway: number | null;
+  corruption: number; challengeArmed: boolean; challengeGuardianId: number | null;
   jogressSpot: { x: number; z: number } | null; jogressOffer: [number, number][] | null; jogressUsed: boolean; jogressArmed: boolean;
   /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
   dataRng: Rng;
@@ -81,6 +85,7 @@ function setupPhase(r: RunState, n: number) {
   r.px = 0; r.pz = 0;
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
   r.chests = placeChests(n, r.rng); r.portals = []; r.jogressSpot = null;
+  r.altars = placeAltars(n, r.dataRng); r.altarAway = null;
   if (r.phase.mission.kind === 'collect') for (const p of r.phase.mission.points) r.pickups.push({ id: r.nextPickupId++, x: p.x, z: p.z, kind: 'fragment', value: 1 });
   placeDigiData(r);
   syncHp(r); r.combat.hp = r.combat.maxHp;
@@ -128,7 +133,8 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -221,12 +227,13 @@ export function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
 }
 
 export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] {
-  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null || r.relicOffer !== null || r.jogressOffer !== null) return [];
+  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null || r.relicOffer !== null || r.jogressOffer !== null || r.altarOffer !== null) return [];
   const ev: RunEvent[] = [];
   r.time += dt;
   movePlayer(r, input, dt);
 
   const d = r.director; d.phase = r.phase.phase; d.t = r.phase.t; d.px = r.px; d.pz = r.pz;
+  d.corruption = r.corruption;
   if (!r.zone) stepDirector(d, dt, r.rng); // na arena só surgem as ondas da Distorção
 
   for (const [id] of r.combat.bosses) if (!r.pool.get(id)) r.combat.bosses.delete(id);
@@ -272,7 +279,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   // pickups
   for (const p of collect(r.pickups, r.px, r.pz, 1.5 * stats.pickupMul)) {
-    if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul);
+    if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul * (1 + r.corruption * T.ALTARS.CORRUPTION_XP));
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
     else if (p.kind === 'fragment') collectedFragment = true;
     else if (p.kind === 'digidata') collectDigiData(r, ev);
@@ -290,8 +297,8 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   }
 
   // Zona Digital: dentro, ondas/Alfa/saída; fora, portais
-  if (r.zone) stepZone(r, dt, ev, () => { for (let k = 0; k < 1 + relicEffects(r.prog).digidata; k++) collectDigiData(r, ev); });
-  else { stepPortals(r, dt, ev); stepJogressTerminal(r, ev); }
+  if (r.zone) stepZone(r, dt, ev, extra => { for (let k = 0; k < 1 + extra + relicEffects(r.prog).digidata; k++) collectDigiData(r, ev); });
+  else { stepPortals(r, dt, ev); stepJogressTerminal(r, ev); stepAltars(r); }
 
   // phase
   if (r.debug.god) r.combat.hp = r.combat.maxHp;
@@ -311,7 +318,11 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
       const defs = MINIBOSSES.filter(m => m.minPhase <= r.phase.phase);
       const def = r.rng.pick(defs.length ? defs : MINIBOSSES);
       const a = r.rng.next() * Math.PI * 2, diff = difficulty(r.phase.phase, r.phase.t);
-      r.pool.spawn(def, clamp(r.px + Math.cos(a) * 16, -T.MAP_HALF, T.MAP_HALF), clamp(r.pz + Math.sin(a) * 16, -T.MAP_HALF, T.MAP_HALF), { hp: diff.hpMul, dmg: diff.dmgMul }, { miniboss: true });
+      // Altar do Desafio: este guardião vem mais forte e a Distorção dele será rara
+      const ch = r.challengeArmed && r.challengeGuardianId === null;
+      const g = r.pool.spawn(def, clamp(r.px + Math.cos(a) * 16, -T.MAP_HALF, T.MAP_HALF), clamp(r.pz + Math.sin(a) * 16, -T.MAP_HALF, T.MAP_HALF),
+        { hp: diff.hpMul * (ch ? T.ALTARS.CHALLENGE_HP : 1), dmg: diff.dmgMul * (ch ? T.ALTARS.CHALLENGE_DMG : 1) }, { miniboss: true });
+      if (ch && g) r.challengeGuardianId = g.id;
       ev.push({ type: 'minibossSpawned' });
     } else if (pe === 'bossStarted') {
       const def = BOSSES.find(b => b.phase === r.phase.phase)!;
@@ -376,6 +387,34 @@ export function doEvolve(r: RunState, formId: string): void {
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
+}
+
+/** Altares: pisar num altar ainda não usado abre a escolha (depois de recusar, só reabre ao sair de cima) */
+function stepAltars(r: RunState) {
+  for (const a of r.altars) {
+    const d = Math.hypot(a.x - r.px, a.z - r.pz);
+    if (r.altarAway === a.id && d > 3) r.altarAway = null;
+    if (a.used || d > 1.8 || r.altarAway === a.id) continue;
+    r.altarOffer = { altarId: a.id, kind: a.kind, trades: a.kind === 'datamon' ? rollTrades(r.dataRng) : undefined };
+    return;
+  }
+}
+
+/** Altar: aceita a opção `index` (Etemon/Desafio: 0; Datamon: a troca) ou recusa (null) */
+export function chooseAltar(r: RunState, index: number | null): void {
+  const o = r.altarOffer; if (!o) return;
+  r.altarOffer = null;
+  const a = r.altars.find(x => x.id === o.altarId);
+  if (index === null || !a) { r.altarAway = o.altarId; return; }
+  if (o.kind === 'etemon') r.corruption = Math.min(T.ALTARS.CORRUPTION_MAX, r.corruption + 1);
+  else if (o.kind === 'challenge') r.challengeArmed = true;
+  else {
+    const t = o.trades?.[index]; if (!t) { r.altarAway = o.altarId; return; }
+    const sh = r.prog.statShift;
+    sh[t.from] = (sh[t.from] ?? 0) - t.lose; sh[t.to] = (sh[t.to] ?? 0) + t.gain;
+    syncHp(r);
+  }
+  a.used = true;
 }
 
 /** Terminal Jogress: aparece quando há um par de golpes no máximo (uma vez por partida); pisar nele abre a escolha */

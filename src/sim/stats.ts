@@ -34,7 +34,7 @@ export function effectiveStats(p: PlayerProg): EffStats {
   }
   for (const id of p.relics) { const r = RELICS[id]; if (r) pct[r.stat] += r.statPct; }
   const rel = relicEffects(p);
-  const stat = (k: StatKey) => (statAt(f.baseStats[k], f.growthRate, p.level) + p.bonus[k]) * (1 + pct[k] / 100);
+  const stat = (k: StatKey) => (statAt(f.baseStats[k], f.growthRate, p.level) + p.bonus[k]) * (1 + pct[k] / 100) * (1 + (p.statShift[k] ?? 0) / 100);
   const mat = p.matured ? 1 + T.MATURITY_BONUS : 1;
   return {
     hp: stat('hp') * mat, atk: stat('atk'), def: stat('def'), spd: stat('spd'), brain: stat('brain'),
