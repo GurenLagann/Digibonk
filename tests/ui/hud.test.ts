@@ -212,3 +212,7 @@ test('golpe Jogress aparece com os dois nomes e moldura própria', () => {
   expect(slot.textContent).toContain('Baby Flame × Sharp Claws');
   expect(slot.classList.contains('jogress')).toBe(true);
 });
+test('Corrupção aparece no topo da fase', () => {
+  const { run, hud, q } = setup(); run.corruption = 2; hud.update(run);
+  expect(q('.hud-top').textContent).toContain('Corrupção ×2');
+});

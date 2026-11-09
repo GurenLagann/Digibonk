@@ -134,7 +134,7 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
 
       // fase
       const tv = timerView(ph);
-      setText(phaseLbl, `FASE ${ph.phase}/${T.PHASES} · TEMPO DA FASE`);
+      setText(phaseLbl, `FASE ${ph.phase}/${T.PHASES} · TEMPO DA FASE${run.corruption ? ` · Corrupção ×${run.corruption}` : ''}`);
       setText(pct, `${tv.pct}%`);
       setW(fill, tv.frac);
       if (tv.mode !== mode) { mode = tv.mode; for (const md of MODES) track.classList.toggle(md, md === mode); timer.classList.toggle('warning', mode === 'warning'); timer.classList.toggle('overtime', mode === 'overtime'); }

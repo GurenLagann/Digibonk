@@ -34,6 +34,8 @@ function arenaTexture(): THREE.CanvasTexture {
 /** cor do portal pelo atributo do guardião */
 const PORTAL_COLORS: Record<string, number> = { vaccine: 0x3d9bff, data: 0x3dff9b, virus: 0xb04dff, free: 0xffd43b };
 
+const ALTAR_COLORS: Record<string, number> = { etemon: 0x9a3dff, datamon: 0x3dff8a, challenge: 0xff3a4a };
+
 export class MapView {
   private arena: THREE.Group;
   private arenaRing: THREE.Mesh;
@@ -41,6 +43,8 @@ export class MapView {
   private exitPortal: THREE.Group;
   private inZone = false;
   private terminal: THREE.Group;
+  private altarMeshes = new Map<number, THREE.Group>();
+  private altarKey = '';
   private altar: THREE.Group;
   private altarRing: THREE.Mesh;
   private points: THREE.Mesh[] = [];
@@ -141,6 +145,29 @@ export class MapView {
     const ex = run.zone?.exit;
     this.exitPortal.visible = !!ex && run.relicOffer === null;
     if (ex) { this.exitPortal.position.set(ex.x, 0, ex.z); this.exitPortal.rotation.y = time * 1.8; }
+    // altares da fase: pilar com cristal (Etemon roxo, Datamon verde, Desafio vermelho); usado fica cinza
+    const ak = run.altars.map(a => a.id).join(',');
+    if (ak !== this.altarKey) {
+      this.altarKey = ak;
+      for (const g of this.altarMeshes.values()) this.scene.remove(g);
+      this.altarMeshes.clear();
+      for (const a of run.altars) {
+        const g = new THREE.Group();
+        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 1.4, 6), new THREE.MeshLambertMaterial({ color: 0x3a3a48 }));
+        pillar.position.y = 0.7;
+        const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.6), new THREE.MeshBasicMaterial({ color: ALTAR_COLORS[a.kind] }));
+        crystal.position.y = 2.1;
+        g.add(pillar, crystal); g.position.set(a.x, 0, a.z);
+        this.scene.add(g); this.altarMeshes.set(a.id, g);
+      }
+    }
+    for (const a of run.altars) {
+      const g = this.altarMeshes.get(a.id); if (!g) continue;
+      g.visible = !run.zone;
+      const crystal = g.children[1] as THREE.Mesh;
+      (crystal.material as THREE.MeshBasicMaterial).color.setHex(a.used ? 0x555560 : ALTAR_COLORS[a.kind]);
+      crystal.rotation.y = time * 1.5; crystal.position.y = 2.1 + (a.used ? 0 : Math.sin(time * 2 + a.id) * 0.15);
+    }
     const js = run.jogressSpot;
     this.terminal.visible = !!js && !run.zone;
     if (js) { this.terminal.position.set(js.x, 0, js.z); this.terminal.rotation.y = time * 2; this.terminal.children[1].rotation.x = time * 3; }

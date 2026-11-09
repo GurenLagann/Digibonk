@@ -21,6 +21,7 @@ import { canEvolve, showBlindEvolve, showEvolve } from './ui/evolve';
 import { autoGainText, mountHud } from './ui/hud';
 import { showRelicChoice } from './ui/relics';
 import { showJogressChoice } from './ui/jogress';
+import { showAltar } from './ui/altars';
 import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
@@ -161,6 +162,7 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
   }
   if (input.pressed('pause')) { pause(); return; }
   if (run.relicOffer) { showRelicChoice(ui, run); return; }
+  if (run.altarOffer) { showAltar(ui, run); return; }
   if (run.jogressOffer) { showJogressChoice(ui, run, name => toast(`Jogress! ${name}`, 'rare')); return; }
   if (run.blindChoice) { showBlindEvolve(ui, run, id => toast(`Nova forma liberada! ${FORMS[id].name}`, 'rare')); return; }
   if (run.offers) { showLevelUp(ui, run); return; }
