@@ -98,6 +98,13 @@
       "t": "Altares de risco",
       "p": "Um altar de cada por fase: Etemon (Corrupção ×1..×5: mais inimigos e mais fortes, +XP), Datamon (troca % de um status por outro) e Desafio (guardião mais forte, Distorção rara com onda extra, 4 relíquias e Digi Data extra).",
       "f": "src/sim/altars.ts · src/ui/altars.ts"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Ficha de dano por golpe",
+      "p": "A partida registra o dano de cada golpe (os dois do Jogress separados). A pausa mostra total, % e dano por segundo dos últimos 15 s; o resultado mostra a lista do maior para o menor.",
+      "f": "src/sim/damage.ts · src/ui/damage.ts"
     }
   ],
   "proximos": [
@@ -110,11 +117,6 @@
       "Digimon aliados",
       "G",
       "Precisa de IA aliada."
-    ],
-    [
-      "Ficha de dano por golpe na pausa e no resultado",
-      "P",
-      "Ajuda a balancear tudo isso."
     ],
     [
       "★/✕ por parceiro nas builds",
