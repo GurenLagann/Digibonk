@@ -8,7 +8,7 @@ export interface Pose { y: number; sx: number; sy: number; tilt: number }
 export interface MotionInput { t: number; phase: number; moving: boolean; attack: number; hurt: number; drawnWalk?: boolean }
 
 /** altura máxima do pulinho, fração da altura do sprite */
-export const HOP = 0.12;
+export const HOP = 0.03; // era 0.12: os sprites sem caminhada desenhada pareciam flutuar
 const STEPS = 3;      // pulinhos por segundo
 const WADDLE = 0.12;  // balanço lateral máximo (rad)
 const LAND = 0.1;     // amassada ao tocar o chão

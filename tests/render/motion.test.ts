@@ -63,3 +63,6 @@ test('altura do parceiro cresce um pouco a cada estágio', () => {
   expect(playerHeightFor('ultimate')).toBeGreaterThan(playerHeightFor('perfect'));
   expect(playerHeightFor('ultimate')).toBeLessThanOrEqual(3);
 });
+test('o pulinho é baixo (sprites sem caminhada desenhada não parecem flutuar)', () => {
+  expect(HOP).toBeLessThanOrEqual(0.04);
+});
