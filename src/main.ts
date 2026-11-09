@@ -66,7 +66,7 @@ const toTitle = () => {
     records: () => { m.close(); app.go('records'); showRecords(ui, save, toTitle); },
     settings: () => { m.close(); app.go('settings'); openSettings(); },
     credits: () => { m.close(); app.go('credits'); showCredits(ui, toTitle); },
-  });
+  }, lastPartner);
 };
 function openSettings(back: () => void = toTitle) { showSettings(ui, input, save, undefined, back); }
 
