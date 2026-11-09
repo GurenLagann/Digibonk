@@ -10,9 +10,10 @@ const ACTION_NAMES: Record<Action, string> = {
 };
 export const prettyCode = (c: string) => c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^pad:b(\d+)$/, 'Controle botão $1').replace(/^Arrow/, 'Seta ');
 
-export function showPause(root: HTMLElement, onResume: () => void, onSettings: () => void, onQuit: () => void) {
+export function showPause(root: HTMLElement, onResume: () => void, onSettings: () => void, onQuit: () => void, detail?: HTMLElement) {
   return showChoice(root, {
     title: 'Pausado',
+    detail,
     options: [
       { title: 'Continuar', onPick: onResume },
       { title: 'Controles', onPick: onSettings },

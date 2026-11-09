@@ -22,6 +22,7 @@ import { autoGainText, mountHud } from './ui/hud';
 import { showRelicChoice } from './ui/relics';
 import { showJogressChoice } from './ui/jogress';
 import { showAltar } from './ui/altars';
+import { damagePanel } from './ui/damage';
 import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
@@ -85,7 +86,7 @@ function pause() {
   if (!run || run.ended || activeModal()) return;
   run.paused = true;
   const resume = () => { if (run) run.paused = false; };
-  const open = () => showPause(ui, resume, () => openSettings(open), () => { if (run) abandonRun(run).forEach(announce); });
+  const open = () => showPause(ui, resume, () => openSettings(open), () => { if (run) abandonRun(run).forEach(announce); }, run ? damagePanel(run) : undefined);
   open();
 }
 installAutoPause(document, pause, window);

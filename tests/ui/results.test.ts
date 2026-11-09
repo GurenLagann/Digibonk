@@ -154,3 +154,12 @@ test('resultado lista as relíquias da partida', () => {
   expect(box.textContent).toContain('Relíquias');
   expect(box.textContent).toContain('Card Azul Rachado');
 });
+test('resultado mostra o dano por golpe, do maior para o menor', () => {
+  const r = endedRun();
+  r.damage.total = { baby_flame: 300, spitfire_blast: 900 };
+  const root = document.createElement('div');
+  showResults(root, r, () => {}, () => {});
+  const rows = [...root.querySelectorAll('.dmg-row')].map(e => e.textContent ?? '');
+  expect(rows[0]).toContain('Spitfire Blast'); expect(rows[0]).toContain('75%');
+  expect(rows[1]).toContain('Baby Flame');
+});

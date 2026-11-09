@@ -34,7 +34,7 @@ export interface CombatState {
 }
 export type CombatEvent =
   | { type: 'kill'; enemy: Enemy }
-  | { type: 'hit'; enemyId: number; dmg: number; x: number; z: number }
+  | { type: 'hit'; enemyId: number; dmg: number; x: number; z: number; moveId?: string }
   | { type: 'playerHit'; dmg: number };
 
 export const INVULN = 0.5;
@@ -53,10 +53,10 @@ function nearest(pool: EnemyPool, hash: SpatialHash, x: number, z: number, range
   return best;
 }
 
-export function damageEnemy(e: Enemy, dmg: number, pool: EnemyPool, out: CombatEvent[]) {
+export function damageEnemy(e: Enemy, dmg: number, pool: EnemyPool, out: CombatEvent[], moveId?: string) {
   if (!e.alive) return;
   e.hp -= dmg; e.hitFlash = 0.1;
-  out.push({ type: 'hit', enemyId: e.id, dmg, x: e.x, z: e.z });
+  out.push({ type: 'hit', enemyId: e.id, dmg, x: e.x, z: e.z, moveId });
   if (e.hp <= 0) { pool.kill(e.id); out.push({ type: 'kill', enemy: e }); }
 }
 
@@ -92,7 +92,7 @@ export function hitArea(a: Area, pool: EnemyPool, hash: SpatialHash, out: Combat
   const cx = a.shape === 'beam' ? a.x + a.dx * a.length * 0.5 : a.x, cz = a.shape === 'beam' ? a.z + a.dz * a.length * 0.5 : a.z;
   tmp.length = 0; hash.query(cx, cz, (a.shape === 'beam' ? reach * 0.5 + a.radius : reach) + 2, tmp);
   const ids = [...tmp];
-  for (const id of ids) { const e = pool.get(id); if (e && inArea(a, e)) damageEnemy(e, typedDamage(a.dmg, a.moveId, atkAttr, e), pool, out); }
+  for (const id of ids) { const e = pool.get(id); if (e && inArea(a, e)) damageEnemy(e, typedDamage(a.dmg, a.moveId, atkAttr, e), pool, out, a.moveId); }
 }
 
 function fire(m: MoveDef, dmg: number, c: CombatState, px: number, pz: number, target: Enemy, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[], atkAttr: AttributeId) {
@@ -205,7 +205,7 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
       for (const id of ids) {
         const e = pool.get(id); if (!e || pr.hit.has(id)) continue;
         if (Math.hypot(e.x - pr.x, e.z - pr.z) <= pr.radius + e.size * 0.5) {
-          pr.hit.add(id); damageEnemy(e, typedDamage(pr.dmg, pr.moveId, form.attribute, e), pool, out);
+          pr.hit.add(id); damageEnemy(e, typedDamage(pr.dmg, pr.moveId, form.attribute, e), pool, out, pr.moveId);
           if (!pr.orbit && pr.hit.size > pr.pierce) { dead = true; break; }
         }
       }

@@ -19,6 +19,7 @@ import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
 import { addRelic, relicEffects } from './relics';
+import { logDamage, newDamageLog, type DamageLog } from './damage';
 import { applyJogress, jogressPairs } from './jogress';
 import { placeAltars, rollTrades, type Altar, type AltarKind, type Trade } from './altars';
 import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
@@ -54,6 +55,8 @@ export interface RunState {
   blindChoice: string[] | null;
   /** usos restantes de atualizar/pular/banir no level up e as ofertas banidas (offerKey) */
   levelTools: { reroll: number; skip: number; ban: number }; banned: string[];
+  /** dano causado por golpe (ficha da pausa e do resultado) */
+  damage: DamageLog;
   /** relíquia de reviver já usada nesta partida */
   reviveUsed: boolean;
   /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
@@ -133,7 +136,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -249,7 +252,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   const bossDrops: { kind: 'card' | 'item' | 'heal'; ref?: string }[] = [];
   const stats = effectiveStats(r.prog);
   for (const ce of stepCombat(r.combat, r.prog, r.px, r.pz, r.pool, r.hash, dt, r.rng)) {
-    if (ce.type === 'hit') ev.push({ type: 'hit', x: ce.x, z: ce.z, dmg: ce.dmg });
+    if (ce.type === 'hit') { ev.push({ type: 'hit', x: ce.x, z: ce.z, dmg: ce.dmg }); if (ce.moveId) logDamage(r.damage, r.time, ce.moveId, ce.dmg); }
     else if (ce.type === 'playerHit') ev.push({ type: 'playerHit', dmg: ce.dmg });
     else {
       const e = ce.enemy;

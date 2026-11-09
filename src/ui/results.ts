@@ -12,6 +12,7 @@ import { portrait } from './portrait';
 import { findEdge } from '../sim/discovery';
 import { RELICS } from '../data/relics';
 import { pathLabel, reqKeyText } from './evoText';
+import { damagePanel } from './damage';
 
 const num = (label: string, value: string, extra?: HTMLElement | null) =>
   h('div', { class: 'res-num' }, h('div', { class: 'b2-label' }, label), h('b', {}, value), extra ?? null);
@@ -65,6 +66,7 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
       h('div', { class: 'b2-panel tick res-path' },
         h('div', { class: 'b2-label' }, 'Caminho evolutivo'),
         h('div', { class: 'res-steps' }, ...path),
+        damagePanel(run, { dps: false }),
         h('div', { class: 'b2-label res-kitlbl' }, 'Golpes e cartas no fim'),
         h('div', { class: 'res-kit' }, kit.join(' · ') || '—')),
       h('div', { class: 'res-side' },
