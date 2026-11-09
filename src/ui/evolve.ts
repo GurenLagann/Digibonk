@@ -2,6 +2,7 @@ import type { Input } from '../core/input';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import { knownAvailable } from '../sim/discovery';
+import { canMature } from '../sim/evolution';
 import { chooseBlind, doEvolve, stayMature, type RunState } from '../sim/run';
 import { T } from '../data/tuning';
 import { effectiveStats } from '../sim/stats';
@@ -11,7 +12,7 @@ import { portrait } from './portrait';
 import { chip } from './theme';
 
 /** só evoluções já descobertas abrem a tela (as secretas evoluem sozinhas) */
-export function canEvolve(run: RunState) { return knownAvailable(run.prog, { save: run.save, phase: run.phase.phase }).length > 0; }
+export function canEvolve(run: RunState) { return knownAvailable(run.prog, { save: run.save, phase: run.phase.phase }).length > 0 || canMature(run.prog); }
 
 const STAT_ROWS = (['hp', 'atk', 'def', 'spd'] as const).map(k => [k, STAT_SHORT[k]] as const);
 
@@ -77,10 +78,11 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
   const cur = FORMS[run.prog.formId];
   const evos = knownAvailable(run.prog, { save: run.save, phase: run.phase.phase });
   // a Maturidade entra como última opção quando há alguma evolução para recusar
-  const forms = evos.length && !run.prog.matured ? [...evos, MATURE] : evos;
+  const forms = canMature(run.prog) ? [...evos, MATURE] : evos;
   let sel = 0, closed = false;
 
   const slot = h('div', { class: 'evo-opt' });
+  const goLabel = h('span', { class: 'b2-btn-label' }, 'Digievoluir!');
   const tabName = (id: string) => (id === MATURE ? `Ficar como ${cur.name}` : FORMS[id].name);
   const tabs = forms.length > 1 ? forms.map((id, i) => h('button', { type: 'button', class: 'evo-tab' + (id === MATURE ? ' mature' : ''), onclick: () => select(i) }, h('span', { class: 'b2-key' }, String(i + 1)), tabName(id))) : [];
   const screen = h('div', { class: 'b2-screen evo-screen' },
@@ -100,13 +102,14 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
       h('button', { type: 'button', class: 'b2-btn secondary', onclick: () => refuse() },
         h('span', { class: 'b2-btn-label' }, 'Agora não'), h('span', { class: 'b2-key' }, 'Esc')),
       h('button', { type: 'button', class: 'b2-btn evo-go', onclick: () => accept() },
-        h('span', { class: 'b2-btn-label' }, 'Digievoluir!'), h('span', { class: 'b2-key' }, 'Enter'))));
+        goLabel, h('span', { class: 'b2-key' }, 'Enter'))));
   root.append(screen);
 
   function select(i: number) {
     if (!forms.length) return;
     sel = (i + forms.length) % forms.length;
     slot.replaceChildren(forms[sel] === MATURE ? matureCard(run) : optionCard(run, forms[sel]));
+    goLabel.textContent = forms[sel] === MATURE ? 'Amadurecer!' : 'Digievoluir!';
     tabs.forEach((t, j) => t.classList.toggle('b2-sel', j === sel));
   }
   function accept() {

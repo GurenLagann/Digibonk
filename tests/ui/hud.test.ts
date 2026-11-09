@@ -158,11 +158,11 @@ describe('evoluções secretas no painel', () => {
     const { run, hud, q } = setup('agumon', save);
     run.prog.formId = 'greymon'; run.prog.level = 20; run.prog.bonus.atk = 40; hud.update(run);
     expect(q('.hud-evoname').textContent).toBe('Greymon → ???');
-    expect(q('.hud-evotext').textContent).toBe('???');
+    expect(q('.hud-evotext').textContent).toBe('??? · Maturidade [E / Y]'); // Greymon Nv 20 já pode amadurecer
     expect(q('.hud-right').textContent).not.toContain('SkullGreymon');
     expect(q('.hud-right canvas')).toBeNull();
     run.prog.bonus.atk = 0; hud.update(run);
-    expect(q('.hud-evotext').textContent).toMatch(/^Atq \d+ · \?\?\?$/);
+    expect(q('.hud-evotext').textContent).toMatch(/^Atq \d+ · \?\?\? · Maturidade/);
   });
 });
 
@@ -177,3 +177,8 @@ test('forma madura mostra "Maturidade" no painel da próxima evolução', () => 
   expect(q('.hud-evoname').textContent).toBe('Maturidade');
 });
 test('evoMissingText mostra a Maturidade', () => expect(evoMissingText([{ kind: 'maturity' }, { kind: 'level', need: 30 }])).toBe('Maturidade · Nv 30'));
+test('HUD avisa quando dá para amadurecer', () => {
+  const { run, hud, q } = setup('veemon');
+  run.prog.level = 5; hud.update(run);
+  expect(q('.hud-evotext').textContent).toContain('Maturidade [E / Y]');
+});

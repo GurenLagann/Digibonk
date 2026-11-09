@@ -1,4 +1,4 @@
-import { applyForm, availableEvolutions, evolve, EvoNotifier, mature, nextEvolutionHint, type EvoContext } from '../../src/sim/evolution';
+import { applyForm, availableEvolutions, canMature, evolve, EvoNotifier, mature, nextEvolutionHint, type EvoContext } from '../../src/sim/evolution';
 import { effectiveStats } from '../../src/sim/stats';
 import { T } from '../../src/data/tuning';
 import { newPlayerProg } from '../../src/sim/progression';
@@ -22,9 +22,31 @@ test('veemon branches by stats', () => {
   p.bonus.spd = 0; p.bonus.def = 5; p.bonus.atk = 4; expect(availableEvolutions(p, ctx())).toEqual(['veedramon']);
   p.bonus.spd = 10; expect(availableEvolutions(p, ctx()).sort()).toEqual(['exveemon', 'veedramon']);
 });
-test('digiegg unlocks flamedramon early', () => {
-  const p = newPlayerProg('veemon'); p.level = 5; expect(availableEvolutions(p, ctx())).not.toContain('flamedramon');
-  p.items.push('digiegg_courage'); expect(availableEvolutions(p, ctx())).toContain('flamedramon');
+test('flamedramon pede Maturidade e o Digiovo da Coragem', () => {
+  const p = newPlayerProg('veemon'); p.level = 5; p.items.push('digiegg_courage');
+  expect(availableEvolutions(p, ctx())).not.toContain('flamedramon');
+  mature(p); expect(availableEvolutions(p, ctx())).toEqual(['flamedramon']);
+});
+test('Magnamon: Veemon maduro, Nv 12 e Digiovo dos Milagres', () => {
+  const p = newPlayerProg('veemon'); p.level = 12; mature(p);
+  expect(availableEvolutions(p, ctx())).not.toContain('magnamon');
+  p.items.push('digiegg_miracles'); expect(availableEvolutions(p, ctx())).toContain('magnamon');
+});
+test('VictoryGreymon: WarGreymon maduro no Nv 50; Modo Paladino: Transcendent Sword, sem Maturidade', () => {
+  const w = progAt('wargreymon', 50); expect(availableEvolutions(w, ctx())).not.toContain('victorygreymon');
+  mature(w); expect(availableEvolutions(w, ctx())).toEqual(['victorygreymon']);
+  const i = progAt('imperialdramon_fm', 45); i.items.push('sword_omnimon');
+  expect(availableEvolutions(i, ctx())).toEqual(['imperialdramon_pm']);
+});
+describe('quando dá para amadurecer', () => {
+  test('a partir do menor nível das evoluções da forma, uma vez, e nunca em forma final', () => {
+    const v = newPlayerProg('veemon'); v.level = 4; expect(canMature(v)).toBe(false);
+    v.level = 5; expect(canMature(v)).toBe(true);
+    mature(v); expect(canMature(v)).toBe(false);
+    expect(canMature(progAt('omnimon', 80))).toBe(false);
+    expect(canMature(progAt('wargreymon', 41))).toBe(false);
+    expect(canMature(progAt('wargreymon', 42))).toBe(true);
+  });
 });
 test('paildramon blocked without wormmon unlocked', () => {
   const p = progAt('exveemon', 22); p.items.push('fusion_stingmon');

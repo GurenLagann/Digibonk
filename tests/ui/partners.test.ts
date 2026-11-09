@@ -102,8 +102,8 @@ test('requisitos nomeiam itens e parceiros liberados', () => {
   const vee = root.querySelector<HTMLElement>('.ps-cell[data-partner="' + ordered.find(p => p.childForm === 'veemon')!.id + '"]')!;
   vee.dispatchEvent(new Event('mouseenter'));
   const d = root.querySelector('.ps-detail')!.textContent!;
-  expect(d).toContain('Flamedramon · Nv 5 e Digiovo da Coragem');
-  expect(d).toContain('Raidramon · Nv 5 e Digiovo da Amizade');
+  expect(d).toContain('Flamedramon · Nv 5 e Maturidade e Digiovo da Coragem');
+  expect(d).toContain('Raidramon · Nv 5 e Maturidade e Digiovo da Amizade');
   expect(reqText({ minLevel: 42, items: ['fusion_garurumon'], unlocked: ['gabumon'] })).toContain('com Gabumon liberado');
 });
 

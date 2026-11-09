@@ -22,7 +22,8 @@ test('every enemy and boss has a sprite source', () => {
 });
 test('forms without a sprite are only from the unlockable partner lines (sprites em avaliação → placeholder)', () => {
   const unlockable = new Set(['gabumon', 'patamon', 'tentomon', 'gatomon', 'wormmon', 'armadillomon', 'terriermon', 'renamon']);
-  const darkBranch = new Set(['blackwargreymon', 'megidramon']); // ramo sombrio: aguardando sprites
+  // ramo sombrio e formas da Maturidade/Modo Paladino: aguardando sprites
+  const darkBranch = new Set(['blackwargreymon', 'megidramon', 'victorygreymon', 'imperialdramon_pm', 'magnamon']);
   expect(Object.values(FORMS).filter(f => !hasSheet(f.id) && !unlockable.has(f.line) && !darkBranch.has(f.id)).map(f => f.id)).toEqual([]);
 });
 test('moving with walk frames cycles walk1..walk4', () => {

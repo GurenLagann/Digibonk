@@ -6,7 +6,7 @@ import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
 import type { StatKey } from '../data/types';
 import { knownAvailable, visibleHint } from '../sim/discovery';
-import type { EvoMissing } from '../sim/evolution';
+import { canMature, type EvoMissing } from '../sim/evolution';
 import { xpToNext } from '../sim/progression';
 import { hudSave, type RunState } from '../sim/run';
 import { moveCooldown } from '../sim/stats';
@@ -164,7 +164,10 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       setText(evoName, evoLabel);
       evoName.classList.toggle('long', evoLabel.length > 12); // ex.: BlackWarGreymon não quebra no meio
       const secretText = hint.kind === 'secret' ? [evoMissingText(hint.missing), hint.hidden ? '???' : ''].filter(Boolean).join(' · ') : '';
-      setText(evoText, ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : secretText);
+      const baseText = ready ? `Digievoluir [${evolveKey()}]` : hint.kind === 'next' ? evoMissingText(hint.missing) : secretText;
+      // sem evolução pronta, mas já dá para amadurecer: avisa a tecla
+      const matText = !ready && canMature(p) ? `Maturidade [${evolveKey()}]` : '';
+      setText(evoText, [baseText, matText].filter(Boolean).join(' · '));
 
       // golpes e cartas
       p.slots.forEach((s, i) => {

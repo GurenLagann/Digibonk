@@ -70,6 +70,12 @@ export function evolve(p: PlayerProg, toFormId: string, ctx: EvoContext): void {
   applyForm(p, toFormId);
 }
 
+/** dá para amadurecer: ainda não amadureceu, a forma evolui e o nível já alcança a evolução mais baixa dela */
+export function canMature(p: PlayerProg): boolean {
+  const evs = FORMS[p.formId]?.evolutions ?? [];
+  return !p.matured && evs.length > 0 && p.level >= Math.min(...evs.map(e => e.req.minLevel));
+}
+
 /** Maturidade: fica na forma atual com bônus (stats.ts); daí em diante só valem as arestas de Maturidade */
 export function mature(p: PlayerProg): void { p.matured = true; }
 

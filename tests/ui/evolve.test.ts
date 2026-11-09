@@ -112,10 +112,12 @@ test('opt1/opt2/opt3 escolhem o caminho e evoluem na hora; opção inexistente �
 test('save vazio: Greymon é secreto, a tela não oferece nada', () => {
   const r = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: null });
   r.prog.level = 9; r.prog.bonus.atk = 6;
-  expect(canEvolve(r)).toBe(false);
+  expect(canEvolve(r)).toBe(true); // só a Maturidade
   const root = document.createElement('div');
   showEvolve(root, r, () => {});
-  expect(root.querySelector('.evo-card')).toBeNull();
+  expect(root.textContent).not.toContain('Greymon');
+  expect(root.querySelectorAll('.evo-card')).toHaveLength(1);
+  expect(root.querySelector('.evo-mature')).not.toBeNull();
 });
 
 test('escolha às cegas: só cartas "???", não cancela, opt2 evolui para a segunda', () => {
@@ -153,6 +155,7 @@ test('Maturidade: última opção, mostra o bônus e trava a forma ao confirmar'
   m.handle(press('right'));
   const card = root.querySelector('.evo-card')!;
   expect(card.textContent).toContain('Maturidade');
+  expect(root.querySelector('.evo-go')!.textContent).toContain('Amadurecer!');
   expect(card.textContent).toContain('+12%');
   m.handle(press('confirm'));
   expect(r.prog.matured).toBe(true); expect(r.prog.formId).toBe('agumon');
@@ -168,4 +171,14 @@ test('forma já madura não oferece a Maturidade de novo', () => {
     const root = document.createElement('div'); showEvolve(root, r, () => {});
     expect(root.textContent).not.toContain('Ficar como');
   } finally { FORMS.agumon.evolutions = FORMS.agumon.evolutions.filter(e => e !== edge); }
+});
+
+test('Veemon no Nv 5 sem evolução normal: a tela abre só com a Maturidade', () => {
+  const r = createRun({ partnerId: 'veemon', seed: 1, save: discoverAll(defaultSave()), storage: null });
+  r.prog.level = 5;
+  expect(canEvolve(r)).toBe(true);
+  const root = document.createElement('div'); const m = showEvolve(root, r, () => {});
+  expect(root.querySelector('.evo-mature')).not.toBeNull();
+  m.handle(press('confirm'));
+  expect(r.prog.matured).toBe(true);
 });

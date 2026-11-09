@@ -2861,6 +2861,78 @@ export const MOVES: Record<string, MoveDef> = {
    "cooldown": 0.92
   },
   "color": 8024096
+ },
+ "dramon_breaker": {
+  "id": "dramon_breaker",
+  "name": "Dramon Breaker",
+  "element": "fire",
+  "pattern": "beam",
+  "damage": 100,
+  "cooldown": 1.6,
+  "range": 16,
+  "radius": 1.5,
+  "duration": 0.4,
+  "description": "Um golpe da espada-lança corta tudo numa linha à frente.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16752672
+ },
+ "trident_gaia": {
+  "id": "trident_gaia",
+  "name": "Trident Gaia",
+  "element": "fire",
+  "pattern": "area",
+  "damage": 85,
+  "cooldown": 2.4,
+  "range": 15,
+  "radius": 6,
+  "duration": 0.6,
+  "description": "Uma rajada de energia explode em grande área ao redor do alvo.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16742938
+ },
+ "omega_blade": {
+  "id": "omega_blade",
+  "name": "Omega Blade",
+  "element": "light",
+  "pattern": "beam",
+  "damage": 120,
+  "cooldown": 1.6,
+  "range": 18,
+  "radius": 1.6,
+  "duration": 0.4,
+  "description": "A espada do Omnimon corta tudo numa linha longa à frente.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16777164
+ },
+ "extreme_jihad": {
+  "id": "extreme_jihad",
+  "name": "Extreme Jihad",
+  "element": "light",
+  "pattern": "area",
+  "damage": 48,
+  "cooldown": 2,
+  "range": 12,
+  "radius": 5,
+  "duration": 0.5,
+  "description": "Uma explosão de luz dourada atinge uma grande área ao redor do alvo.",
+  "maxLevel": 5,
+  "perLevel": {
+   "damage": 1.25,
+   "cooldown": 0.92
+  },
+  "color": 16766720
  }
 };
 export const FORMS: Record<string, FormDef> = {
@@ -3013,6 +3085,13 @@ export const FORMS: Record<string, FormDef> = {
       "gabumon"
      ]
     }
+   },
+   {
+    "to": "victorygreymon",
+    "req": {
+     "minLevel": 50,
+     "requiresMaturity": true
+    }
    }
   ],
   "size": 2.2,
@@ -3090,7 +3169,8 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 5,
      "items": [
       "digiegg_courage"
-     ]
+     ],
+     "requiresMaturity": true
     }
    },
    {
@@ -3099,7 +3179,18 @@ export const FORMS: Record<string, FormDef> = {
      "minLevel": 5,
      "items": [
       "digiegg_friendship"
-     ]
+     ],
+     "requiresMaturity": true
+    }
+   },
+   {
+    "to": "magnamon",
+    "req": {
+     "minLevel": 12,
+     "items": [
+      "digiegg_miracles"
+     ],
+     "requiresMaturity": true
     }
    }
   ],
@@ -3346,7 +3437,17 @@ export const FORMS: Record<string, FormDef> = {
    "desperado_blaster",
    "sting_strike"
   ],
-  "evolutions": [],
+  "evolutions": [
+   {
+    "to": "imperialdramon_pm",
+    "req": {
+     "minLevel": 45,
+     "items": [
+      "sword_omnimon"
+     ]
+    }
+   }
+  ],
   "size": 2.2,
   "color": 1720232
  },
@@ -4668,6 +4769,81 @@ export const FORMS: Record<string, FormDef> = {
   ],
   "size": 2.2,
   "color": 15231626
+ },
+ "victorygreymon": {
+  "id": "victorygreymon",
+  "name": "VictoryGreymon",
+  "stage": "ultimate",
+  "line": "agumon",
+  "attribute": "vaccine",
+  "element": "fire",
+  "baseStats": {
+   "hp": 420,
+   "atk": 66,
+   "def": 46,
+   "spd": 36,
+   "brain": 34
+  },
+  "growthRate": 0.005,
+  "signature": "dramon_breaker",
+  "kit": [
+   "gaia_force",
+   "trident_gaia",
+   "brave_tornado"
+  ],
+  "evolutions": [],
+  "size": 2.3,
+  "color": 16752672
+ },
+ "imperialdramon_pm": {
+  "id": "imperialdramon_pm",
+  "name": "Imperialdramon PM",
+  "stage": "ultimate",
+  "line": "veemon",
+  "attribute": "vaccine",
+  "element": "light",
+  "baseStats": {
+   "hp": 520,
+   "atk": 76,
+   "def": 58,
+   "spd": 46,
+   "brain": 44
+  },
+  "growthRate": 0.005,
+  "signature": "omega_blade",
+  "kit": [
+   "positron_laser",
+   "transcendent_sword",
+   "giga_crusher"
+  ],
+  "evolutions": [],
+  "size": 2.4,
+  "color": 16777164
+ },
+ "magnamon": {
+  "id": "magnamon",
+  "name": "Magnamon",
+  "stage": "perfect",
+  "line": "veemon",
+  "attribute": "free",
+  "element": "light",
+  "baseStats": {
+   "hp": 300,
+   "atk": 46,
+   "def": 40,
+   "spd": 34,
+   "brain": 28
+  },
+  "growthRate": 0.005,
+  "signature": "extreme_jihad",
+  "kit": [
+   "vee_headbutt",
+   "fire_rocket",
+   "blue_thunder"
+  ],
+  "evolutions": [],
+  "size": 1.7,
+  "color": 16766720
  }
 };
 export const CARDS: Record<string, CardDef> = {
@@ -4925,6 +5101,22 @@ export const ITEMS: Record<string, ItemDef> = {
   "name": "Ovo do Renamon",
   "kind": "egg",
   "unlockPartner": "renamon"
+ },
+ "digiegg_miracles": {
+  "id": "digiegg_miracles",
+  "name": "Digiovo dos Milagres",
+  "kind": "digiegg",
+  "forPartners": [
+   "veemon"
+  ]
+ },
+ "sword_omnimon": {
+  "id": "sword_omnimon",
+  "name": "Transcendent Sword",
+  "kind": "fusion",
+  "forPartners": [
+   "veemon"
+  ]
  }
 };
 export const PARTNERS: PartnerDef[] = [
