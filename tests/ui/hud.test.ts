@@ -5,7 +5,8 @@ import { CARDS } from '../../src/data/cards';
 import { FORMS } from '../../src/data/forms';
 import { MOVES } from '../../src/data/moves';
 import { T } from '../../src/data/tuning';
-import { createRun, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, type RunState } from '../../src/sim/run';
+import { MINIBOSSES } from '../../src/data/enemies';
 import { autoGainText, evoMissingText, mountHud } from '../../src/ui/hud';
 import { discoverAll, fakeStorage } from '../helpers';
 import { reveal } from '../../src/sim/discovery';
@@ -181,4 +182,25 @@ test('HUD avisa quando dá para amadurecer', () => {
   const { run, hud, q } = setup('veemon');
   run.prog.level = 5; hud.update(run);
   expect(q('.hud-evotext').textContent).toContain('Maturidade [E / Y]');
+});
+
+describe('Zona Digital no HUD', () => {
+  const enter = (run: RunState) => {
+    const g = MINIBOSSES[0];
+    run.portals.push({ x: run.px, z: run.pz, attr: g.attribute, guardian: g.id, t: 30 });
+    run.debug.god = true; stepRun(run, { mx: 0, mz: 0 }, 1 / 60);
+  };
+  test('missão mostra a onda e quantos faltam; depois o Alfa com o tempo', () => {
+    const { run, hud, q } = setup(); enter(run); hud.update(run);
+    expect(q('.hud-mission').textContent).toMatch(/^Distorção Digital · onda 1\/4 · restam \d+$/);
+    run.zone!.stage = 'alpha'; run.zone!.alphaT = 41.2; hud.update(run);
+    expect(q('.hud-mission').textContent).toBe(`Derrote o Alfa ${MINIBOSSES[0].name}! 42 s`);
+    run.zone!.stage = 'exit'; hud.update(run);
+    expect(q('.hud-mission').textContent).toBe('Volte pelo portal');
+  });
+  test('relíquias aparecem junto dos itens do parceiro', () => {
+    const { run, hud, q } = setup(); run.prog.relics = ['relic_blue_card']; hud.update(run);
+    expect(q('.hud-items').textContent).toContain('Card Azul Rachado');
+    expect(q('.hud-items .hud-relic')).not.toBeNull();
+  });
 });

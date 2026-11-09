@@ -499,6 +499,8 @@
 .evo-name.long { font-size: calc(13 * var(--u)); }
 .evo-card .evo-name.long { font-size: calc(15 * var(--u)); }
 /* escolha às cegas: cartas "???" sem nada do destino */
+.res-relics { display: flex; flex-direction: column; gap: calc(4 * var(--u)); }
+.hud-item.hud-relic { background: var(--b2-cyan); color: #04121f; }
 .res-data { display: flex; flex-direction: column; gap: calc(4 * var(--u)); }
 .res-dline { font-size: calc(12 * var(--u)); color: var(--b2-text); }
 .ps-evo.secret { color: var(--b2-text-dim); font-style: italic; }

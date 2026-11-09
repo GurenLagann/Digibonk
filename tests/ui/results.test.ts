@@ -146,3 +146,11 @@ test('resultado marca a Maturidade na última forma do caminho', () => {
   showResults(root, r, () => {}, () => {});
   expect(root.querySelector('.res-step.last')!.textContent).toContain('Maturidade');
 });
+test('resultado lista as relíquias da partida', () => {
+  const r = endedRun(); r.prog.relics = ['relic_blue_card', 'relic_digivice'];
+  const root = document.createElement('div');
+  showResults(root, r, () => {}, () => {});
+  const box = root.querySelector('.res-relics')!;
+  expect(box.textContent).toContain('Relíquias');
+  expect(box.textContent).toContain('Card Azul Rachado');
+});

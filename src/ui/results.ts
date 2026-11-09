@@ -10,6 +10,7 @@ import { fmtTime, h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 import { findEdge } from '../sim/discovery';
+import { RELICS } from '../data/relics';
 import { pathLabel, reqKeyText } from './evoText';
 
 const num = (label: string, value: string, extra?: HTMLElement | null) =>
@@ -73,6 +74,8 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
           num('Chefes', String(run.stats.bosses)),
           num('Guardiões', String(run.stats.guardians)),
           num('Melhor fase', String(rec.bestPhase), run.newRecord ? h('span', { class: 'res-rec' }, 'Novo recorde!') : null)),
+        run.prog.relics.length ? h('div', { class: 'b2-panel res-relics' },
+          h('div', { class: 'b2-label' }, 'Relíquias'), ...run.prog.relics.map(id => h('div', { class: 'res-dline' }, RELICS[id]?.name ?? id))) : null,
         data.length ? h('div', { class: 'b2-panel res-data' },
           h('div', { class: 'b2-label' }, 'Digi Data'), ...data) : null,
         unlocked.length ? h('div', { class: 'b2-panel res-unlock' },

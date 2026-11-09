@@ -32,7 +32,7 @@ export type RunEvent =
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
   | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
-  | { type: 'zoneEnter'; attr: string } | { type: 'zoneExit' } | { type: 'zoneWave'; wave: number } | { type: 'zoneAlpha'; name: string } | { type: 'zoneDone'; won: boolean };
+  | { type: 'portalOpened'; attr: string } | { type: 'zoneEnter'; attr: string } | { type: 'zoneExit' } | { type: 'zoneWave'; wave: number } | { type: 'zoneAlpha'; name: string } | { type: 'zoneDone'; won: boolean };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -252,7 +252,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
         }
         continue;
       }
-      if (e.miniboss && !r.zone) { killedMiniboss = true; r.stats.guardians++; openPortal(r, e); }
+      if (e.miniboss && !r.zone) { killedMiniboss = true; r.stats.guardians++; openPortal(r, e, ev); }
       if (e.miniboss) { spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
       const drop = dropOnKill(e, r.rng);
       if (drop.xp > 0) r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z, kind: 'xp', value: drop.xp });

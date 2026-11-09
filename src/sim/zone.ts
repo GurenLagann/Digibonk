@@ -26,8 +26,9 @@ export interface ZoneState {
 const Z = () => T.ZONE;
 
 /** guardião derrotado no mapa: abre um portal no lugar dele */
-export function openPortal(r: RunState, e: Enemy): void {
+export function openPortal(r: RunState, e: Enemy, ev: RunEvent[]): void {
   r.portals.push({ x: e.x, z: e.z, attr: e.attribute, guardian: e.def, t: Z().PORTAL_SECONDS });
+  ev.push({ type: 'portalOpened', attr: e.attribute });
 }
 
 function clearCombat(r: RunState) {

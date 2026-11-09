@@ -22,7 +22,7 @@ export const T = {
   ZONE: {
     PORTAL_SECONDS: 30, ENTER_RADIUS: 1.8, CENTER: { x: 400, z: 0 }, RADIUS: 22,
     WAVES: 4, WAVE_BASE: 8, WAVE_GROWTH: 4, WAVE_SECONDS: 15,
-    ALPHA_SECONDS: 60, ALPHA_HP: 10, ALPHA_DMG: 1.5, ALPHA_SIZE: 1.5,
+    ALPHA_SECONDS: 60, ALPHA_HP: 10, ALPHA_DMG: 1.5, ALPHA_SIZE: 1.1,
   },
   /** Maturidade (ficar na forma atual de vez): +12% de dano e de Vida máxima */
   MATURITY_BONUS: 0.12,

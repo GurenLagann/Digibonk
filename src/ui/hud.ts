@@ -1,7 +1,8 @@
-import { BOSSES } from '../data/enemies';
+import { BOSSES, MINIBOSSES } from '../data/enemies';
 import { CARDS } from '../data/cards';
 import { FORMS } from '../data/forms';
 import { ITEMS } from '../data/items';
+import { RELICS } from '../data/relics';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
 import type { StatKey } from '../data/types';
@@ -125,9 +126,10 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       setText(name, f.name); setText(lv, `Nv ${p.level}`);
       setW(hpFill, c.hp / c.maxHp); setText(hpText, `${Math.max(0, Math.ceil(c.hp))}/${Math.ceil(c.maxHp)}`);
       setW(xpFill, p.xp / xpToNext(p.level));
-      const key = p.items.join(',');
+      const key = [...p.items, '|', ...p.relics].join(',');
       if (key !== itemKey) {
-        itemKey = key; items.replaceChildren(...p.items.map(id => h('span', { class: 'hud-item' }, ITEMS[id]?.name ?? CARDS[id]?.name ?? id)));
+        itemKey = key; items.replaceChildren(...p.items.map(id => h('span', { class: 'hud-item' }, ITEMS[id]?.name ?? CARDS[id]?.name ?? id)),
+          ...p.relics.map(id => h('span', { class: 'hud-item hud-relic', title: RELICS[id]?.description ?? '' }, RELICS[id]?.name ?? id)));
       }
 
       // fase
@@ -138,7 +140,12 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       if (tv.mode !== mode) { mode = tv.mode; for (const md of MODES) track.classList.toggle(md, md === mode); timer.classList.toggle('warning', mode === 'warning'); timer.classList.toggle('overtime', mode === 'overtime'); }
       if (timer.textContent !== tv.text) { timer.textContent = tv.text; timer.setAttribute('data-t', tv.text); }
       let ms = '';
-      if (ph.bossActive) ms = `Derrote ${BOSSES.find(b => b.phase === ph.phase)!.name}!`;
+      const z = run.zone;
+      if (z) {
+        ms = z.stage === 'waves' ? `Distorção Digital · onda ${z.wave}/${T.ZONE.WAVES} · restam ${run.pool.alive().length}`
+          : z.stage === 'alpha' ? `Derrote o Alfa ${MINIBOSSES.find(b => b.id === z.guardian)?.name ?? ''}! ${Math.max(0, Math.ceil(z.alphaT))} s`
+          : 'Volte pelo portal';
+      } else if (ph.bossActive) ms = `Derrote ${BOSSES.find(b => b.phase === ph.phase)!.name}!`;
       else if (ph.bossUnlocked) ms = 'Chefe liberado — vá ao altar';
       else if (m.kind === 'collect') ms = `Fragmentos de dados ${m.progress}/${m.goal}`;
       else if (m.kind === 'activate') ms = `Ative os pontos ${m.progress}/${m.goal} (fique dentro do círculo)`;
@@ -190,7 +197,9 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
 
       // seta para o objetivo (altar ou ponto mais próximo)
       let target: { x: number; z: number } | null = null;
-      if (ph.bossUnlocked && !ph.bossActive) target = ph.bossAltar;
+      if (run.zone) target = run.zone.exit;
+      else if (run.portals.length) target = run.portals[0]; // portal da Distorção some em 30 s: vem antes
+      else if (ph.bossUnlocked && !ph.bossActive) target = ph.bossAltar;
       else if (!m.done && m.kind === 'activate') target = m.points.filter(q => q.charge < 1).sort((a, b) => Math.hypot(a.x - run.px, a.z - run.pz) - Math.hypot(b.x - run.px, b.z - run.pz))[0] ?? null;
       else if (!m.done && m.kind === 'collect') {
         const frs = run.pickups.filter(q => q.kind === 'fragment');

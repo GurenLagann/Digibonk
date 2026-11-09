@@ -17,7 +17,29 @@ function groundTexture(): THREE.CanvasTexture {
   return t;
 }
 
+/** chão da Zona Digital: placas escuras com grade ciano */
+function arenaTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  g.fillStyle = '#071226'; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = '#0b1d3a'; g.fillRect(2, 2, 28, 28); g.fillRect(34, 34, 28, 28);
+  g.strokeStyle = '#1fd6ff'; g.globalAlpha = 0.55; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 63, 63);
+  g.globalAlpha = 0.25; g.beginPath(); g.moveTo(32, 0); g.lineTo(32, 64); g.moveTo(0, 32); g.lineTo(64, 32); g.stroke();
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(12, 12);
+  t.magFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** cor do portal pelo atributo do guardião */
+const PORTAL_COLORS: Record<string, number> = { vaccine: 0x3d9bff, data: 0x3dff9b, virus: 0xb04dff, free: 0xffd43b };
+
 export class MapView {
+  private arena: THREE.Group;
+  private arenaRing: THREE.Mesh;
+  private portals: THREE.Group[] = [];
+  private exitPortal: THREE.Group;
+  private inZone = false;
   private altar: THREE.Group;
   private altarRing: THREE.Mesh;
   private points: THREE.Mesh[] = [];
@@ -58,9 +80,69 @@ export class MapView {
     this.altarRing.rotation.x = -Math.PI / 2; this.altarRing.position.y = 0.15;
     this.altar.add(base, this.altarRing);
     scene.add(this.altar);
+
+    // Zona Digital: arena separada, longe do mapa (o nevoeiro esconde um do outro)
+    const C = T.ZONE.CENTER, R = T.ZONE.RADIUS;
+    this.arena = new THREE.Group(); this.arena.position.set(C.x, 0, C.z);
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(R + 8, 48), new THREE.MeshBasicMaterial({ map: arenaTexture() }));
+    floor.rotation.x = -Math.PI / 2;
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.3, R + 0.3, 3, 48, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0x1fd6ff, transparent: true, opacity: 0.22, side: THREE.DoubleSide }));
+    wall.position.y = 1.5;
+    this.arenaRing = new THREE.Mesh(new THREE.TorusGeometry(R + 0.3, 0.12, 6, 64), new THREE.MeshBasicMaterial({ color: 0x5ae8ff }));
+    this.arenaRing.rotation.x = -Math.PI / 2; this.arenaRing.position.y = 0.08;
+    const cubes = new THREE.InstancedMesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshBasicMaterial({ color: 0x1fd6ff, transparent: true, opacity: 0.5 }), 24);
+    const mm = new THREE.Matrix4();
+    for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; cubes.setMatrixAt(i, mm.makeTranslation(Math.cos(a) * (R + 4), 2 + (i % 3), Math.sin(a) * (R + 4))); }
+    this.arena.add(floor, wall, this.arenaRing, cubes);
+    scene.add(this.arena);
+    this.exitPortal = this.makePortal(0x5ae8ff);
+    this.exitPortal.visible = false;
+  }
+
+  /** anel vertical girando sobre um disco brilhante */
+  private makePortal(color: number): THREE.Group {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.18, 8, 32), new THREE.MeshBasicMaterial({ color }));
+    ring.position.y = 1.6;
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(1.15, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+    disc.position.y = 1.6;
+    const glow = new THREE.Mesh(new THREE.RingGeometry(1.2, 1.9, 32), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
+    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.06;
+    g.add(ring, disc, glow);
+    this.scene.add(g);
+    return g;
+  }
+
+  private syncPortals(run: RunState, time: number) {
+    while (this.portals.length < run.portals.length) this.portals.push(this.makePortal(0xffffff));
+    this.portals.forEach((g, i) => {
+      const p = run.portals[i];
+      g.visible = !!p && !run.zone;
+      if (!p) return;
+      g.position.set(p.x, 0, p.z);
+      const c = PORTAL_COLORS[p.attr] ?? 0xffffff;
+      for (const m of g.children) ((m as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(c);
+      g.rotation.y = time * 1.8;
+      // pisca nos últimos 5 s
+      g.children[1].visible = p.t > 5 || Math.sin(time * 12) > 0;
+    });
+    const ex = run.zone?.exit;
+    this.exitPortal.visible = !!ex && run.relicOffer === null;
+    if (ex) { this.exitPortal.position.set(ex.x, 0, ex.z); this.exitPortal.rotation.y = time * 1.8; }
+    // dentro da arena: céu e nevoeiro escuros
+    const z = !!run.zone;
+    if (z !== this.inZone) {
+      this.inZone = z;
+      const col = z ? 0x050b16 : 0x8fc8ff;
+      (this.scene.background as THREE.Color).setHex(col);
+      this.scene.fog?.color.setHex(col);
+    }
+    (this.arenaRing.material as THREE.MeshBasicMaterial).color.setHex(Math.sin(time * 3) > 0 ? 0x5ae8ff : 0x1fd6ff);
   }
 
   sync(run: RunState, time: number) {
+    this.syncPortals(run, time);
     const ph = run.phase;
     const key = ph.phase * 1000 + run.chests.length;
     if (key !== this.phaseKey || run !== this.lastRun) {

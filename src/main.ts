@@ -19,6 +19,7 @@ import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './
 import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showBlindEvolve, showEvolve } from './ui/evolve';
 import { autoGainText, mountHud } from './ui/hud';
+import { showRelicChoice } from './ui/relics';
 import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
@@ -121,6 +122,13 @@ function announce(e: RunEvent) {
     case 'formDiscovered': toast(`Nova forma liberada! ${FORMS[e.formId].name}`, 'rare'); break;
     case 'digiData': toast('Digi Data coletado'); break;
     case 'autoGain': break; // somados num aviso só, no loop
+    case 'revived': toast('Reviveu com a relíquia!', 'rare'); break;
+    case 'portalOpened': toast('Uma Distorção Digital se abriu! Entre em 30 s', 'rare'); break;
+    case 'zoneEnter': toast('Distorção Digital! Sobreviva às ondas', 'warn'); break;
+    case 'zoneWave': if (e.wave > 1) toast(`Onda ${e.wave}`); break;
+    case 'zoneAlpha': toast(`O Alfa ${e.name} apareceu!`, 'warn'); break;
+    case 'zoneDone': toast(e.won ? 'Distorção vencida! Volte pelo portal' : 'O Alfa escapou… volte pelo portal', e.won ? 'rare' : 'warn'); break;
+    case 'zoneExit': toast('De volta ao mapa'); break;
     case 'evolutionAvailable': break; // o painel "Próx. evolução" do HUD acende no lugar do aviso
     case 'bossUnlocked': toast('Missão cumprida! O chefe foi liberado', 'rare'); break;
     case 'bossStarted': toast('O chefe apareceu!', 'warn'); break;
@@ -150,6 +158,7 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
     return;
   }
   if (input.pressed('pause')) { pause(); return; }
+  if (run.relicOffer) { showRelicChoice(ui, run); return; }
   if (run.blindChoice) { showBlindEvolve(ui, run, id => toast(`Nova forma liberada! ${FORMS[id].name}`, 'rare')); return; }
   if (run.offers) { showLevelUp(ui, run); return; }
   if (run.pendingCard) { showCardChoice(ui, run); return; }
