@@ -171,3 +171,9 @@ test('autoGainText resume os ganhos automáticos do nível infinito', () => {
   expect(autoGainText([{ level: 37, stat: 'hp', amount: 3 }, { level: 38, stat: 'atk', amount: 1 }, { level: 39, stat: 'atk', amount: 1 }]))
     .toBe('Nv 37–39 · +3 Vida · +2 Atq');
 });
+test('forma madura mostra "Maturidade" no painel da próxima evolução', () => {
+  const { run, hud, q } = setup();
+  run.prog.matured = true; hud.update(run);
+  expect(q('.hud-evoname').textContent).toBe('Maturidade');
+});
+test('evoMissingText mostra a Maturidade', () => expect(evoMissingText([{ kind: 'maturity' }, { kind: 'level', need: 30 }])).toBe('Maturidade · Nv 30'));

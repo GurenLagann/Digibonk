@@ -10,7 +10,7 @@ import { availableEvolutions, type EvoContext, type EvoHint, type EvoMissing } f
 import type { PlayerProg } from './progression';
 import { effectiveStats } from './stats';
 
-export type ReqKey = 'level' | 'kills' | 'nearDeaths' | 'phase' | `stat:${StatKey}` | `item:${string}`;
+export type ReqKey = 'level' | 'kills' | 'nearDeaths' | 'phase' | 'maturity' | `stat:${StatKey}` | `item:${string}`;
 export interface Reveal { edge: string; key: ReqKey }
 export type VisibleHint = EvoHint | { kind: 'secret'; from: string; missing: EvoMissing[]; hidden: boolean };
 
@@ -32,6 +32,7 @@ export function reqKeys(req: EvoReq): ReqKey[] {
   if (req.minKills) keys.push('kills');
   if (req.minNearDeaths) keys.push('nearDeaths');
   if (req.minPhase) keys.push('phase');
+  if (req.requiresMaturity) keys.push('maturity');
   return keys;
 }
 
@@ -55,6 +56,7 @@ function missingOf(p: PlayerProg, s: Stats, ctx: EvoContext, req: EvoReq, key: R
   if (key === 'level') return p.level < req.minLevel ? { kind: 'level', need: req.minLevel } : null;
   if (key === 'kills') return req.minKills && p.kills < req.minKills ? { kind: 'kills', need: req.minKills } : null;
   if (key === 'nearDeaths') return req.minNearDeaths && p.nearDeaths < req.minNearDeaths ? { kind: 'nearDeaths', need: req.minNearDeaths, have: p.nearDeaths } : null;
+  if (key === 'maturity') return p.matured ? null : { kind: 'maturity' };
   if (key === 'phase') return req.minPhase && ctx.phase < req.minPhase ? { kind: 'phase', need: req.minPhase } : null;
   if (key.startsWith('stat:')) {
     const stat = key.slice(5) as StatKey, need = req.minStats?.[stat] ?? 0;
@@ -73,9 +75,10 @@ const unlockedOk = (save: SaveData, req: EvoReq) => !req.unlocked || req.unlocke
  */
 export function visibleHint(p: PlayerProg, ctx: EvoContext): VisibleHint {
   const f = FORMS[p.formId];
-  if (f.evolutions.length === 0) return { kind: 'final' };
+  const own = p.matured ? f.evolutions.filter(e => e.req.requiresMaturity) : f.evolutions;
+  if (own.length === 0) return { kind: 'final' };
   const s = effectiveStats(p);
-  const edges = f.evolutions.filter(e => unlockedOk(ctx.save, e.req));
+  const edges = own.filter(e => unlockedOk(ctx.save, e.req));
   const rank = <T extends { missing: EvoMissing[] }>(xs: T[]) => xs.reduce<T | null>((b, x) => (!b || x.missing.length < b.missing.length ? x : b), null);
 
   const known = edges.filter(e => isDiscovered(ctx.save, edgeId(p.formId, e.to)))

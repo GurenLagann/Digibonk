@@ -31,9 +31,10 @@ export function effectiveStats(p: PlayerProg): EffStats {
     for (const b of CARDS[id]?.bonuses ?? []) pct[b.stat] += b.basePct + b.perLevelPct * (level - 1);
   }
   const stat = (k: StatKey) => (statAt(f.baseStats[k], f.growthRate, p.level) + p.bonus[k]) * (1 + pct[k] / 100);
+  const mat = p.matured ? 1 + T.MATURITY_BONUS : 1;
   return {
-    hp: stat('hp'), atk: stat('atk'), def: stat('def'), spd: stat('spd'), brain: stat('brain'),
-    dmgMul: 1 + pct.dmg / 100, pickupMul: 1 + pct.pickup / 100, xpMul: 1 + pct.xp / 100, cdMul: 1 + pct.cooldown / 100,
+    hp: stat('hp') * mat, atk: stat('atk'), def: stat('def'), spd: stat('spd'), brain: stat('brain'),
+    dmgMul: (1 + pct.dmg / 100) * mat, pickupMul: 1 + pct.pickup / 100, xpMul: 1 + pct.xp / 100, cdMul: 1 + pct.cooldown / 100,
   };
 }
 

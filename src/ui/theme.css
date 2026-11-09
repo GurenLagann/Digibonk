@@ -502,6 +502,8 @@
 .res-data { display: flex; flex-direction: column; gap: calc(4 * var(--u)); }
 .res-dline { font-size: calc(12 * var(--u)); color: var(--b2-text); }
 .ps-evo.secret { color: var(--b2-text-dim); font-style: italic; }
+.evo-tab.mature { border-style: dashed; }
+.res-mature { color: var(--b2-orange); }
 .evo-mysteries { display: flex; gap: calc(18 * var(--u)); justify-content: center; }
 .evo-card.evo-mystery {
   flex-direction: column; justify-content: center; gap: calc(8 * var(--u));

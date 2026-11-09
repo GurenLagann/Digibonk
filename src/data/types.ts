@@ -25,6 +25,8 @@ export interface EvoReq {
   minKills?: number;
   /** vezes na partida em que o HP caiu abaixo de 25% (ramo sombrio) */
   minNearDeaths?: number;
+  /** só vale depois de amadurecer (Maturidade); ao amadurecer, as evoluções sem isto travam */
+  requiresMaturity?: boolean;
 }
 export interface EvoEdge { to: string; req: EvoReq }
 export interface FormDef {

@@ -153,7 +153,11 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
   if (run.blindChoice) { showBlindEvolve(ui, run, id => toast(`Nova forma liberada! ${FORMS[id].name}`, 'rare')); return; }
   if (run.offers) { showLevelUp(ui, run); return; }
   if (run.pendingCard) { showCardChoice(ui, run); return; }
-  if (input.pressed('evolve') && canEvolve(run)) { showEvolve(ui, run, id => id && toast(`Digievoluiu para ${FORMS[id].name}!`, 'rare')); return; }
+  if (input.pressed('evolve') && canEvolve(run)) {
+    showEvolve(ui, run, id => id && toast(`Digievoluiu para ${FORMS[id].name}!`, 'rare'),
+      () => toast(`${FORMS[run!.prog.formId].name} chegou à Maturidade! +${Math.round(T.MATURITY_BONUS * 100)}% de vida e dano`, 'rare'));
+    return;
+  }
   const ev = stepRun(run, input.move(), dt);
   ev.forEach(announce);
   const gains = ev.flatMap(e => (e.type === 'autoGain' ? [e] : []));

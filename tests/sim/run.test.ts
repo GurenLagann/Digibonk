@@ -1,4 +1,4 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, rerollOffers, skipOffer, banOffer, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, rerollOffers, skipOffer, banOffer, stayMature, type RunState } from '../../src/sim/run';
 import { offerKey } from '../../src/sim/progression';
 import { visibleHint } from '../../src/sim/discovery';
 import { CARDS } from '../../src/data/cards';
@@ -286,4 +286,12 @@ describe('atualizar, pular e banir', () => {
     expect(r.levelTools.ban).toBe(T.LEVEL_TOOLS.ban - 1);
     expect(banOffer(r, 0)).toBe(false);
   });
+});
+test('amadurecer: trava as evoluções normais, enche a vida e não avisa evolução', () => {
+  const o = opts(); discoverAll(o.save);
+  const r = createRun(o); r.prog.level = 9; r.prog.bonus.atk = 20; r.combat.hp = 1;
+  stayMature(r);
+  expect(r.prog.matured).toBe(true); expect(r.combat.hp).toBe(r.combat.maxHp);
+  const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(r.prog.formId).toBe('agumon'); expect(ev.some(e => e.type === 'evolutionAvailable')).toBe(false);
 });

@@ -32,6 +32,7 @@ export function reqLabels(r: EvoReq): string[] {
   if (r.minKills) out.push(`${r.minKills} abates`);
   if (r.minNearDeaths) out.push(`HP<25% ${r.minNearDeaths}×`);
   if (r.minPhase) out.push(`Fase ${r.minPhase}`);
+  if (r.requiresMaturity) out.push('Maturidade');
   for (const u of r.unlocked ?? []) {
     const cf = PARTNERS.find(p => p.id === u)?.childForm;
     out.push(`com ${cf ? FORMS[cf].name : u} liberado`);

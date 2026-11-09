@@ -12,6 +12,7 @@ export function reqKeyText(req: EvoReq, key: ReqKey): string {
   if (key === 'kills') return `${req.minKills} abates`;
   if (key === 'nearDeaths') return `HP < 25%: ${req.minNearDeaths}×`;
   if (key === 'phase') return `Fase ${req.minPhase}`;
+  if (key === 'maturity') return 'Maturidade';
   if (key.startsWith('stat:')) { const k = key.slice(5) as StatKey; return `${STAT_SHORT[k]} ${req.minStats?.[k]}`; }
   const id = key.slice(5);
   return ITEMS[id]?.name ?? CARDS[id]?.name ?? id;

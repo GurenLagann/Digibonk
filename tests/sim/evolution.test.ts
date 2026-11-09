@@ -1,4 +1,6 @@
-import { availableEvolutions, evolve, EvoNotifier, nextEvolutionHint, type EvoContext } from '../../src/sim/evolution';
+import { applyForm, availableEvolutions, evolve, EvoNotifier, mature, nextEvolutionHint, type EvoContext } from '../../src/sim/evolution';
+import { effectiveStats } from '../../src/sim/stats';
+import { T } from '../../src/data/tuning';
 import { newPlayerProg } from '../../src/sim/progression';
 import { defaultSave } from '../../src/core/save';
 import { progAt } from '../helpers';
@@ -98,5 +100,41 @@ describe('nextEvolutionHint', () => {
   test('none when all edges impossible', () => {
     const p = progAt('exveemon', 22); p.items.push('fusion_stingmon');
     expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'none' });
+  });
+});
+
+describe('Maturidade (troca de caminho)', () => {
+  // aresta de teste: Agumon maduro → MetalGreymon (os dados reais vêm do banco)
+  const edge = { to: 'metalgreymon', req: { minLevel: 12, requiresMaturity: true } };
+  beforeEach(() => { FORMS.agumon.evolutions.push(edge); });
+  afterEach(() => { FORMS.agumon.evolutions = FORMS.agumon.evolutions.filter(e => e !== edge); });
+
+  test('dá +12% de vida e de dano', () => {
+    const p = progAt('agumon', 9); const before = effectiveStats(p);
+    mature(p); const after = effectiveStats(p);
+    expect(after.hp).toBeCloseTo(before.hp * (1 + T.MATURITY_BONUS));
+    expect(after.dmgMul).toBeCloseTo(before.dmgMul * (1 + T.MATURITY_BONUS));
+  });
+  test('sem Maturidade, a aresta de Maturidade não aparece; com Maturidade só ela vale', () => {
+    const p = progAt('agumon', 12); p.bonus.atk = 20;
+    expect(availableEvolutions(p, ctx())).toEqual(['greymon']);
+    mature(p);
+    expect(availableEvolutions(p, ctx())).toEqual(['metalgreymon']);
+  });
+  test('dica: maduro mira a aresta de Maturidade; sem ela vira forma final', () => {
+    const p = progAt('agumon', 5); mature(p);
+    expect(nextEvolutionHint(p, ctx())).toEqual({ kind: 'next', to: 'metalgreymon', missing: [{ kind: 'level', need: 12 }] });
+    const q = progAt('greymon', 5); mature(q);
+    expect(nextEvolutionHint(q, ctx())).toEqual({ kind: 'final' });
+  });
+  test('sem Maturidade, a dica mostra que falta a Maturidade só se for a melhor opção', () => {
+    FORMS.agumon.evolutions = FORMS.agumon.evolutions.filter(e => e.to !== 'greymon' || e === edge);
+    const p = progAt('agumon', 12);
+    const h = nextEvolutionHint(p, ctx());
+    expect(h).toEqual({ kind: 'next', to: 'metalgreymon', missing: [{ kind: 'maturity' }] });
+  });
+  test('trocar de forma tira a Maturidade', () => {
+    const p = progAt('agumon', 9); mature(p); applyForm(p, 'greymon');
+    expect(p.matured).toBe(false);
   });
 });

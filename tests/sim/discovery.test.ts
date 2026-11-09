@@ -105,3 +105,24 @@ describe('correções da revisão final', () => {
     expect(s.revealedReqs).toEqual({ 'agumon->greymon': ['level'] });
   });
 });
+describe('Maturidade nas evoluções secretas', () => {
+  const edge = { to: 'metalgreymon', req: { minLevel: 12, requiresMaturity: true } };
+  beforeEach(() => { FORMS.agumon.evolutions.push(edge); });
+  afterEach(() => { FORMS.agumon.evolutions = FORMS.agumon.evolutions.filter(e => e !== edge); });
+  test('reqKeys inclui a Maturidade e o Digi Data pode revelá-la', () => {
+    expect(reqKeys(edge.req)).toEqual(['level', 'maturity']);
+    expect(drawPool(defaultSave())).toContainEqual({ edge: 'agumon->metalgreymon', key: 'maturity' });
+  });
+  test('secreta de Maturidade: só dispara depois de amadurecer', () => {
+    const s = discoverAll(defaultSave()); s.discoveredEvos = s.discoveredEvos.filter(e => e !== 'agumon->metalgreymon');
+    const p = progAt('agumon', 12);
+    expect(secretAvailable(p, ctxOf(s))).toEqual([]);
+    p.matured = true;
+    expect(secretAvailable(p, ctxOf(s))).toEqual(['metalgreymon']);
+  });
+  test('pista revelada de Maturidade aparece na dica da secreta', () => {
+    const s = defaultSave(); reveal(s, { edge: 'agumon->metalgreymon', key: 'maturity' });
+    const p = progAt('agumon', 12);
+    expect(visibleHint(p, ctxOf(s))).toEqual({ kind: 'secret', from: 'agumon', missing: [{ kind: 'maturity' }], hidden: true });
+  });
+});

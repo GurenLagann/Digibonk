@@ -18,6 +18,8 @@ export const T = {
     upgradeLevels: { common: 1, uncommon: 1, rare: 2, legendary: 2 },
     cardStartLevel: { common: 1, uncommon: 1, rare: 2, legendary: 3 },
   },
+  /** Maturidade (ficar na forma atual de vez): +12% de dano e de Vida máxima */
+  MATURITY_BONUS: 0.12,
   /** usos por partida na tela de level up (o Laboratório vai aumentar depois) */
   LEVEL_TOOLS: { reroll: 2, skip: 2, ban: 1 },
   /** nível infinito: ganho automático por nível quando não há mais nada para melhorar (1/3 da oferta de status) */

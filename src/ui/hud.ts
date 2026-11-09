@@ -30,6 +30,7 @@ export function evoMissingText(missing: EvoMissing[]): string {
       case 'phase': return `Fase ${m.need}`;
       case 'kills': return `${m.need} abates`;
       case 'nearDeaths': return `HP < 25%: ${m.have}/${m.need}×`;
+      case 'maturity': return 'Maturidade';
     }
   }).join(' · ');
 }
@@ -158,7 +159,7 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
         evoPort.replaceChildren(...(to ? [portrait(to, { size: 36, silhouette: !ready })] : []));
         evoPort.classList.toggle('hidden', !to);
       }
-      const evoLabel = ready ? FORMS[to]?.name ?? to : hint.kind === 'final' ? 'Forma final' : hint.kind === 'none' ? '—'
+      const evoLabel = ready ? FORMS[to]?.name ?? to : hint.kind === 'final' ? (p.matured ? 'Maturidade' : 'Forma final') : hint.kind === 'none' ? '—'
         : hint.kind === 'secret' ? `${FORMS[hint.from]?.name ?? hint.from} → ???` : FORMS[to]?.name ?? to;
       setText(evoName, evoLabel);
       evoName.classList.toggle('long', evoLabel.length > 12); // ex.: BlackWarGreymon não quebra no meio

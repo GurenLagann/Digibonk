@@ -140,3 +140,9 @@ test('sem Digi Data, sem seção', () => {
   showResults(root, endedRun(), () => {}, () => {});
   expect(root.querySelector('.res-data')).toBeNull();
 });
+test('resultado marca a Maturidade na última forma do caminho', () => {
+  const r = endedRun(); r.prog.matured = true;
+  const root = document.createElement('div');
+  showResults(root, r, () => {}, () => {});
+  expect(root.querySelector('.res-step.last')!.textContent).toContain('Maturidade');
+});

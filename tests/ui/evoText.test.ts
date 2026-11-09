@@ -14,3 +14,4 @@ test('pathLabel numera só quando há mais de um caminho', () => {
   expect(pathLabel('greymon->skullgreymon')).toBe(`Caminho ${FORMS.greymon.name} ②`);
   expect(pathLabel('agumon->greymon')).toBe('Caminho Agumon');
 });
+test('reqKeyText da Maturidade', () => expect(reqKeyText({ minLevel: 1, requiresMaturity: true }, 'maturity')).toBe('Maturidade'));

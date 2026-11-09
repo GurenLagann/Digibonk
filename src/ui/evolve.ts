@@ -2,7 +2,8 @@ import type { Input } from '../core/input';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import { knownAvailable } from '../sim/discovery';
-import { chooseBlind, doEvolve, type RunState } from '../sim/run';
+import { chooseBlind, doEvolve, stayMature, type RunState } from '../sim/run';
+import { T } from '../data/tuning';
 import { effectiveStats } from '../sim/stats';
 import { h, STAGE_NAMES, STAT_SHORT } from './dom';
 import { setActiveModal, type Modal } from './modal';
@@ -46,17 +47,42 @@ function optionCard(run: RunState, formId: string): HTMLElement {
       h('div', { class: 'evo-sig' }, h('b', {}, sig?.name ?? f.signature), replaces)));
 }
 
+/** opção da Maturidade: ficar na forma atual de vez, com +12% de vida e dano */
+const MATURE = '__mature__';
+function matureCard(run: RunState): HTMLElement {
+  const f = FORMS[run.prog.formId];
+  const before = effectiveStats(run.prog), after = effectiveStats({ ...run.prog, matured: true });
+  const pct = `+${Math.round(T.MATURITY_BONUS * 100)}%`;
+  const row = (lbl: string, a: number, b: number) => h('div', { class: 'evo-stat' }, h('span', { class: 'evo-sl' }, lbl),
+    h('div', { class: 'b2-bar evo-bar' }, h('i', { style: `width:${(a / b) * 100}%` }), h('b', { style: `width:${((b - a) / b) * 100}%` })),
+    h('span', { class: 'evo-sv' }, `${Math.ceil(a)} → `, h('span', { class: 'b2-gain' }, String(Math.ceil(b)))));
+  return h('div', { class: 'b2-panel tick evo-card b2-sel evo-mature' },
+    h('div', { class: 'evo-side' },
+      h('div', { class: 'evo-art' }, portrait(f.id, { size: 128 })),
+      h('b', { class: f.name.length > 12 ? 'evo-name long' : 'evo-name' }, f.name),
+      h('div', { class: 'evo-chips' }, chip('attr', f.attribute), chip('elem', f.element))),
+    h('div', { class: 'evo-info' },
+      h('div', { class: 'b2-label' }, `Maturidade · ${pct} de vida e dano`),
+      row(STAT_SHORT.hp, before.hp, after.hp),
+      row('Dano', before.dmgMul * 100, after.dmgMul * 100),
+      h('div', { class: 'b2-label evo-siglbl' }, 'Troca de caminho'),
+      h('div', { class: 'evo-sig' }, `${f.name} deixa as evoluções normais para trás. Daqui em diante só seguem os caminhos que pedem Maturidade.`)));
+}
+
 /**
  * Tela "Digievolução!": forma atual à esquerda, a opção selecionada num cartão grande (setas trocam quando há mais de uma).
  * `confirm` evolui; `cancel`/`pause` ("Agora não") fecham sem evoluir e chamam `onDone(null)`.
  */
-export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: string | null) => void): Modal {
+export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: string | null) => void, onMature?: () => void): Modal {
   const cur = FORMS[run.prog.formId];
-  const forms = knownAvailable(run.prog, { save: run.save, phase: run.phase.phase });
+  const evos = knownAvailable(run.prog, { save: run.save, phase: run.phase.phase });
+  // a Maturidade entra como última opção quando há alguma evolução para recusar
+  const forms = evos.length && !run.prog.matured ? [...evos, MATURE] : evos;
   let sel = 0, closed = false;
 
   const slot = h('div', { class: 'evo-opt' });
-  const tabs = forms.length > 1 ? forms.map((id, i) => h('button', { type: 'button', class: 'evo-tab', onclick: () => select(i) }, h('span', { class: 'b2-key' }, String(i + 1)), FORMS[id].name)) : [];
+  const tabName = (id: string) => (id === MATURE ? `Ficar como ${cur.name}` : FORMS[id].name);
+  const tabs = forms.length > 1 ? forms.map((id, i) => h('button', { type: 'button', class: 'evo-tab' + (id === MATURE ? ' mature' : ''), onclick: () => select(i) }, h('span', { class: 'b2-key' }, String(i + 1)), tabName(id))) : [];
   const screen = h('div', { class: 'b2-screen evo-screen' },
     h('div', { class: 'evo-head' },
       h('h1', { class: 'b2-title evo-title' }, 'Digievolução!'),
@@ -80,7 +106,7 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
   function select(i: number) {
     if (!forms.length) return;
     sel = (i + forms.length) % forms.length;
-    slot.replaceChildren(optionCard(run, forms[sel]));
+    slot.replaceChildren(forms[sel] === MATURE ? matureCard(run) : optionCard(run, forms[sel]));
     tabs.forEach((t, j) => t.classList.toggle('b2-sel', j === sel));
   }
   function accept() {
@@ -88,6 +114,7 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
     const id = forms[sel];
     m.close();
     if (!id) return onDone(null);
+    if (id === MATURE) { stayMature(run); onMature?.(); return; }
     doEvolve(run, id);
     onDone(id);
   }

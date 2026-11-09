@@ -27,3 +27,4 @@ test('lineOf percorre a linha inteira a partir da forma Child', () => {
   for (const id of ['agumon', 'greymon', 'metalgreymon', 'skullgreymon', 'blackwargreymon', 'wargreymon']) expect(ids).toContain(id);
   expect(ids).not.toContain('gabumon');
 });
+test('reqLabels mostra a Maturidade', () => expect(reqLabels({ minLevel: 30, requiresMaturity: true })).toEqual(['Nv 30', 'Maturidade']));

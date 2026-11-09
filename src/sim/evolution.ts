@@ -10,6 +10,8 @@ export function availableEvolutions(p: PlayerProg, ctx: EvoContext): string[] {
   const f = FORMS[p.formId];
   const s = effectiveStats(p);
   return f.evolutions.filter(({ req }) => {
+    // Maturidade troca de caminho: madura só segue arestas de Maturidade; não madura, só as outras
+    if (!!req.requiresMaturity !== p.matured) return false;
     if (p.level < req.minLevel) return false;
     for (const [k, v] of Object.entries(req.minStats ?? {})) if (s[k as StatKey] < (v as number)) return false;
     if (req.items && !req.items.every(i => p.items.includes(i))) return false;
@@ -27,15 +29,17 @@ export type EvoMissing =
   | { kind: 'item'; id: string }
   | { kind: 'phase'; need: number }
   | { kind: 'kills'; need: number }
-  | { kind: 'nearDeaths'; need: number; have: number };
+  | { kind: 'nearDeaths'; need: number; have: number }
+  | { kind: 'maturity' };
 export type EvoHint = { kind: 'final' } | { kind: 'none' } | { kind: 'next'; to: string; missing: EvoMissing[] };
 
 export function nextEvolutionHint(p: PlayerProg, ctx: EvoContext): EvoHint {
   const f = FORMS[p.formId];
-  if (f.evolutions.length === 0) return { kind: 'final' };
+  const edges = p.matured ? f.evolutions.filter(e => e.req.requiresMaturity) : f.evolutions;
+  if (edges.length === 0) return { kind: 'final' };
   const s = effectiveStats(p);
   let best: { to: string; missing: EvoMissing[] } | null = null;
-  for (const { to, req } of f.evolutions) {
+  for (const { to, req } of edges) {
     if (req.unlocked && !req.unlocked.every(u => ctx.save.unlocked.includes(u))) continue;
     const missing: EvoMissing[] = [];
     if (p.level < req.minLevel) missing.push({ kind: 'level', need: req.minLevel });
@@ -45,6 +49,7 @@ export function nextEvolutionHint(p: PlayerProg, ctx: EvoContext): EvoHint {
     if (req.minPhase && ctx.phase < req.minPhase) missing.push({ kind: 'phase', need: req.minPhase });
     if (req.minKills && p.kills < req.minKills) missing.push({ kind: 'kills', need: req.minKills });
     if (req.minNearDeaths && p.nearDeaths < req.minNearDeaths) missing.push({ kind: 'nearDeaths', need: req.minNearDeaths, have: p.nearDeaths });
+    if (req.requiresMaturity && !p.matured) missing.push({ kind: 'maturity' });
     if (!best || missing.length < best.missing.length) best = { to, missing };
   }
   return best ? { kind: 'next', ...best } : { kind: 'none' };
@@ -65,11 +70,15 @@ export function evolve(p: PlayerProg, toFormId: string, ctx: EvoContext): void {
   applyForm(p, toFormId);
 }
 
+/** Maturidade: fica na forma atual com bônus (stats.ts); daí em diante só valem as arestas de Maturidade */
+export function mature(p: PlayerProg): void { p.matured = true; }
+
 /** troca de forma sem checar requisitos (evolução já validada, ou debug) */
 export function applyForm(p: PlayerProg, toFormId: string): void {
   const to = FORMS[toFormId];
   if (!to) throw new Error(`unknown form ${toFormId}`);
   p.formId = toFormId;
+  p.matured = false;
   p.path.push(toFormId);
   p.pathLevels.push(p.level);
   const prev = p.slots[0];

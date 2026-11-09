@@ -85,9 +85,9 @@ test('com 2 caminhos (Veemon), setas trocam a opção e confirm evolui para a es
   m.handle(press('right'));
   expect(name()).toContain(FORMS.veedramon.name);
   expect(name()).not.toContain(FORMS.exveemon.name);
-  m.handle(press('right'));
-  expect(name()).toContain(FORMS.exveemon.name); // dá a volta
-  m.handle(press('left'));
+  m.handle(press('right')); m.handle(press('right'));
+  expect(name()).toContain(FORMS.exveemon.name); // dá a volta (passando pela Maturidade)
+  m.handle(press('left')); m.handle(press('left'));
   expect(name()).toContain(FORMS.veedramon.name);
   m.handle(press('confirm'));
   expect(r.prog.formId).toBe('veedramon');
@@ -101,12 +101,11 @@ test('opt1/opt2/opt3 escolhem o caminho e evoluem na hora; opção inexistente �
   };
   const r = mk(); const root = document.createElement('div');
   const m = showEvolve(root, r, () => {});
-  expect([...root.querySelectorAll('.evo-tab .b2-key')].map(e => e.textContent)).toEqual(['1', '2']);
+  expect([...root.querySelectorAll('.evo-tab .b2-key')].map(e => e.textContent)).toEqual(['1', '2', '3']); // 3 = Maturidade
   m.handle(press('opt2'));
   expect(r.prog.formId).toBe('veedramon'); expect(m.closed).toBe(true);
   activeModal()?.close();
   const r3 = mk(); const m3 = showEvolve(document.createElement('div'), r3, () => {});
-  m3.handle(press('opt3')); expect(r3.prog.formId).toBe('veemon'); expect(m3.closed).toBe(false);
   m3.handle(press('opt1')); expect(r3.prog.formId).toBe('exveemon');
 });
 
@@ -143,4 +142,30 @@ test('escolha às cegas: setas e Enter', () => {
   const m = showBlindEvolve(document.createElement('div'), r, () => {});
   m.handle(press('right')); m.handle(press('confirm'));
   expect(r.prog.formId).toBe('veedramon');
+});
+
+test('Maturidade: última opção, mostra o bônus e trava a forma ao confirmar', () => {
+  const r = agumonRun(); const root = document.createElement('div');
+  const done: (string | null)[] = []; const matured: number[] = [];
+  const m = showEvolve(root, r, id => done.push(id), () => matured.push(1));
+  const tabs = [...root.querySelectorAll('.evo-tab')].map(t => t.textContent);
+  expect(tabs[1]).toContain('Ficar como Agumon');
+  m.handle(press('right'));
+  const card = root.querySelector('.evo-card')!;
+  expect(card.textContent).toContain('Maturidade');
+  expect(card.textContent).toContain('+12%');
+  m.handle(press('confirm'));
+  expect(r.prog.matured).toBe(true); expect(r.prog.formId).toBe('agumon');
+  expect(matured).toEqual([1]); expect(done).toEqual([]);
+  expect(canEvolve(r)).toBe(false);
+});
+
+test('forma já madura não oferece a Maturidade de novo', () => {
+  const r = agumonRun(); r.prog.matured = true;
+  const edge = { to: 'greymon', req: { minLevel: 1, requiresMaturity: true } };
+  FORMS.agumon.evolutions.push(edge);
+  try {
+    const root = document.createElement('div'); showEvolve(root, r, () => {});
+    expect(root.textContent).not.toContain('Ficar como');
+  } finally { FORMS.agumon.evolutions = FORMS.agumon.evolutions.filter(e => e !== edge); }
 });

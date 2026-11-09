@@ -27,6 +27,7 @@ export function reqText(req: EvoReq): string {
   if (req.minPhase) parts.push(`fase ${req.minPhase}`);
   if (req.minKills) parts.push(`${req.minKills} abates`);
   if (req.minNearDeaths) parts.push(`${req.minNearDeaths}× HP abaixo de 25%`);
+  if (req.requiresMaturity) parts.push('Maturidade');
   for (const id of req.items ?? []) parts.push(ITEMS[id]?.name ?? CARDS[id]?.name ?? id);
   for (const id of req.unlocked ?? []) {
     const cf = PARTNERS.find(x => x.id === id)?.childForm;

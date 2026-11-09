@@ -9,7 +9,7 @@ import { gainItem, levelUpOwnedCard, maxedCards, offerPassive, replacePassive, s
 import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
-import { evolve, EvoNotifier } from './evolution';
+import { evolve, EvoNotifier, mature } from './evolution';
 import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
@@ -350,6 +350,14 @@ export function doEvolve(r: RunState, formId: string): void {
   discover(r.save, edgeId(from, formId));
   if (!r.save.discovered.includes(formId)) r.save.discovered.push(formId);
   persist(r);
+  r.evo.reset();
+  syncHp(r);
+  r.combat.hp = r.combat.maxHp;
+}
+
+/** Maturidade: fica na forma atual pelo resto da partida, com bônus e vida cheia */
+export function stayMature(r: RunState): void {
+  mature(r.prog);
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;

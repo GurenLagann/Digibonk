@@ -32,7 +32,8 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
     path.push(h('div', { class: 'res-step' + (big ? ' last' : '') },
       portrait(id, { size: big ? 112 : 80 }),
       h('span', { class: 'res-sname' }, FORMS[id]?.name ?? id),
-      i > 0 && p.pathLevels[i] !== undefined ? h('div', { class: 'b2-label' }, `Nv ${p.pathLevels[i]}`) : null));
+      i > 0 && p.pathLevels[i] !== undefined ? h('div', { class: 'b2-label' }, `Nv ${p.pathLevels[i]}`) : null,
+      big && p.matured ? h('div', { class: 'b2-label res-mature' }, 'Maturidade') : null));
   });
 
   const kit = [

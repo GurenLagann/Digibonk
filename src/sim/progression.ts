@@ -16,6 +16,8 @@ export interface PlayerProg {
   cardLevels: Record<string, number>;
   /** vezes em que o HP caiu abaixo de NEAR_DEATH_PCT; só volta a contar depois de curar acima de NEAR_DEATH_REARM */
   nearDeaths: number; nearDeathArmed: boolean;
+  /** Maturidade: escolheu ficar nesta forma pelo resto da partida (bônus em stats.ts, sem evoluções) */
+  matured: boolean;
 }
 export const RARITIES = ['common', 'uncommon', 'rare', 'legendary'] as const;
 export type Rarity = typeof RARITIES[number];
@@ -48,7 +50,7 @@ export function newPlayerProg(formId: string): PlayerProg {
     formId, level: 1, xp: 0, bonus: { hp: 0, atk: 0, def: 0, spd: 0, brain: 0 },
     slots, passives: Array.from({ length: T.PASSIVE_SLOTS }, () => null), items: [],
     pendingLevelUps: 0, kills: 0, path: [formId], pathLevels: [1], cardLevels: {},
-    nearDeaths: 0, nearDeathArmed: true,
+    nearDeaths: 0, nearDeathArmed: true, matured: false,
   };
 }
 
