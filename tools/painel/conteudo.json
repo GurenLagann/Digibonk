@@ -91,13 +91,20 @@
       "t": "Jogress de golpes",
       "p": "Com dois golpes no nível máximo surge um Terminal Jogress no mapa (desde a fase 1, uma vez por partida). O par vira um golpe num espaço só, os dois disparam com +25% de dano e o outro espaço fica livre.",
       "f": "src/sim/jogress.ts · src/ui/jogress.ts"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Altares de risco",
+      "p": "Um altar de cada por fase: Etemon (Corrupção ×1..×5: mais inimigos e mais fortes, +XP), Datamon (troca % de um status por outro) e Desafio (guardião mais forte, Distorção rara com onda extra, 4 relíquias e Digi Data extra).",
+      "f": "src/sim/altars.ts · src/ui/altars.ts"
     }
   ],
   "proximos": [
     [
-      "Altares de risco e baús pagos",
-      "M",
-      "Escolhas no mapa."
+      "Baús pagos (com moeda da partida)",
+      "P–M",
+      "Ficou para junto do Laboratório, que traz a moeda."
     ],
     [
       "Digimon aliados",
@@ -149,6 +156,7 @@
     "Teclas mostradas nos botões de atualizar/pular/banir são as padrão (F/X/Z), mesmo se o jogador trocar a tecla.",
     "Maturidade do Guilmon: decidir depois (Gallantmon Modo Carmesim pede Grani na franquia).",
     "VictoryGreymon, Imperialdramon PM e Magnamon entraram sem sprite.",
-    "Zona Digital: só abre ao derrotar guardião (missões de guardião, fase 2+); inimigos comuns quase todos Vírus, então as ondas variam pouco de atributo."
+    "Zona Digital: só abre ao derrotar guardião (missões de guardião, fase 2+); inimigos comuns quase todos Vírus, então as ondas variam pouco de atributo.",
+    "Altar do Desafio ainda sem Digimon próprio (Etemon e Datamon definidos pelo usuário)."
   ]
 }
