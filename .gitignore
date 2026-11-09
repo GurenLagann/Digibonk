@@ -5,3 +5,6 @@ assets-src/sprites/contact-*.png
 
 # banco gerado (fonte: db/migrations + db/seeds)
 db/*.db
+
+# arte extraída do Digimon Survive (só local, não publicar)
+assets-src/survive/
