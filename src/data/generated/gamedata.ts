@@ -5223,7 +5223,7 @@ export const ENEMIES: EnemyDef[] = [
   "dmg": 7,
   "speed": 2,
   "xp": 2,
-  "size": 0.9,
+  "size": 1.1,
   "color": 10193786,
   "minPhase": 1
  },

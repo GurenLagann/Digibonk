@@ -36,6 +36,12 @@ FORMATO
 - Contorno escuro de 1 px em volta do personagem, pixels nítidos, sem anti-aliasing
   borrado.
 
+CÂMERA (IMPORTANTE)
+- Câmera elevada olhando de cima em ~30 graus (estilo RPG de visão de cima, como Pokémon
+  dos jogos de DS). Em TODAS as vistas, inclusive de perfil, aparece um pouco do topo
+  da cabeça e das costas, e os pés ficam levemente achatados no chão.
+- Nada de vista totalmente de lado na altura dos olhos.
+
 LINHAS (de cima para baixo)
 1. Andando para a DIREITA (vista de perfil)
 2. Andando para a ESQUERDA (vista de perfil)
@@ -77,6 +83,12 @@ FORMATO
   encostando no outro).
 - Personagem do mesmo tamanho em todos os quadros, pés na mesma linha de chão,
   centralizado na célula.
+
+CÂMERA (IMPORTANTE)
+- Câmera elevada olhando de cima em ~30 graus (estilo RPG de visão de cima, como Pokémon
+  dos jogos de DS). Em TODAS as vistas, inclusive de perfil, aparece um pouco do topo
+  da cabeça e das costas, e os pés ficam levemente achatados no chão.
+- Nada de vista totalmente de lado na altura dos olhos.
 
 LINHAS
 1. Andando na diagonal PARA BAIXO E PARA A ESQUERDA: vista 3/4 de frente. O

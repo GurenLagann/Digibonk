@@ -8,3 +8,4 @@ db/*.db
 
 # arte extraída do Digimon Survive (só local, não publicar)
 assets-src/survive/
+public/survive-preview/
