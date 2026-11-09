@@ -9,7 +9,8 @@ import { gainItem, levelUpOwnedCard, maxedCards, offerPassive, replacePassive, s
 import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
-import { availableEvolutions, evolve, EvoNotifier } from './evolution';
+import { evolve, EvoNotifier } from './evolution';
+import { discover, edgeId, knownAvailable, secretAvailable } from './discovery';
 import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
@@ -25,7 +26,8 @@ export type RunEvent =
   | { type: 'cardFound'; cardId: string } | { type: 'itemFound'; itemId: string } | { type: 'partnerUnlocked'; partnerId: string }
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
   | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
-  | { type: 'cardLeveled'; cardId: string; level: number };
+  | { type: 'cardLeveled'; cardId: string; level: number }
+  | { type: 'formDiscovered'; formId: string };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -40,6 +42,8 @@ export interface RunState {
   pickups: Pickup[]; chests: Chest[]; evo: EvoNotifier;
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
   offers: LevelOffer[] | null; pendingCard: string | null;
+  /** 2+ evoluções secretas ao mesmo tempo: o jogador escolhe às cegas (ids de forma) */
+  blindChoice: string[] | null;
   /** chefes de fase e guardiões derrotados nesta partida */
   stats: { bosses: number; guardians: number };
   /** true quando `finish` superou o bestPhase deste parceiro */
@@ -82,7 +86,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null,
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null,
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -174,7 +178,7 @@ export function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
 }
 
 export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] {
-  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null) return [];
+  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null) return [];
   const ev: RunEvent[] = [];
   r.time += dt;
   movePlayer(r, input, dt);
@@ -271,8 +275,15 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     } else if (pe === 'playerDied') { finish(r, 'defeat', ev); return ev; }
   }
 
-  // evolution + level-up
-  const avail = availableEvolutions(r.prog, { save: r.save, phase: r.phase.phase });
+  // evolução: secreta cumprida evolui sozinha (ou abre a escolha às cegas); conhecida só avisa
+  const ctx = { save: r.save, phase: r.phase.phase };
+  const secret = secretAvailable(r.prog, ctx);
+  if (secret.length === 1) {
+    doEvolve(r, secret[0]); ev.push({ type: 'formDiscovered', formId: secret[0] });
+    return ev;
+  }
+  if (secret.length > 1) { r.blindChoice = secret; return ev; }
+  const avail = knownAvailable(r.prog, ctx);
   if (r.evo.update(avail).length) ev.push({ type: 'evolutionAvailable', forms: avail });
   if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng); ev.push({ type: 'levelUp' }); }
   syncHp(r);
@@ -295,12 +306,23 @@ export function chooseOffer(r: RunState, index: number): void {
 }
 
 export function doEvolve(r: RunState, formId: string): void {
+  const from = r.prog.formId;
   evolve(r.prog, formId, { save: r.save, phase: r.phase.phase });
+  discover(r.save, edgeId(from, formId));
   if (!r.save.discovered.includes(formId)) r.save.discovered.push(formId);
   persist(r);
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
+}
+
+/** escolha às cegas: evolui para a opção `index` e devolve a forma (null se índice inválido) */
+export function chooseBlind(r: RunState, index: number): string | null {
+  const id = r.blindChoice?.[index];
+  if (!id) return null;
+  r.blindChoice = null;
+  doEvolve(r, id);
+  return id;
 }
 
 export function resolveCard(r: RunState, choice: { passiveSlot?: number | null; moveSlot?: number }): void {

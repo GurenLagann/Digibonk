@@ -1,4 +1,4 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, type RunState } from '../../src/sim/run';
+import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, type RunState } from '../../src/sim/run';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
@@ -6,7 +6,7 @@ import { BOSSES } from '../../src/data/enemies';
 import { T } from '../../src/data/tuning';
 import { MINIBOSSES } from '../../src/data/enemies';
 import { MAP_OBSTACLES } from '../../src/sim/map';
-import { fakeStorage, autoResolveModals, circleInput } from '../helpers';
+import { fakeStorage, autoResolveModals, circleInput, discoverAll } from '../helpers';
 
 const opts = (o: { seed?: number; partnerId?: string; storage?: Storage } = {}) =>
   ({ partnerId: o.partnerId ?? 'agumon', seed: o.seed ?? 1, save: defaultSave(), storage: o.storage ?? fakeStorage({}) });
@@ -66,7 +66,8 @@ test('evolving records discovery and restores hp', () => {
   expect(loadSave(storage).discovered).toContain('greymon');
 });
 test('evolution availability is announced once', () => {
-  const r = createRun(opts()); r.prog.level = 8; r.prog.bonus.atk = 20;
+  const o = opts(); discoverAll(o.save);
+  const r = createRun(o); r.prog.level = 8; r.prog.bonus.atk = 20;
   const a = stepRun(r, { mx: 0, mz: 0 }, 1 / 60), b = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(a).toContainEqual({ type: 'evolutionAvailable', forms: ['greymon'] });
   expect(b.some(e => e.type === 'evolutionAvailable')).toBe(false);
@@ -125,4 +126,47 @@ test('killing the phase boss counts in stats', () => {
   const b = r.pool.spawn(BOSSES[0], r.px + 1, r.pz, { hp: 1, dmg: 0 }, { boss: true })!; b.hp = 0.001; r.phase.bossId = b.id;
   for (let i = 0; i < 120 && !r.stats.bosses; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(r.stats.bosses).toBe(1);
+});
+
+describe('evoluções secretas na partida', () => {
+  const veemonReady = (r: RunState) => { r.prog.level = 8; r.prog.bonus.spd = 10; r.prog.bonus.def = 5; r.prog.bonus.atk = 4; };
+  test('uma secreta disponível: evolui sozinho, avisa e grava na hora', () => {
+    const storage = fakeStorage({}); const r = createRun(opts({ storage }));
+    r.prog.level = 9; r.prog.bonus.atk = 20;
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.prog.formId).toBe('greymon');
+    expect(ev).toContainEqual({ type: 'formDiscovered', formId: 'greymon' });
+    expect(loadSave(storage).discoveredEvos).toContain('agumon->greymon');
+  });
+  test('duas secretas: escolha às cegas congela a partida até escolher', () => {
+    const r = createRun(opts({ partnerId: 'veemon' })); veemonReady(r);
+    stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.blindChoice?.slice().sort()).toEqual(['exveemon', 'veedramon']);
+    expect(r.prog.formId).toBe('veemon');
+    const t = r.time; stepRun(r, { mx: 1, mz: 0 }, 1 / 60); expect(r.time).toBe(t);
+    const second = r.blindChoice![1], first = r.blindChoice![0];
+    expect(chooseBlind(r, 1)).toBe(second);
+    expect(r.prog.formId).toBe(second); expect(r.blindChoice).toBeNull();
+    expect(r.save.discoveredEvos).toContain(`veemon->${second}`);
+    expect(r.save.discoveredEvos).not.toContain(`veemon->${first}`);
+  });
+  test('chooseBlind com índice inválido não faz nada', () => {
+    const r = createRun(opts({ partnerId: 'veemon' })); veemonReady(r);
+    stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(chooseBlind(r, 5)).toBeNull(); expect(r.prog.formId).toBe('veemon');
+  });
+  test('secreta e conhecida juntas: a secreta evolui sozinha', () => {
+    const o = opts({ partnerId: 'veemon' }); o.save.discoveredEvos.push('veemon->exveemon');
+    const r = createRun(o); veemonReady(r);
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.blindChoice).toBeNull(); expect(r.prog.formId).toBe('veedramon');
+    expect(ev).toContainEqual({ type: 'formDiscovered', formId: 'veedramon' });
+  });
+  test('todas conhecidas: nada automático, só o aviso de disponível', () => {
+    const o = opts({ partnerId: 'veemon' }); o.save.discoveredEvos.push('veemon->exveemon', 'veemon->veedramon');
+    const r = createRun(o); veemonReady(r);
+    const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.prog.formId).toBe('veemon'); expect(r.blindChoice).toBeNull();
+    expect(ev.some(e => e.type === 'evolutionAvailable')).toBe(true);
+  });
 });

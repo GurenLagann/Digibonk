@@ -1,5 +1,6 @@
 import { createRun, playerSpeed, stepRun } from '../../src/sim/run';
-import { debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
+import { drawPool } from '../../src/sim/discovery';
+import { debugForgetAll, debugRevealAll, debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
 import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
 import { ENEMIES } from '../../src/data/enemies';
@@ -80,4 +81,15 @@ test('getting an owned card again levels it up and reports it (no slot choice)',
   debugGiveCard(r, 'card_lightning_paw');
   expect(r.prog.slots[1]?.level).toBe(2);
   expect(r.pendingCard).toBeNull();
+});
+
+test('debugEvolve marca a aresta da forma atual como descoberta', () => {
+  const r = mk(); debugEvolve(r, 'greymon');
+  expect(r.save.discoveredEvos).toContain('agumon->greymon');
+});
+test('debugRevealAll esvazia o sorteio e debugForgetAll zera tudo', () => {
+  const s = defaultSave();
+  debugRevealAll(s, null); expect(drawPool(s)).toEqual([]);
+  s.revealedReqs['x->y'] = ['level'];
+  debugForgetAll(s, null); expect(s.discoveredEvos).toEqual([]); expect(s.revealedReqs).toEqual({});
 });
