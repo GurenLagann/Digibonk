@@ -295,3 +295,21 @@ test('amadurecer: trava as evoluções normais, enche a vida e não avisa evolu�
   const ev = stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(r.prog.formId).toBe('agumon'); expect(ev.some(e => e.type === 'evolutionAvailable')).toBe(false);
 });
+
+describe('efeitos de relíquia na partida', () => {
+  test('regeneração cura com o tempo', () => {
+    const r = createRun(opts()); r.prog.relics = ['relic_crest_friend']; r.pool.clearAll();
+    stepRun(r, { mx: 0, mz: 0 }, 1e-6); // sincroniza a vida máxima com a relíquia
+    r.combat.hp = 10; r.pool.clearAll();
+    stepRun(r, { mx: 0, mz: 0 }, 0.5);
+    expect(r.combat.hp).toBeCloseTo(10 + 3 * 0.5, 1);
+  });
+  test('revive uma vez com metade da vida', () => {
+    const r = createRun(opts()); r.prog.relics = ['relic_digiegg_hope'];
+    stepRun(r, { mx: 0, mz: 0 }, 1e-6); // sincroniza a vida máxima com a relíquia
+    r.combat.hp = -5; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.ended).toBeNull(); expect(r.combat.hp).toBeCloseTo(r.combat.maxHp * 0.5, 0); expect(r.reviveUsed).toBe(true);
+    r.combat.hp = -5; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.ended).toBe('defeat');
+  });
+});

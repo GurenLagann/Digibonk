@@ -18,6 +18,7 @@ import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, offerKey,
 import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
+import { relicEffects } from './relics';
 import type { StatKey } from '../data/types';
 
 export interface InputState { mx: number; mz: number }
@@ -29,7 +30,7 @@ export type RunEvent =
   | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
-  | { type: 'autoGain'; level: number; stat: StatKey; amount: number };
+  | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -48,6 +49,8 @@ export interface RunState {
   blindChoice: string[] | null;
   /** usos restantes de atualizar/pular/banir no level up e as ofertas banidas (offerKey) */
   levelTools: { reroll: number; skip: number; ban: number }; banned: string[];
+  /** relíquia de reviver já usada nesta partida */
+  reviveUsed: boolean;
   /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
   dataRng: Rng;
   /** requisitos revelados por Digi Data nesta partida (mostrados no resultado) */
@@ -117,7 +120,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -278,6 +281,10 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   // phase
   if (r.debug.god) r.combat.hp = r.combat.maxHp;
+  // relíquias: regeneração e reviver uma vez
+  if (r.combat.hp > 0 && stats.regen > 0) r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + stats.regen * dt);
+  const rel = relicEffects(r.prog);
+  if (r.combat.hp <= 0 && rel.revive > 0 && !r.reviveUsed) { r.reviveUsed = true; r.combat.hp = r.combat.maxHp * rel.revive; ev.push({ type: 'revived' }); }
   const playerDead = r.combat.hp <= 0;
   trackNearDeath(r.prog, r.combat.hp, r.combat.maxHp);
   for (const pe of stepPhase(r.phase, { px: r.px, pz: r.pz, dt, killedMiniboss, collectedFragment, bossDead, playerDead })) {

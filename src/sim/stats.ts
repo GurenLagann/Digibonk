@@ -5,8 +5,10 @@ import { T } from '../data/tuning';
 import { ATTRIBUTE_CHART, ELEMENT_CHART } from '../data/typing';
 import type { AttributeId, CardStat, ElementId, StatKey, Stats } from '../data/types';
 import type { MoveSlot, PlayerProg } from './progression';
+import { RELICS } from '../data/relics';
+import { relicEffects } from './relics';
 
-export type EffStats = Stats & { dmgMul: number; pickupMul: number; xpMul: number; cdMul: number };
+export type EffStats = Stats & { dmgMul: number; pickupMul: number; xpMul: number; cdMul: number; eliteMul: number; regen: number };
 
 /** status no nível: base × (1 + taxa × (nível − 1)) — 0,5% do base por nível, sem composição */
 export const statAt = (base: number, rate: number, level: number) => base * (1 + rate * (level - 1));
@@ -30,11 +32,14 @@ export function effectiveStats(p: PlayerProg): EffStats {
     const level = p.cardLevels[id] ?? 1;
     for (const b of CARDS[id]?.bonuses ?? []) pct[b.stat] += b.basePct + b.perLevelPct * (level - 1);
   }
+  for (const id of p.relics) { const r = RELICS[id]; if (r) pct[r.stat] += r.statPct; }
+  const rel = relicEffects(p);
   const stat = (k: StatKey) => (statAt(f.baseStats[k], f.growthRate, p.level) + p.bonus[k]) * (1 + pct[k] / 100);
   const mat = p.matured ? 1 + T.MATURITY_BONUS : 1;
   return {
     hp: stat('hp') * mat, atk: stat('atk'), def: stat('def'), spd: stat('spd'), brain: stat('brain'),
-    dmgMul: (1 + pct.dmg / 100) * mat, pickupMul: 1 + pct.pickup / 100, xpMul: 1 + pct.xp / 100, cdMul: 1 + pct.cooldown / 100,
+    dmgMul: (1 + pct.dmg / 100) * mat, pickupMul: 1 + pct.pickup / 100 + rel.pickup / 1.5, xpMul: 1 + pct.xp / 100 + rel.xp / 100, cdMul: 1 + pct.cooldown / 100,
+    eliteMul: 1 + rel.elite / 100, regen: rel.regen,
   };
 }
 

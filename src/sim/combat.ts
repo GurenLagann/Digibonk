@@ -78,9 +78,12 @@ export function pointInArea(a: Area, x: number, z: number, er: number): boolean 
   return along / d >= Math.cos(Math.PI / 4);
 }
 
-/** dano de um golpe do jogador num inimigo, com a vantagem de tipagem */
+/** bônus de relíquia contra chefes e guardiões no passo de combate atual (definido em stepCombat) */
+let eliteMul = 1;
+
+/** dano de um golpe do jogador num inimigo, com a vantagem de tipagem (e o bônus contra chefes/guardiões) */
 function typedDamage(dmg: number, moveId: string, atkAttr: AttributeId, e: Enemy): number {
-  return dmg * typeMultiplier(atkAttr, MOVES[moveId]?.element ?? 'neutral', e.attribute, e.element);
+  return dmg * (e.boss || e.miniboss ? eliteMul : 1) * typeMultiplier(atkAttr, MOVES[moveId]?.element ?? 'neutral', e.attribute, e.element);
 }
 
 export function hitArea(a: Area, pool: EnemyPool, hash: SpatialHash, out: CombatEvent[], atkAttr: AttributeId = 'free') {
@@ -120,6 +123,7 @@ function fire(m: MoveDef, dmg: number, c: CombatState, px: number, pz: number, t
 export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number, pool: EnemyPool, hash: SpatialHash, dt: number, _rng: Rng): CombatEvent[] {
   const out: CombatEvent[] = [];
   const stats = effectiveStats(p);
+  eliteMul = stats.eliteMul;
   const form = FORMS[p.formId];
   /** golpe de chefe no jogador: atributo do chefe × elemento do golpe contra a tipagem da forma */
   const hostileMul = (attr: AttributeId | undefined, moveId: string) =>
