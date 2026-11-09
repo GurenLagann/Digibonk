@@ -34,3 +34,7 @@ export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false }
   tilt -= HURT_TILT * hurt;
   return { y, sx: 1 / sy, sy, tilt };
 }
+
+/** altura do parceiro em cena por estágio: as evoluções ficam um pouco maiores a cada estágio */
+const STAGE_HEIGHT: Record<string, number> = { child: 2, adult: 2.3, perfect: 2.55, ultimate: 2.8 };
+export function playerHeightFor(stage: string): number { return STAGE_HEIGHT[stage] ?? 2; }

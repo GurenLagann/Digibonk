@@ -4,6 +4,17 @@ import type { Image, Role } from './slice.ts';
 export const VPET_ROLES: Role[] = ['idle1', 'idle2'];
 
 /** recorta todos os quadros na caixa que une os pixels opacos de todos eles */
+/** apoia todos os quadros na base (pés na mesma linha) e centraliza na horizontal, num quadro do maior tamanho.
+ * Recortes por quadro (cut-chatgpt) têm alturas diferentes; sem isto os mais baixos "flutuam". */
+export function alignBottom(frames: Image[]): Image[] {
+  const W = Math.max(...frames.map(f => f.w)), H = Math.max(...frames.map(f => f.h));
+  return frames.map(f => {
+    const data = new Uint8Array(W * H * 4), ox = Math.floor((W - f.w) / 2), oy = H - f.h;
+    for (let y = 0; y < f.h; y++) data.set(f.data.subarray(y * f.w * 4, (y + 1) * f.w * 4), ((oy + y) * W + ox) * 4);
+    return { w: W, h: H, data };
+  });
+}
+
 export function cropToUnion(frames: Image[]): Image[] {
   let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
   for (const f of frames)

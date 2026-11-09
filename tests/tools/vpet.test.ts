@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Image } from '../../tools/sprites/slice';
-import { clearHoles, cropToUnion, defringe, DEFRINGE_OUTLINE, VPET_ROLES } from '../../tools/sprites/vpet';
+import { alignBottom, clearHoles, cropToUnion, defringe, DEFRINGE_OUTLINE, VPET_ROLES } from '../../tools/sprites/vpet';
 
 function img(w: number, h: number, dots: [number, number][]): Image {
   const data = new Uint8Array(w * h * 4);
@@ -71,5 +71,24 @@ describe('clearHoles', () => {
     const out = clearHoles(mk(), [118, 118, 118], 12, 6);
     expect(out.data[(6 * 8 + 6) * 4 + 3]).toBe(255);
     expect(out.data[(0 * 8 + 0) * 4 + 3]).toBe(255);
+  });
+});
+
+describe('alignBottom (pés na mesma linha)', () => {
+  it('quadros de alturas diferentes ficam apoiados na base e centralizados', () => {
+    const alto = img(4, 6, [[0, 0], [3, 5]]);   // ocupa 4x6 inteiro
+    const baixo = img(2, 2, [[0, 1], [1, 1]]);  // 2x2, "pés" na linha de baixo
+    const [a, b] = alignBottom([alto, baixo]);
+    expect([a.w, a.h]).toEqual([4, 6]); expect([b.w, b.h]).toEqual([4, 6]);
+    // a linha de baixo do quadro baixo cai na última linha (y=5), centralizada (x=1..2)
+    expect(b.data[(5 * 4 + 1) * 4 + 3]).toBe(255);
+    expect(b.data[(5 * 4 + 2) * 4 + 3]).toBe(255);
+    expect(b.data[(0 * 4 + 1) * 4 + 3]).toBe(0);
+  });
+  it('depois do cropToUnion os pés continuam na última linha', () => {
+    const [, b] = cropToUnion(alignBottom([img(4, 6, [[0, 0], [3, 5]]), img(2, 2, [[0, 1]])]));
+    expect(b.h).toBe(6);
+    let last = -1; for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) if (b.data[(y * b.w + x) * 4 + 3]) last = y;
+    expect(last).toBe(5);
   });
 });

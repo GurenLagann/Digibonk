@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { HOP, motionPose } from '../../src/render/motion';
+import { HOP, motionPose, playerHeightFor } from '../../src/render/motion';
+import { test } from 'vitest';
 
 const base = { t: 0, phase: 0, moving: false, attack: 99, hurt: 0, drawnWalk: false };
 const samples = (o: Partial<typeof base>) => Array.from({ length: 120 }, (_, i) => motionPose({ ...base, ...o, t: i / 60 }));
@@ -53,4 +54,12 @@ describe('motionPose com caminhada desenhada', () => {
     expect(motionPose({ ...base, drawnWalk: true, attack: 0.02 }).sx).toBeGreaterThan(1.1);
     expect(motionPose({ ...base, drawnWalk: true, hurt: 1 }).tilt).toBeLessThan(-0.15);
   });
+});
+
+test('altura do parceiro cresce um pouco a cada estágio', () => {
+  expect(playerHeightFor('child')).toBe(2);
+  expect(playerHeightFor('adult')).toBeGreaterThan(playerHeightFor('child'));
+  expect(playerHeightFor('perfect')).toBeGreaterThan(playerHeightFor('adult'));
+  expect(playerHeightFor('ultimate')).toBeGreaterThan(playerHeightFor('perfect'));
+  expect(playerHeightFor('ultimate')).toBeLessThanOrEqual(3);
 });

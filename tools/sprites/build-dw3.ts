@@ -18,12 +18,9 @@ type Dirs = Record<Dir, At>;
 /** file: folha em assets-src/sprites/dw3 (padrão <id>.png); direções ausentes caem nas de lado no jogo */
 interface Sheet { file?: string; idle?: Partial<Dirs>; walk: Partial<Dirs>; walkFrames: number; run?: Partial<Dirs>; runFrames?: number }
 const ROW0_IDLE: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
+// agumon saiu daqui em 2026-11-09: agora usa a folha do ChatGPT (assets-src/sprites/gemini/agumon); a folha DW3 continua
+// em assets-src/sprites/dw3/agumon.png caso seja preciso voltar (walk/run em 5 direções, linhas 1-3).
 const CONFIG: Record<string, Sheet> = {
-  agumon: {
-    idle: ROW0_IDLE, walkFrames: 5, runFrames: 6,
-    walk: { up: [1, 0], diagup: [1, 5], side: [1, 10], diagdown: [1, 15], down: [2, 0] },
-    run: { up: [2, 5], diagup: [2, 11], side: [3, 0], diagdown: [3, 6], down: [3, 12] },
-  },
   veemon: {
     idle: ROW0_IDLE, walkFrames: 5, runFrames: 6,
     walk: { up: [0, 20], diagup: [1, 0], side: [1, 5], diagdown: [1, 10], down: [1, 15] },

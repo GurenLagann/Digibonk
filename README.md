@@ -172,7 +172,7 @@ Quem não tem quadros de caminhada desenhados ganha uma animação procedural: p
 
 ### Digimon World 3 (formas Child)
 
-Agumon, Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1), assim como os inimigos Bakemon e Guardromon: 5 direções com caminhada (4–5 quadros) e corrida (5–6 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
+Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1), assim como os inimigos Bakemon e Guardromon: 5 direções com caminhada (4–5 quadros) e corrida (5–6 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
 
 ### Folhas geradas por IA (evoluções)
 
@@ -206,10 +206,10 @@ A lista completa e atualizada fica no painel dos devs (`npm run painel`). Os pri
 
 DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.
 
-- **Sprites do Digimon World 3** (Agumon, Veemon, Guilmon, Bakemon, Guardromon): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
+- **Sprites do Digimon World 3** (Veemon, Guilmon, Bakemon, Guardromon; o Agumon usou até 2026-11): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
-- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Greymon, MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
+- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Agumon, Greymon (com diagonais, dano e morte), MetalGreymon, WarGreymon, Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
 - **Arte da tela inicial** (logo, Mundo Digital e a paisagem do fundo): imagens fornecidas pelo autor do projeto.
 - As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.

@@ -4,15 +4,13 @@ import { FORMS } from '../data/forms';
 import { T } from '../data/tuning';
 import { playerSpeed, type RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
-import { motionPose } from './motion';
+import { motionPose, playerHeightFor } from './motion';
 import { deathFrame, facingFlip, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
 
 const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
 /** escala visual dos placeholders em relação ao tamanho de colisão */
 const VIS = 1.6;
-/** altura do Digimon do jogador no mundo: igual para todas as formas (evoluir não aumenta) */
-const PLAYER_HEIGHT = 2;
 export const FLIP_SPRITES = true;
 /** altura visual dos inimigos com sprite = tamanho de colisão × ENEMY_VIS */
 const ENEMY_VIS = 1.7;
@@ -119,7 +117,7 @@ export class Billboards {
       this.player.geometry = g.geo;
       mat.map = g.tex ?? placeholderTexture('form:' + f.id, f.name, f.color);
       mat.needsUpdate = true;
-      this.playerHeight = g.tex ? PLAYER_HEIGHT : f.size * VIS;
+      this.playerHeight = g.tex ? playerHeightFor(f.stage) : f.size * VIS;
     }
     const c = run.combat;
     // morte: conta a partir do primeiro quadro em que a partida terminou em derrota
