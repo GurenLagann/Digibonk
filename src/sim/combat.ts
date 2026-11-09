@@ -1,9 +1,10 @@
 import type { Rng } from '../core/rng';
 import { MOVES } from '../data/moves';
+import { T } from '../data/tuning';
 import { FORMS } from '../data/forms';
 import type { AttributeId, MoveDef } from '../data/types';
 import type { Enemy, EnemyPool } from './director';
-import type { PlayerProg } from './progression';
+import type { MoveSlot, PlayerProg } from './progression';
 import type { SpatialHash } from './spatial';
 import { effectiveStats, incomingDamage, moveCooldown, outgoingDamage, typeMultiplier } from './stats';
 import { norm } from './vec';
@@ -25,7 +26,7 @@ export interface Area {
 }
 export interface HostileProjectile { x: number; z: number; vx: number; vz: number; dmg: number; radius: number; life: number; moveId: string; attribute?: AttributeId }
 export interface CombatState {
-  cooldowns: number[]; projectiles: Projectile[]; areas: Area[]; hostiles: HostileProjectile[];
+  cooldowns: number[]; jogressCd: number[]; projectiles: Projectile[]; areas: Area[]; hostiles: HostileProjectile[];
   invuln: number; hp: number; maxHp: number; facingX: number; facingZ: number;
   /** time since each slot last fired (render squash) */
   firedAgo: number[];
@@ -40,7 +41,7 @@ export const INVULN = 0.5;
 
 export function newCombatState(p: PlayerProg): CombatState {
   const hp = effectiveStats(p).hp;
-  return { cooldowns: p.slots.map(() => 0), projectiles: [], areas: [], hostiles: [], invuln: 0, hp, maxHp: hp, facingX: 1, facingZ: 0, firedAgo: p.slots.map(() => 99), bosses: new Map() };
+  return { cooldowns: p.slots.map(() => 0), jogressCd: p.slots.map(() => 0), projectiles: [], areas: [], hostiles: [], invuln: 0, hp, maxHp: hp, facingX: 1, facingZ: 0, firedAgo: p.slots.map(() => 99), bosses: new Map() };
 }
 
 const tmp: number[] = [];
@@ -164,20 +165,28 @@ export function stepCombat(c: CombatState, p: PlayerProg, px: number, pz: number
   }
 
   // fire slots
+  const tryFire = (s: MoveSlot, mul: number): boolean => {
+    const m = MOVES[s.moveId];
+    const reach = m.pattern === 'aura' || m.pattern === 'orbital' ? (m.radius ?? m.range) + 0.5 : m.range;
+    const target = nearest(pool, hash, px, pz, reach);
+    if (!target) return false;
+    fire(m, outgoingDamage(p, s) * mul, c, px, pz, target, pool, hash, out, form.attribute);
+    return true;
+  };
   for (let i = 0; i < p.slots.length; i++) {
     const s = p.slots[i];
     if (c.cooldowns[i] === undefined) { c.cooldowns[i] = 0; c.firedAgo[i] = 99; }
     c.firedAgo[i] += dt;
     if (!s) continue;
+    // espaço Jogress: os dois golpes disparam, cada um com a sua recarga e o bônus de dano
+    const bonus = s.jogress ? 1 + T.JOGRESS_BONUS : 1;
     c.cooldowns[i] = Math.max(0, c.cooldowns[i] - dt);
-    if (c.cooldowns[i] > 0) continue;
-    const m = MOVES[s.moveId];
-    const reach = m.pattern === 'aura' || m.pattern === 'orbital' ? (m.radius ?? m.range) + 0.5 : m.range;
-    const target = nearest(pool, hash, px, pz, reach);
-    if (!target) continue;
-    fire(m, outgoingDamage(p, s), c, px, pz, target, pool, hash, out, form.attribute);
-    c.cooldowns[i] = moveCooldown(p, s);
-    c.firedAgo[i] = 0;
+    if (c.cooldowns[i] <= 0 && tryFire(s, bonus)) { c.cooldowns[i] = moveCooldown(p, s); c.firedAgo[i] = 0; }
+    if (s.jogress) {
+      const js: MoveSlot = { moveId: s.jogress.moveId, level: s.jogress.level, fromCard: false };
+      c.jogressCd[i] = Math.max(0, (c.jogressCd[i] ?? 0) - dt);
+      if (c.jogressCd[i] <= 0 && tryFire(js, bonus)) c.jogressCd[i] = moveCooldown(p, js);
+    }
   }
 
   // projectiles

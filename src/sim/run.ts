@@ -19,6 +19,7 @@ import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
 import { addRelic, relicEffects } from './relics';
+import { applyJogress, jogressPairs } from './jogress';
 import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
 import type { StatKey } from '../data/types';
 
@@ -32,6 +33,7 @@ export type RunEvent =
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
   | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
+  | { type: 'jogressReady' }
   | { type: 'portalOpened'; attr: string } | { type: 'zoneEnter'; attr: string } | { type: 'zoneExit' } | { type: 'zoneWave'; wave: number } | { type: 'zoneAlpha'; name: string } | { type: 'zoneDone'; won: boolean };
 
 export interface RunState {
@@ -55,6 +57,8 @@ export interface RunState {
   reviveUsed: boolean;
   /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
   portals: Portal[]; zone: ZoneState | null; relicOffer: string[] | null;
+  /** Jogress de golpes: Terminal no mapa, pares oferecidos (espaços) e se já foi usado nesta partida */
+  jogressSpot: { x: number; z: number } | null; jogressOffer: [number, number][] | null; jogressUsed: boolean; jogressArmed: boolean;
   /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
   dataRng: Rng;
   /** requisitos revelados por Digi Data nesta partida (mostrados no resultado) */
@@ -76,7 +80,7 @@ function setupPhase(r: RunState, n: number) {
   r.combat.projectiles.length = 0; r.combat.areas.length = 0; r.combat.hostiles.length = 0; r.combat.bosses.clear();
   r.px = 0; r.pz = 0;
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
-  r.chests = placeChests(n, r.rng); r.portals = [];
+  r.chests = placeChests(n, r.rng); r.portals = []; r.jogressSpot = null;
   if (r.phase.mission.kind === 'collect') for (const p of r.phase.mission.points) r.pickups.push({ id: r.nextPickupId++, x: p.x, z: p.z, kind: 'fragment', value: 1 });
   placeDigiData(r);
   syncHp(r); r.combat.hp = r.combat.maxHp;
@@ -124,7 +128,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -217,7 +221,7 @@ export function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
 }
 
 export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] {
-  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null || r.relicOffer !== null) return [];
+  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null || r.relicOffer !== null || r.jogressOffer !== null) return [];
   const ev: RunEvent[] = [];
   r.time += dt;
   movePlayer(r, input, dt);
@@ -287,7 +291,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
 
   // Zona Digital: dentro, ondas/Alfa/saída; fora, portais
   if (r.zone) stepZone(r, dt, ev, () => { for (let k = 0; k < 1 + relicEffects(r.prog).digidata; k++) collectDigiData(r, ev); });
-  else stepPortals(r, dt, ev);
+  else { stepPortals(r, dt, ev); stepJogressTerminal(r, ev); }
 
   // phase
   if (r.debug.god) r.combat.hp = r.combat.maxHp;
@@ -372,6 +376,39 @@ export function doEvolve(r: RunState, formId: string): void {
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
+}
+
+/** Terminal Jogress: aparece quando há um par de golpes no máximo (uma vez por partida); pisar nele abre a escolha */
+function stepJogressTerminal(r: RunState, ev: RunEvent[]) {
+  if (r.jogressUsed) return;
+  const pairs = jogressPairs(r.prog);
+  if (!r.jogressSpot) {
+    if (!pairs.length) return;
+    const lim = T.MAP_HALF - 10;
+    for (let tries = 0; tries < 200; tries++) {
+      const a = r.rng.next() * Math.PI * 2, d = 18 + r.rng.next() * 12;
+      const x = clamp(r.px + Math.cos(a) * d, -lim, lim), z = clamp(r.pz + Math.sin(a) * d, -lim, lim);
+      if (MAP_OBSTACLES.some(o => Math.hypot(o.x - x, o.z - z) < o.r + 2)) continue;
+      r.jogressSpot = { x, z }; ev.push({ type: 'jogressReady' }); break;
+    }
+    return;
+  }
+  const d = Math.hypot(r.jogressSpot.x - r.px, r.jogressSpot.z - r.pz);
+  if (d > 3) r.jogressArmed = true;
+  else if (d <= 1.8 && r.jogressArmed && pairs.length) r.jogressOffer = pairs;
+}
+
+/** Jogress: junta o par `index` das ofertas e devolve os golpes; null = fechar sem fazer (o Terminal fica no mapa
+ * e só reabre depois que o jogador sai de cima dele) */
+export function chooseJogress(r: RunState, index: number | null): { a: string; b: string } | null {
+  const pair = index === null ? undefined : r.jogressOffer?.[index];
+  r.jogressOffer = null;
+  if (!pair) { r.jogressArmed = false; return null; }
+  const a = r.prog.slots[pair[0]]!.moveId, b = r.prog.slots[pair[1]]!.moveId;
+  applyJogress(r.prog, pair[0], pair[1]);
+  r.jogressUsed = true; r.jogressSpot = null;
+  r.combat.jogressCd[pair[0]] = 0;
+  return { a, b };
 }
 
 /** Zona Digital: escolhe a relíquia `index` das oferecidas (null = não levar nenhuma) */

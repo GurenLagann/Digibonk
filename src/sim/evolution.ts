@@ -91,8 +91,12 @@ export function applyForm(p: PlayerProg, toFormId: string): void {
   const lvl = prev?.level ?? 1;
   for (let i = 1; i < p.slots.length; i++) if (p.slots[i]?.moveId === to.signature) p.slots[i] = null;
   p.slots[0] = { moveId: to.signature, level: lvl, fromCard: false };
-  // a assinatura anterior que faz parte do kit novo passa para um espaço livre, mantendo o nível
-  if (prev && to.kit.includes(prev.moveId) && !p.slots.some(s => s?.moveId === prev.moveId)) {
+  // golpe Jogress na assinatura: o par inteiro vai para um espaço livre (não se perde ao evoluir)
+  if (prev?.jogress) {
+    const free = p.slots.findIndex((s, i) => i > 0 && s === null);
+    if (free > 0) p.slots[free] = { ...prev, fromCard: false };
+  } else if (prev && to.kit.includes(prev.moveId) && !p.slots.some(s => s?.moveId === prev.moveId)) {
+    // a assinatura anterior que faz parte do kit novo passa para um espaço livre, mantendo o nível
     const free = p.slots.findIndex((s, i) => i > 0 && s === null);
     if (free > 0) p.slots[free] = { moveId: prev.moveId, level: prev.level, fromCard: false };
   }

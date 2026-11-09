@@ -24,6 +24,8 @@ export const T = {
     WAVES: 4, WAVE_BASE: 8, WAVE_GROWTH: 4, WAVE_SECONDS: 15,
     ALPHA_SECONDS: 60, ALPHA_HP: 10, ALPHA_DMG: 1.5, ALPHA_SIZE: 1.1,
   },
+  /** Jogress de golpes: bônus de dano dos dois golpes que dividem o espaço */
+  JOGRESS_BONUS: 0.25,
   /** Maturidade (ficar na forma atual de vez): +12% de dano e de Vida máxima */
   MATURITY_BONUS: 0.12,
   /** usos por partida na tela de level up (o Laboratório vai aumentar depois) */

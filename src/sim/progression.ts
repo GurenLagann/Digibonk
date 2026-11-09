@@ -5,7 +5,11 @@ import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
 import type { StatKey, Stats } from '../data/types';
 
-export interface MoveSlot { moveId: string; level: number; fromCard: boolean }
+export interface MoveSlot {
+  moveId: string; level: number; fromCard: boolean;
+  /** Jogress: segundo golpe que divide este espaço (dispara junto, com bônus de dano) */
+  jogress?: { moveId: string; level: number };
+}
 export interface PlayerProg {
   formId: string; level: number; xp: number; bonus: Stats;
   slots: (MoveSlot | null)[]; passives: (string | null)[]; items: string[];
