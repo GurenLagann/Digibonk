@@ -77,14 +77,16 @@
       "t": "Maturidade",
       "p": "\"Ficar como está\" na tela de evolução: +12% de vida e dano e troca de caminho (só seguem evoluções que pedem Maturidade). WarGreymon maduro → VictoryGreymon; Flamedramon, Raidramon e Magnamon pedem Maturidade + Digiovo; Imperialdramon PM pela Transcendent Sword.",
       "f": "db/seeds/007_maturidade.sql · migration 004"
+    },
+    {
+      "n": "Melhoria",
+      "d": "09/11",
+      "t": "Zona Digital (Distorção)",
+      "p": "Guardião derrotado abre um portal (30 s) para uma arena separada: 4 ondas do atributo e o guardião como Alfa (60 s). Vencer dá Digi Data e 1 de 3 relíquias (até 3 por partida). O mapa volta igual na saída.",
+      "f": "src/sim/zone.ts · migration 005 · seed 008"
     }
   ],
   "proximos": [
-    [
-      "Zona Digital com relíquias",
-      "M",
-      "Dá vida ao mapa e é a fonte natural de Digi Data."
-    ],
     [
       "Jogress de golpes no nível máximo",
       "M",
@@ -144,6 +146,7 @@
     "Servidor para ranking online: decidido para depois (hoje é SQLite local).",
     "Teclas mostradas nos botões de atualizar/pular/banir são as padrão (F/X/Z), mesmo se o jogador trocar a tecla.",
     "Maturidade do Guilmon: decidir depois (Gallantmon Modo Carmesim pede Grani na franquia).",
-    "VictoryGreymon, Imperialdramon PM e Magnamon entraram sem sprite."
+    "VictoryGreymon, Imperialdramon PM e Magnamon entraram sem sprite.",
+    "Zona Digital: só abre ao derrotar guardião (missões de guardião, fase 2+); inimigos comuns quase todos Vírus, então as ondas variam pouco de atributo."
   ]
 }
