@@ -18,7 +18,8 @@ import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, offerKey,
 import { SpatialHash } from './spatial';
 import { effectiveStats } from './stats';
 import { clamp } from './vec';
-import { relicEffects } from './relics';
+import { addRelic, relicEffects } from './relics';
+import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
 import type { StatKey } from '../data/types';
 
 export interface InputState { mx: number; mz: number }
@@ -30,7 +31,8 @@ export type RunEvent =
   | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
-  | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' };
+  | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
+  | { type: 'zoneEnter'; attr: string } | { type: 'zoneExit' } | { type: 'zoneWave'; wave: number } | { type: 'zoneAlpha'; name: string } | { type: 'zoneDone'; won: boolean };
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
@@ -51,6 +53,8 @@ export interface RunState {
   levelTools: { reroll: number; skip: number; ban: number }; banned: string[];
   /** relíquia de reviver já usada nesta partida */
   reviveUsed: boolean;
+  /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
+  portals: Portal[]; zone: ZoneState | null; relicOffer: string[] | null;
   /** sorteios de Digi Data (gerador separado para não mexer na sequência de `rng`) */
   dataRng: Rng;
   /** requisitos revelados por Digi Data nesta partida (mostrados no resultado) */
@@ -72,7 +76,7 @@ function setupPhase(r: RunState, n: number) {
   r.combat.projectiles.length = 0; r.combat.areas.length = 0; r.combat.hostiles.length = 0; r.combat.bosses.clear();
   r.px = 0; r.pz = 0;
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
-  r.chests = placeChests(n, r.rng);
+  r.chests = placeChests(n, r.rng); r.portals = [];
   if (r.phase.mission.kind === 'collect') for (const p of r.phase.mission.points) r.pickups.push({ id: r.nextPickupId++, x: p.x, z: p.z, kind: 'fragment', value: 1 });
   placeDigiData(r);
   syncHp(r); r.combat.hp = r.combat.maxHp;
@@ -120,7 +124,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], reviveUsed: false, portals: [], zone: null, relicOffer: null, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
@@ -157,6 +161,7 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
   }
   const speed = playerSpeed(r.prog);
   let x = r.px + mx * speed * dt, z = r.pz + mz * speed * dt;
+  if (r.zone) { [r.px, r.pz] = clampToArena(x, z); return; } // arena: círculo sem obstáculos
   for (const o of MAP_OBSTACLES) {
     const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), min = o.r + PLAYER_RADIUS;
     if (d < min && d > 1e-6) { x = o.x + (dx / d) * min; z = o.z + (dz / d) * min; }
@@ -212,13 +217,13 @@ export function handleItem(r: RunState, itemId: string, ev: RunEvent[]) {
 }
 
 export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] {
-  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null) return [];
+  if (r.paused || r.ended || r.offers !== null || r.pendingCard !== null || r.blindChoice !== null || r.relicOffer !== null) return [];
   const ev: RunEvent[] = [];
   r.time += dt;
   movePlayer(r, input, dt);
 
   const d = r.director; d.phase = r.phase.phase; d.t = r.phase.t; d.px = r.px; d.pz = r.pz;
-  stepDirector(d, dt, r.rng);
+  if (!r.zone) stepDirector(d, dt, r.rng); // na arena só surgem as ondas da Distorção
 
   for (const [id] of r.combat.bosses) if (!r.pool.get(id)) r.combat.bosses.delete(id);
   for (const e of r.pool.all) {
@@ -247,7 +252,8 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
         }
         continue;
       }
-      if (e.miniboss) { killedMiniboss = true; r.stats.guardians++; spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
+      if (e.miniboss && !r.zone) { killedMiniboss = true; r.stats.guardians++; openPortal(r, e); }
+      if (e.miniboss) { spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
       const drop = dropOnKill(e, r.rng);
       if (drop.xp > 0) r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z, kind: 'xp', value: drop.xp });
       if (drop.extra === 'heal') spawnPickup(r, e.x + 0.6, e.z, { kind: 'heal' });
@@ -279,6 +285,10 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     spawnPickup(r, c.x, c.z, lootRoll(r));
   }
 
+  // Zona Digital: dentro, ondas/Alfa/saída; fora, portais
+  if (r.zone) stepZone(r, dt, ev, () => { for (let k = 0; k < 1 + relicEffects(r.prog).digidata; k++) collectDigiData(r, ev); });
+  else stepPortals(r, dt, ev);
+
   // phase
   if (r.debug.god) r.combat.hp = r.combat.maxHp;
   // relíquias: regeneração e reviver uma vez
@@ -287,7 +297,9 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   if (r.combat.hp <= 0 && rel.revive > 0 && !r.reviveUsed) { r.reviveUsed = true; r.combat.hp = r.combat.maxHp * rel.revive; ev.push({ type: 'revived' }); }
   const playerDead = r.combat.hp <= 0;
   trackNearDeath(r.prog, r.combat.hp, r.combat.maxHp);
-  for (const pe of stepPhase(r.phase, { px: r.px, pz: r.pz, dt, killedMiniboss, collectedFragment, bossDead, playerDead })) {
+  // na arena o relógio da fase para; só a morte conta
+  if (r.zone && playerDead) { finish(r, 'defeat', ev); return ev; }
+  for (const pe of r.zone ? [] : stepPhase(r.phase, { px: r.px, pz: r.pz, dt, killedMiniboss, collectedFragment, bossDead, playerDead })) {
     if (pe === 'missionProgress') ev.push({ type: 'missionProgress' });
     else if (pe === 'bossUnlocked') ev.push({ type: 'bossUnlocked' });
     else if (pe === 'overtimeStarted') ev.push({ type: 'overtime' });
@@ -360,6 +372,15 @@ export function doEvolve(r: RunState, formId: string): void {
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
+}
+
+/** Zona Digital: escolhe a relíquia `index` das oferecidas (null = não levar nenhuma) */
+export function chooseRelic(r: RunState, index: number | null): void {
+  const id = index === null ? undefined : r.relicOffer?.[index];
+  if (!r.relicOffer) return;
+  if (id) addRelic(r.prog, id);
+  r.relicOffer = null;
+  syncHp(r);
 }
 
 /** Maturidade: fica na forma atual pelo resto da partida, com bônus e vida cheia */

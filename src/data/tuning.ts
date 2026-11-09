@@ -18,6 +18,12 @@ export const T = {
     upgradeLevels: { common: 1, uncommon: 1, rare: 2, legendary: 2 },
     cardStartLevel: { common: 1, uncommon: 1, rare: 2, legendary: 3 },
   },
+  /** Zona Digital (Distorção): portal do guardião, arena separada, ondas e Alfa */
+  ZONE: {
+    PORTAL_SECONDS: 30, ENTER_RADIUS: 1.8, CENTER: { x: 400, z: 0 }, RADIUS: 22,
+    WAVES: 4, WAVE_BASE: 8, WAVE_GROWTH: 4, WAVE_SECONDS: 15,
+    ALPHA_SECONDS: 60, ALPHA_HP: 10, ALPHA_DMG: 1.5, ALPHA_SIZE: 1.5,
+  },
   /** Maturidade (ficar na forma atual de vez): +12% de dano e de Vida máxima */
   MATURITY_BONUS: 0.12,
   /** usos por partida na tela de level up (o Laboratório vai aumentar depois) */
