@@ -142,6 +142,80 @@ Legenda de esforço para o DigiBonk: **P** pequeno (horas), **M** médio (um pla
   - recompensas;
   - posição no ranking.
 
+## 6. Telas do menu: Pokédex, Laboratório, Builds e Ranking
+
+### 6.1 Pokédex (enciclopédia)
+- Abas: **Pokémon** (251), **Ataques** (734), **Vitaminas** (26) e **Itens** (132).
+- **Pokémon:**
+  - contadores de vistos (250/251), shinies (37) e famílias capturadas (125);
+  - filtros: Todos, Vistos, Capturados, Shiny e por tipo;
+  - a ficha traz descrição, altura e peso, status de pesquisa, status base, linha evolutiva, golpes na partida e plano
+    de build.
+- **Ataques:**
+  - filtros por físico, especial ou fusão;
+  - **24 padrões de ataque**: projétil, esfera explosiva, bomba, rajada, teleguiado, bumerangue, drenagem, raio, cone,
+    onda, onda de choque, corrente, impacto celeste, meteoro, armadilha, vórtice, golpe, investida, giro, aura, órbita,
+    rastro, clima e potencializador;
+  - os ataques de fusão aparecem como "Fusão de assinatura".
+- **Vitaminas:** 26 atributos passivos. Os incomuns são os mais interessantes:
+  - "Incenso Maldito": mais inimigos e mais fortes, em troca de +6% de XP e de dinheiro;
+  - "Dado Viciado": um atributo aleatório;
+  - espinhos, sobrecura, surgimento de elites.
+- **Itens:** 132, por raridade (Comum a Lendário), com filtros Desbloqueados, Bloqueados e **Arquivados**.
+- **Caderno de pesquisa (o "Analyzer"):**
+  - derrotar Pokémon soma pesquisa para a família, e Alfas, chefes e jaulas somam mais;
+  - completar uma família libera os Pokémon dela como avatar;
+  - completar famílias de um tipo libera uma **moldura de tipo** (18 molduras);
+  - marcos do pesquisador a cada 5, 15, 30, 45 e 60 famílias, cada um com recompensa.
+- **DigiBonk hoje:** só existe `save.discovered`, uma lista de formas, sem tela. **Proposta M:** um "Digimon Analyzer"
+  com ficha por Digimon, evoluções descobertas (já temos isso) e pistas de Digi Data. Abates por espécie dariam
+  "pesquisa" e liberariam cosméticos.
+
+### 6.2 Laboratório (meta-progressão com moeda permanente)
+- **Treinamento:** atributos permanentes em vários níveis.
+  - +4% de dano, +8 de HP, +2,5% de velocidade, +5% de XP, +8% de dinheiro, +5 de sorte, +0,6 de coleta,
+    +0,2 de regeneração, +2 de armadura, +1% de crítico, +2% de velocidade de ataque, +3% de área.
+  - Cada melhoria pode ser **desligada** depois de chegar ao máximo, para jogar mais difícil.
+- **Equipe da partida:** espaços e ferramentas, desbloqueados uma vez.
+  - 4º espaço de ataque, +espaços de vitamina, +usos de Atualizar, Pular e Banir, **quarta opção** na subida de nível.
+  - Começar com um Revive, +25% de pesquisa, +1 espaço de Alfa de apoio.
+  - **Arquivo:** espaços para tirar itens do sorteio. Ganha +5 por nível e +1 por item desbloqueado.
+  - Ultimate carrega 4% mais rápido, mochila com 3 itens.
+  - **Afinidade:** aumenta a raridade das cartas dos ataques favoritos.
+- **Itens:** desbloqueio de itens no pool, 132 ao todo.
+- **DigiBonk hoje:** `save.currency` existe, mas não é usado. **Proposta M:** uma moeda permanente ganha por partida e
+  uma tela de melhorias. Começar só pelos itens de "equipe da partida", que liberam as mecânicas da seção 1.1
+  (atualizar, banir, 4ª opção), mais 4–6 atributos. Assim a raridade e o banir viram progressão.
+
+### 6.3 Builds (preferências por personagem)
+- Para cada Pokémon e sua linha, o jogador marca com **★** o que quer que apareça mais e com **✕** o que não quer ver.
+  Vale ao começar cada partida com ele.
+- O editor tem quatro grupos:
+  - Ataques (até 8);
+  - Vitaminas (até 5);
+  - Fusões (até 3);
+  - Itens.
+- Os ataques mostram a origem: "Kit dele", "Linha dele" ou "Kit de Skarmory", que são kits emprestados de Pokémon da
+  mesma liga ou tipo.
+  - Um selo "Para a sua fusão" marca o que alimenta uma fusão planejada.
+- Há vários planos por Pokémon, com Renomear, Duplicar e Esvaziar, e **compartilhar e importar por código**. A aba
+  "Aluguel" usa builds de outros jogadores.
+- **DigiBonk hoje:** nada. **Proposta P–M:** começar só com ★ e ✕ por parceiro. O ★ dobra o peso no sorteio da
+  subida de nível e o ✕ tira do sorteio. É barato e combina com a raridade.
+
+### 6.4 Ranking (precisa de servidor)
+- Tabelas:
+  - por **abates**, global (soma da melhor partida de cada uma das 9 regiões) e por região;
+  - **por Pokémon**;
+  - **Sobrevivência** (tempo sobrevivido);
+  - **Contra o relógio** (vitória mais rápida);
+  - **Clãs** e **Cooperativo**.
+- Temporadas de cerca de 1 mês. O top 100 ganha insígnia, moldura e Stardust, de 100 a 1500 conforme a faixa. Os
+  recordes são "validados contra trapaças".
+- **DigiBonk hoje:** a tela Recordes é local (melhor fase, vitórias e partidas por parceiro). O servidor ficou para
+  depois na decisão do banco. **Proposta P (local):** recordes por parceiro, por mapa e contra o relógio, com medalhas
+  Bronze, Prata, Ouro e Campeão. O ranking online fica para quando houver servidor.
+
 ---
 
 ## Recomendação de ordem para o DigiBonk
@@ -156,3 +230,7 @@ Legenda de esforço para o DigiBonk: **P** pequeno (horas), **M** médio (um pla
 | 6 | Altares de risco (2.3) e baús pagos (2.4) | M | Escolhas no mapa. |
 | 7 | Digimon aliados (2.2) | G | Precisa de IA aliada. |
 | 8 | Ficha de dano por golpe na pausa e no resultado (5) | P | Ajuda a balancear tudo isso. |
+| 9 | ★/✕ por parceiro (6.3) | P–M | Dá controle sobre o sorteio; casa com a raridade. |
+| 10 | Laboratório com moeda permanente (6.2) | M | Transforma atualizar, banir e 4ª opção em progressão; usa `save.currency`. |
+| 11 | Digimon Analyzer (6.1) | M | Vitrine das evoluções secretas e do Digi Data. |
+| 12 | Recordes locais por mapa e contra o relógio (6.4) | P | O ranking online fica para quando houver servidor. |
