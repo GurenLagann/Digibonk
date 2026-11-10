@@ -13,7 +13,7 @@ function setup(patch: (s: ReturnType<typeof defaultSave>) => void = () => {}) {
   const save = defaultSave(); patch(save);
   const app = createApp({ save, storage: fakeStorage({}), startRun: () => {} });
   const calls: string[] = [];
-  const nav = { play: () => calls.push('play'), partners: () => calls.push('partners'), records: () => calls.push('records'), settings: () => calls.push('settings'), credits: () => calls.push('credits') };
+  const nav = { play: () => calls.push('play'), partners: () => calls.push('partners'), records: () => calls.push('records'), settings: () => calls.push('settings'), credits: () => calls.push('credits'), wiki: () => calls.push('wiki') };
   const root = document.createElement('div');
   const m = showTitle(root, app, save, nav, 'veemon');
   return { root, m, calls, save };
@@ -21,7 +21,7 @@ function setup(patch: (s: ReturnType<typeof defaultSave>) => void = () => {}) {
 
 test('title shows the items and the progress from the save', () => {
   const { root } = setup(s => { s.records = { bestPhase: 3, wins: 2, runs: 14 }; s.unlocked = ['agumon', 'gabumon', 'patamon']; });
-  for (const t of ['Jogar', 'Parceiros', 'Recordes', 'Controles', 'Créditos', 'Seus parceiros']) expect(root.textContent).toContain(t);
+  for (const t of ['Jogar', 'Parceiros', 'Recordes', 'Controles', 'Créditos', 'DW Wiki', 'Seus parceiros']) expect(root.textContent).toContain(t);
   expect(root.textContent).toContain('3 / 11');
   expect(root.textContent).toContain('14');
   expect(root.textContent).toContain('Vitórias');
@@ -73,7 +73,7 @@ describe('menu no estilo de cartões', () => {
   test('Jogar é o cartão grande; atalhos têm ícone, nome e número', () => {
     const { root } = setup();
     expect(root.querySelector('.tt-play')!.textContent).toContain('Jogar');
-    expect(root.querySelectorAll('.tt-tile').length).toBe(2); // Controles e Créditos; Recordes fica ao lado do Jogar
+    expect(root.querySelectorAll('.tt-tile').length).toBe(3); // Controles, Créditos e DW Wiki; Recordes fica ao lado do Jogar
   });
   test('painel "Seus parceiros" lista os liberados, do melhor resultado para o pior', () => {
     const { root } = setup(s => { s.partnerRecords = { agumon: { runs: 3, wins: 0, bestPhase: 2 }, guilmon: { runs: 9, wins: 2, bestPhase: 5 } }; });
@@ -91,6 +91,9 @@ describe('menu no estilo de cartões', () => {
     expect(go('left')).toBe('play');
     expect(go('right', 'down', 'down')).toBe('credits');
     expect(go('right', 'left')).toBe('play');
+    expect(go('down', 'right', 'right')).toBe('wiki');
+    expect(go('down', 'right', 'right', 'left')).toBe('credits');
+    expect(go('down', 'right', 'right', 'up')).toBe('records');
   });
   test('cada cartão abre uma tela diferente', () => {
     const { root } = setup();
