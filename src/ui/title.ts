@@ -6,12 +6,15 @@ import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 
-export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void }
+export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void; wiki?(): void }
 
-/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Controles, 4 Créditos) */
+/** página da wiki dos Digimon World (public/dw-wiki.html) */
+export const WIKI_URL = './dw-wiki.html';
+
+/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Controles, 4 Créditos, 5 DW Wiki) */
 const NAV = {
-  right: [1, 1, 2, 4, 4], left: [0, 0, 0, 3, 3],
-  down: [3, 2, 4, 3, 4], up: [0, 1, 1, 0, 2],
+  right: [1, 1, 2, 4, 5, 5], left: [0, 0, 0, 3, 3, 4],
+  down: [3, 2, 4, 3, 4, 5], up: [0, 1, 1, 0, 2, 2],
 };
 
 /** total de evoluções do jogo (para "Evoluções x / y") */
@@ -64,7 +67,8 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     h('span', { class: 'tt-tile-ico' }, icon), h('span', { class: 'tt-tile-txt' }, h('b', {}, title), h('span', { class: 'b2-label' }, sub))), go);
   const tiles = h('div', { class: 'tt-tiles' },
     tile('⚙', 'Controles', 'Teclado · controle', '#3d9bff', nav.settings),
-    tile('ⓘ', 'Créditos', 'Aviso legal', '#9a7dff', nav.credits));
+    tile('ⓘ', 'Créditos', 'Aviso legal', '#9a7dff', nav.credits),
+    tile('📖', 'DW Wiki', 'Evoluções · DW 1–4', '#2fbf71', nav.wiki ?? (() => { window.location.href = WIKI_URL; })));
 
   // painel "Seus parceiros": liberados, do melhor resultado para o pior
   const ranked = unlocked.map(p => ({ p, r: partnerRecord(save, p.id) }))
@@ -98,7 +102,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     close() { if (!closed) { closed = true; screen.remove(); } },
     handle(input) {
       if (closed) return;
-      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes (ao lado); 3 Controles | 4 Créditos (embaixo)
+      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes (ao lado); 3 Controles | 4 Créditos | 5 DW Wiki (embaixo)
       if (input.pressed('right')) select(NAV.right[sel]);
       else if (input.pressed('left')) select(NAV.left[sel]);
       else if (input.pressed('down')) select(NAV.down[sel]);

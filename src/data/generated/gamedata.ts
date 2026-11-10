@@ -5199,7 +5199,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 1,
   "size": 0.9,
   "color": 9093706,
-  "minPhase": 1
+  "minPhase": 1,
+  "stage": "child"
  },
  {
   "id": "hagurumon",
@@ -5212,7 +5213,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 1,
   "size": 0.9,
   "color": 10132136,
-  "minPhase": 1
+  "minPhase": 1,
+  "stage": "child"
  },
  {
   "id": "gazimon",
@@ -5225,7 +5227,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 2,
   "size": 1.1,
   "color": 10193786,
-  "minPhase": 1
+  "minPhase": 1,
+  "stage": "child"
  },
  {
   "id": "bakemon",
@@ -5238,7 +5241,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 2,
   "size": 1.1,
   "color": 15263984,
-  "minPhase": 2
+  "minPhase": 2,
+  "stage": "adult"
  },
  {
   "id": "guardromon",
@@ -5251,7 +5255,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 4,
   "size": 1.3,
   "color": 5925450,
-  "minPhase": 2
+  "minPhase": 2,
+  "stage": "adult"
  },
  {
   "id": "kuwagamon",
@@ -5264,7 +5269,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 4,
   "size": 1.4,
   "color": 12595242,
-  "minPhase": 3
+  "minPhase": 3,
+  "stage": "adult"
  },
  {
   "id": "ogremon",
@@ -5277,7 +5283,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 5,
   "size": 1.4,
   "color": 4885050,
-  "minPhase": 3
+  "minPhase": 3,
+  "stage": "adult"
  },
  {
   "id": "snimon",
@@ -5290,7 +5297,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 5,
   "size": 1.4,
   "color": 8049242,
-  "minPhase": 4
+  "minPhase": 4,
+  "stage": "adult"
  },
  {
   "id": "darktyrannomon",
@@ -5303,7 +5311,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 8,
   "size": 1.7,
   "color": 3816026,
-  "minPhase": 4
+  "minPhase": 4,
+  "stage": "adult"
  },
  {
   "id": "devidramon",
@@ -5316,7 +5325,8 @@ export const ENEMIES: EnemyDef[] = [
   "xp": 6,
   "size": 1.1,
   "color": 6961802,
-  "minPhase": 5
+  "minPhase": 5,
+  "stage": "adult"
  }
 ];
 export const MINIBOSSES: EnemyDef[] = [
@@ -5331,7 +5341,8 @@ export const MINIBOSSES: EnemyDef[] = [
   "xp": 40,
   "size": 2.2,
   "color": 15249978,
-  "minPhase": 2
+  "minPhase": 2,
+  "stage": "perfect"
  },
  {
   "id": "arukenimon",
@@ -5344,7 +5355,8 @@ export const MINIBOSSES: EnemyDef[] = [
   "xp": 50,
   "size": 2.2,
   "color": 5933800,
-  "minPhase": 2
+  "minPhase": 2,
+  "stage": "perfect"
  },
  {
   "id": "skullgreymon",
@@ -5357,7 +5369,8 @@ export const MINIBOSSES: EnemyDef[] = [
   "xp": 60,
   "size": 2.2,
   "color": 11037416,
-  "minPhase": 3
+  "minPhase": 3,
+  "stage": "perfect"
  },
  {
   "id": "blackwargrowlmon",
@@ -5370,7 +5383,8 @@ export const MINIBOSSES: EnemyDef[] = [
   "xp": 70,
   "size": 2.2,
   "color": 15231626,
-  "minPhase": 4
+  "minPhase": 4,
+  "stage": "perfect"
  },
  {
   "id": "blackweregarurumon",
@@ -5383,7 +5397,8 @@ export const MINIBOSSES: EnemyDef[] = [
   "xp": 80,
   "size": 2,
   "color": 15263850,
-  "minPhase": 4
+  "minPhase": 4,
+  "stage": "perfect"
  }
 ];
 export const BOSSES: BossDef[] = [
@@ -5398,6 +5413,7 @@ export const BOSSES: BossDef[] = [
   "speed": 2.6,
   "size": 2.8,
   "color": 3811914,
+  "stage": "adult",
   "moves": [
    "touch_of_evil"
   ]
@@ -5413,6 +5429,7 @@ export const BOSSES: BossDef[] = [
   "speed": 2.4,
   "size": 2.8,
   "color": 13148266,
+  "stage": "perfect",
   "moves": [
    "dark_network"
   ]
@@ -5428,6 +5445,7 @@ export const BOSSES: BossDef[] = [
   "speed": 2.8,
   "size": 3,
   "color": 5909098,
+  "stage": "perfect",
   "moves": [
    "crimson_lightning"
   ]
@@ -5443,6 +5461,7 @@ export const BOSSES: BossDef[] = [
   "speed": 2.4,
   "size": 3.4,
   "color": 14207136,
+  "stage": "perfect",
   "moves": [
    "heat_viper"
   ]
@@ -5458,6 +5477,7 @@ export const BOSSES: BossDef[] = [
   "speed": 3,
   "size": 3,
   "color": 15263976,
+  "stage": "ultimate",
   "moves": [
    "trump_sword"
   ]

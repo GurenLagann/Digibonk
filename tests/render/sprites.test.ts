@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { parseManifest, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, mirrorsWithDir, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
+import { frameCell, frameOffset, missingAnimations, parseManifest, sheetGrid, STAND_FPS, idleFrame, facingFlip, frameIndex, moveFrame, hurtFrame, deathFrame, deathDuration, nextHurtStart, mirrorsWithDir, HURT_TIME, HURT_COOLDOWN, DEATH_FPS, type Role } from '../../src/render/sprites';
 import { ENEMIES, MINIBOSSES, BOSSES } from '../../src/data/enemies';
 import { FORMS } from '../../src/data/forms';
 
@@ -13,6 +13,14 @@ test('invalid manifest is null', () => {
 test('valid manifest parses', () => {
   const m = parseManifest({ version: 1, sprites: { agumon: { file: 'agumon.png', frameW: 64, frameH: 75, frames: ['idle1', 'idle2', 'idle3', 'attack', 'hurt'], source: 1 } } });
   expect(m?.sprites.agumon.frameW).toBe(64);
+});
+test('manifest keeps defaults; missingAnimations lists what falls back to a default frame', () => {
+  const m = parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['idle1', 'walk1', 'walkup1', 'walkdiagup1', 'run1'], defaults: ['idle'] } } });
+  expect(m?.sprites.a.defaults).toEqual(['idle']);
+  expect(missingAnimations(m!.sprites.a)).toEqual(['parado', 'dano', 'morte']);
+  expect(missingAnimations({ frames: ['idle1', 'idle2'] })).toEqual(['andar', 'correr', 'frente/costas', 'diagonais', 'dano', 'morte']);
+  expect(missingAnimations({ frames: ['idle1', 'walk1', 'walkdown1', 'walkdiagdown1', 'run1', 'hurt1', 'death1'] })).toEqual(['parado animado']);
+  expect(missingAnimations({ frames: ['idle1', 'stand1', 'walk1', 'walkdown1', 'walkdiagdown1', 'run1', 'death1'] })).toEqual(['dano']);
 });
 test('idle cycles through 4 steps', () => expect([0, 1 / 6, 2 / 6, 3 / 6].map(t => idleFrame(t + 0.001))).toEqual(['idle1', 'idle2', 'idle3', 'idle2']));
 test('frameIndex finds roles', () => { expect(frameIndex('attack', ['idle1', 'idle2', 'idle3', 'attack', 'hurt'])).toBe(3); expect(frameIndex('hurt', ['idle1'])).toBe(0); });
@@ -83,6 +91,28 @@ test('deathFrame plays death1..N once and holds the last; null without death fra
   expect(deathFrame(10, frames)).toBe('death3');
   expect(deathFrame(0, ['idle1'] as Role[])).toBeNull();
   expect(deathDuration(frames)).toBeCloseTo(3 / DEATH_FPS);
+});
+test('deathFrame follows the facing when the sheet has directional death, else falls back to side', () => {
+  const frames = ['death1', 'death2', 'deathup1', 'deathup2'] as Role[];
+  expect(deathFrame(0, frames, 'up')).toBe('deathup1');
+  expect(deathFrame(10, frames, 'up')).toBe('deathup2');
+  expect(deathFrame(0, frames, 'down')).toBe('death1');
+});
+test('standing with a drawn idle cycle (standN) breathes through it in the facing direction', () => {
+  const frames = ['walk1', 'walk2', 'idle1', 'idleup', 'stand1', 'stand2', 'stand3', 'standup1', 'standup2'] as Role[];
+  expect([0, 1, 2, 3].map(i => moveFrame(i / STAND_FPS + 0.001, 0, false, frames))).toEqual(['stand1', 'stand2', 'stand3', 'stand1']);
+  expect(moveFrame(1 / STAND_FPS + 0.001, 0, false, frames, 'up')).toBe('standup2');
+  expect(moveFrame(0.001, 0, false, frames, 'down')).toBe('stand1'); // sem standdown: usa o de lado
+  expect(moveFrame(0.001, 0, true, frames)).toBe('walk1');
+});
+test('grid sheets: cols splits frames into rows; offsets count rows from the top', () => {
+  const info = { frames: Array.from({ length: 10 }, (_, i) => `walk${i + 1}`) as Role[], cols: 4 };
+  expect(sheetGrid(info)).toEqual({ cols: 4, rows: 3 });
+  expect(frameCell(5, info)).toEqual({ col: 1, row: 1 });
+  expect(frameOffset(0, info).x).toBe(0); expect(frameOffset(0, info).y).toBeCloseTo(2 / 3);
+  expect(frameOffset(9, info)).toEqual({ x: 0.25, y: 0 });
+  expect(sheetGrid({ frames: info.frames })).toEqual({ cols: 10, rows: 1 }); // sem cols: uma linha só
+  expect(parseManifest({ version: 1, sprites: { a: { file: 'a.png', frameW: 1, frameH: 1, frames: ['standup1', 'deathdiagdown3'], cols: 21 } } })?.sprites.a.cols).toBe(21);
 });
 test('a new hit starts the hurt animation only after the cooldown', () => {
   expect(nextHurtStart(-Infinity, 5, true)).toBe(5);

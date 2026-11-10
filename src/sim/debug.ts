@@ -2,6 +2,7 @@
 import { addXp, rollOffers, xpToNext } from './progression';
 import { storeSave, type SaveData } from '../core/save';
 import { FORMS } from '../data/forms';
+import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { applyForm } from './evolution';
 import { discover, edgeId } from './discovery';
 import { handleCard, handleItem, playerSpeed, syncHp, type RunEvent, type RunState } from './run';
@@ -35,6 +36,23 @@ export function debugGiveItem(r: RunState, itemId: string): RunEvent[] {
 export function debugHeal(r: RunState): void { r.combat.hp = r.combat.maxHp; }
 
 export function debugKillAll(r: RunState): void { r.pool.clearAll(); }
+
+/** derrota na hora (para ver a animação de derrota): ignora invencível e a relíquia de reviver */
+export function debugDie(r: RunState): void {
+  r.debug.god = false;
+  r.reviveUsed = true;
+  r.combat.hp = 0;
+}
+
+/** vida extra dos invocados, para dar tempo de olhar o sprite antes de os golpes automáticos o derrubarem */
+export const SUMMON_HP = 10;
+/** invoca um inimigo, mini-chefe ou chefe a 6 m do jogador, como inimigo comum (sem barra de chefe nem missão) */
+export function debugSummon(r: RunState, id: string): boolean {
+  const def = [...ENEMIES, ...MINIBOSSES, ...BOSSES].find(d => d.id === id);
+  if (!def) return false;
+  const a = r.rng.next() * Math.PI * 2;
+  return r.pool.spawn(def, r.px + Math.cos(a) * 6, r.pz + Math.sin(a) * 6, { hp: SUMMON_HP, dmg: 1 }) !== null;
+}
 
 /** liga/desliga invencibilidade; devolve o novo estado */
 export function debugToggleGod(r: RunState): boolean { return (r.debug.god = !r.debug.god); }

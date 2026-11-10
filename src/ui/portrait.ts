@@ -1,6 +1,6 @@
 import { FORMS } from '../data/forms';
 import { placeholderLabel } from '../render/placeholderLabel';
-import type { SpriteLibrary } from '../render/sprites';
+import { frameCell, type SpriteLibrary } from '../render/sprites';
 
 let source: SpriteLibrary | null = null;
 /** biblioteca de sprites usada pelos retratos dos menus (null → só placeholders) */
@@ -45,7 +45,8 @@ function drawSprite(g: CanvasRenderingContext2D, formId: string, size: number, s
   const x = Math.floor((size - w) / 2), y = Math.floor((size - hgt) / 2);
   const blit = (t: CanvasRenderingContext2D, dx: number, dy: number) => {
     t.imageSmoothingEnabled = false;
-    t.drawImage(img, frame * info.frameW, 0, info.frameW, info.frameH, dx, dy, w, hgt);
+    const c = frameCell(frame, info);
+    t.drawImage(img, c.col * info.frameW, c.row * info.frameH, info.frameW, info.frameH, dx, dy, w, hgt);
   };
   if (!silhouette) { blit(g, x, y); return true; }
   // silhueta: pinta o quadro de uma cor só (source-in) num canvas auxiliar e carimba ciano em volta, preto por cima

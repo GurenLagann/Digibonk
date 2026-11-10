@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HOP, motionPose, playerHeightFor } from '../../src/render/motion';
+import { enemyStageScale, HOP, motionPose, playerHeightFor } from '../../src/render/motion';
 import { test } from 'vitest';
 
 const base = { t: 0, phase: 0, moving: false, attack: 99, hurt: 0, drawnWalk: false };
@@ -46,6 +46,10 @@ describe('motionPose', () => {
   });
 });
 
+test('parado desenhado (drawnIdle) não respira por cima', () => {
+  for (const t of [0, 0.1, 0.2, 0.3]) expect(motionPose({ t, phase: 0, moving: false, attack: 99, hurt: 0, drawnIdle: true }).sy).toBe(1);
+});
+
 describe('motionPose com caminhada desenhada', () => {
   it('andando não pula nem balança', () => {
     for (const p of samples({ moving: true, drawnWalk: true })) { expect(p.y).toBe(0); expect(p.tilt).toBe(0); }
@@ -56,13 +60,21 @@ describe('motionPose com caminhada desenhada', () => {
   });
 });
 
-test('altura do parceiro cresce um pouco a cada estágio', () => {
+test('altura do parceiro: Child fixo, +25% a cada estágio acima', () => {
   expect(playerHeightFor('child')).toBe(2);
-  expect(playerHeightFor('adult')).toBeGreaterThan(playerHeightFor('child'));
-  expect(playerHeightFor('perfect')).toBeGreaterThan(playerHeightFor('adult'));
-  expect(playerHeightFor('ultimate')).toBeGreaterThan(playerHeightFor('perfect'));
-  expect(playerHeightFor('ultimate')).toBeLessThanOrEqual(3);
+  expect(playerHeightFor('adult')).toBeCloseTo(2 * 1.25);
+  expect(playerHeightFor('perfect')).toBeCloseTo(2 * 1.25 ** 2);
+  expect(playerHeightFor('ultimate')).toBeCloseTo(2 * 1.25 ** 3);
+  expect(playerHeightFor('desconhecido')).toBe(2);
 });
 test('o pulinho é baixo (sprites sem caminhada desenhada não parecem flutuar)', () => {
   expect(HOP).toBeLessThanOrEqual(0.04);
+});
+
+test('inimigos: Child no tamanho de hoje, +15% a cada estágio acima', () => {
+  expect(enemyStageScale('child')).toBe(1);
+  expect(enemyStageScale(undefined)).toBe(1);
+  expect(enemyStageScale('adult')).toBeCloseTo(1.15);
+  expect(enemyStageScale('perfect')).toBeCloseTo(1.15 ** 2);
+  expect(enemyStageScale('ultimate')).toBeCloseTo(1.15 ** 3);
 });

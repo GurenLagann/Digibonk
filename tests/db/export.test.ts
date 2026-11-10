@@ -27,10 +27,10 @@ test('moves, items, partners are identical (moves gain an element and a descript
   expect(g.PARTNERS).toEqual(before.PARTNERS);
 });
 
-test('enemies, minibosses and bosses keep their fields and gain the Digimon typing', () => {
+test('enemies, minibosses and bosses keep their fields and gain the Digimon typing and stage', () => {
   for (const k of ['ENEMIES', 'MINIBOSSES', 'BOSSES'] as const) {
-    expect(g[k].map((e: any) => strip(e, ['attribute', 'element']))).toEqual(before[k]);
-    for (const e of g[k]) expect(e.attribute && e.element, e.id).toBeTruthy();
+    expect(g[k].map((e: any) => strip(e, ['attribute', 'element', 'stage']))).toEqual(before[k]);
+    for (const e of g[k]) expect(e.attribute && e.element && ['child', 'adult', 'perfect', 'ultimate'].includes(e.stage), e.id).toBeTruthy();
   }
 });
 
