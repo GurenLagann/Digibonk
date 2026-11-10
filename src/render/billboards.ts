@@ -4,10 +4,10 @@ import { FORMS } from '../data/forms';
 import { T } from '../data/tuning';
 import { playerSpeed, type RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
-import { motionPose, playerHeightFor } from './motion';
-import { deathFrame, facingFlip, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
+import { enemyStageScale, motionPose, playerHeightFor } from './motion';
+import { deathFrame, facingFlip, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
 
-const DEFS = new Map<string, { name: string; color: number }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color }]));
+const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
 /** escala visual dos placeholders em relação ao tamanho de colisão */
 const VIS = 1.6;
@@ -19,7 +19,7 @@ function spriteMaterial(tex: THREE.Texture) {
   return new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: true, side: THREE.DoubleSide });
 }
 
-interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; height: number; phase: number }
+interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; cols?: number; height: number; phase: number }
 
 export class Billboards {
   private species = new Map<string, Species>();
@@ -27,6 +27,7 @@ export class Billboards {
   private playerForm = '';
   private playerTex: THREE.Texture | null = null;
   private playerFrames: Role[] = [];
+  private playerCols: number | undefined;
   private playerHeight = 1;
   private shadows: THREE.InstancedMesh;
   private m = new THREE.Matrix4(); private p = new THREE.Vector3(); private s = new THREE.Vector3();
@@ -46,32 +47,34 @@ export class Billboards {
     scene.add(this.shadows);
   }
 
-  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[] } {
+  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[]; cols?: number } {
     const info = this.lib.info(id), tex = this.lib.texture(id);
     if (!info || !tex) return { geo: unitPlane, tex: null, frames: [] };
-    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames };
+    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, cols: info.cols };
   }
 
   private speciesFor(def: string, size: number): Species {
     let sp = this.species.get(def);
     if (!sp) {
       const g = this.geometryFor(def);
-      const d = DEFS.get(def) ?? { name: def, color: 0xff00ff };
+      const d = DEFS.get(def) ?? { name: def, color: 0xff00ff, stage: 'child' };
       const mat = spriteMaterial(g.tex ?? placeholderTexture('enemy:' + def, d.name, d.color));
       const mesh = new THREE.InstancedMesh(g.geo, mat, T.MAX_ENEMIES);
       mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(T.MAX_ENEMIES * 3).fill(1), 3);
       mesh.frustumCulled = false;
       this.scene.add(mesh);
-      // inimigos: altura pelo tamanho de jogo (as folhas foram ripadas em escalas diferentes)
-      const height = g.tex ? size * ENEMY_VIS : size * VIS;
-      sp = { mesh, tex: g.tex, frames: g.frames, height, phase: (this.species.size * 0.37) % 1 };
+      // inimigos: altura pelo tamanho de jogo (as folhas foram ripadas em escalas diferentes), +15% por estágio acima do Child
+      const height = g.tex ? size * ENEMY_VIS * enemyStageScale(d.stage) : size * VIS;
+      sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height, phase: (this.species.size * 0.37) % 1 };
       this.species.set(def, sp);
     }
     return sp;
   }
 
-  private setFrame(tex: THREE.Texture | null, frames: Role[], role: Role) {
-    if (tex) tex.offset.x = frameIndex(role, frames) / frames.length;
+  private setFrame(tex: THREE.Texture | null, frames: Role[], role: Role, cols?: number) {
+    if (!tex) return;
+    const o = frameOffset(frameIndex(role, frames), { frames, cols });
+    tex.offset.set(o.x, o.y);
   }
 
   /** quaternion da câmera inclinada no plano da tela (pivô nos pés) */
@@ -103,7 +106,7 @@ export class Billboards {
       sp.mesh.count = this.counts.get(def) ?? 0;
       sp.mesh.instanceMatrix.needsUpdate = true;
       if (sp.mesh.instanceColor) sp.mesh.instanceColor.needsUpdate = true;
-      this.setFrame(sp.tex, sp.frames, moveFrame(time, sp.phase, true, sp.frames));
+      this.setFrame(sp.tex, sp.frames, moveFrame(time, sp.phase, true, sp.frames), sp.cols);
     }
 
     // jogador
@@ -113,7 +116,7 @@ export class Billboards {
       this.playerForm = f.id;
       const g = this.geometryFor(f.id);
       this.playerTex?.dispose();
-      this.playerTex = g.tex; this.playerFrames = g.frames;
+      this.playerTex = g.tex; this.playerFrames = g.frames; this.playerCols = g.cols;
       this.player.geometry = g.geo;
       mat.map = g.tex ?? placeholderTexture('form:' + f.id, f.name, f.color);
       mat.needsUpdate = true;
@@ -124,23 +127,24 @@ export class Billboards {
     if (this.deathRun !== run) { this.deathRun = run; this.deathAt = -1; }
     const dead = run.ended === 'defeat';
     if (dead && this.deathAt < 0) this.deathAt = time;
-    const death = dead ? deathFrame(time - this.deathAt, this.playerFrames) : null;
+    const death = dead ? deathFrame(time - this.deathAt, this.playerFrames, run.facing) : null;
     // dano: golpe novo = invulnerabilidade subiu; conta pelo tempo da tela (não congela com modal aberto)
     if (this.hurtRun !== run) { this.hurtRun = run; this.hurtStart = -Infinity; this.prevInvuln = 0; }
     this.hurtStart = nextHurtStart(this.hurtStart, time, c.invuln > this.prevInvuln + 1e-6);
     this.prevInvuln = c.invuln;
     const hurtRole = hurtFrame(time - this.hurtStart, this.playerFrames);
     // quadros de dano/morte são de lado: viram para o último lado andado
-    const sideOnly = death !== null || (hurtRole !== null && hurtRole !== 'hurt');
+    // (morte desenhada por direção, deathupN…, segue a direção como o andar)
+    const sideOnly = (death !== null && /^death\d/.test(death)) || (hurtRole !== null && hurtRole !== 'hurt');
     if (this.playerTex) {
       // ataque não troca a pose: o golpe sai sem o sprite virar
       const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing, playerSpeed(run.prog) >= 2 * run.baseSpeed);
-      this.setFrame(this.playerTex, this.playerFrames, role);
+      this.setFrame(this.playerTex, this.playerFrames, role, this.playerCols);
     }
     const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(run.facing) || sideOnly) ? facingFlip(run.dirX) : 1;
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
-      : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)) });
+      : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)), drawnIdle: this.playerFrames.some(f => /^stand/.test(f)) });
     this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);

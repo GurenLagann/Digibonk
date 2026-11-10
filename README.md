@@ -165,32 +165,32 @@ Cada Digimon é uma **tira horizontal** de quadros em `public/sprites/<id>.png`.
 | `walkdiagup1..N` / `walkdiagdown1..N` | caminhada nas diagonais (com o lado e o espelhamento, são 8 direções) |
 | `run…` (mesmos sufixos) | corrida: usada quando a velocidade chega ao dobro da inicial |
 | `idle1`, `idleup`, `idledown`, `idlediagup`, `idlediagdown` | parado, em cada direção |
+| `stand1..N` (e `standup…`) | parado em ciclo, em cada direção |
 | `hurt1..N` | dano (toca uma vez a cada golpe, com intervalo mínimo) |
-| `death1..N` | morte (toca uma vez e segura o último quadro) |
+| `death1..N` (e `deathup…`) | morte (toca uma vez e segura o último quadro), na direção em que estava |
 
 Quem não tem quadros de caminhada desenhados ganha uma animação procedural: pulinho e balanço ao andar, respiração parado.
 
-### Digimon World 3 (formas Child)
+### Folhas em grade (andar, correr, parado e derrota, 8 direções) — a fonte principal
 
-Veemon e Guilmon usam os **sprites de campo do Digimon World 3** (PS1), assim como os inimigos Bakemon e Guardromon: 5 direções com caminhada (4–5 quadros) e corrida (5–6 quadros), ampliados 2× sem borrar (`tools/sprites/build-dw3.ts`). As folhas originais ficam em `assets-src/sprites/dw3/`.
-
-### Folhas geradas por IA (evoluções)
-
-As folhas geradas por IA (ChatGPT e, nas primeiras versões, Gemini) são recortadas em quadros. Para recortar uma folha nova:
+A maior parte dos Digimon (52, entre parceiros, evoluções, inimigos e chefes) usa **folhas em grade** de modelos 3D renderizados: `<id>_walk.png`, `<id>_run.png`, `<id>_idle.png` (parado respirando) e `<id>_defeat.png` (derrota), cada uma com 1280×2048, 5 quadros por linha e uma direção por linha (frente, frente-esquerda, esquerda, costas-esquerda, costas; as 3 linhas viradas para a direita não são usadas, o jogo espelha). Elas **substituem** as folhas de DW3, ChatGPT/Gemini e V-pet dos mesmos Digimon.
 
 ```bash
-# lista as células detectadas (índice x,y,w,h)
-tools/sprites/cut-gemini.sh --cells minha-folha.jpeg
-
-# recorta: id, folha, escala %, e papel:célula[:flip] para cada quadro
-tools/sprites/cut-gemini.sh greymon greymon.jpeg 75 walk1:3 walk2:4 idle1:31 hurt1:44
-
-npm run sprites:vpet
+npm run sprites:grid -- <pasta-com-as-folhas> [ids...]   # copia para assets-src/sprites/grid/ (sem ids: os que o jogo usa)
+npm run sprites:vpet                                       # regera todas as folhas; a grade é aplicada por último
 ```
 
-O jogo assume que os sprites de lado **olham para a esquerda**. Use `:flip` nos quadros que vierem virados.
+No jogo, cada Digimon vira uma folha de 105 quadros em grade (21 por linha, `cols` no manifesto): `walk…`, `run…`, `stand…` (parado em ciclo, 6 quadros/s), `death…` (derrota na direção em que estava, 6 quadros/s, segura o último) e a pose fixa `idle1`/`idleup`… (1º quadro do parado, usada no retrato e na miniatura). `idle` e `defeat` são opcionais: sem a folha de parado, a pose fixa vem do andar (`defaults: ["idle"]`); sem a de derrota, o Digimon fica no último quadro.
 
-Os demais Digimon e os inimigos usam sprites de V-pet (Vital Bracelet / Pendulum Color).
+**Ainda falta o dano**: ao apanhar, o jogo mantém o quadro de movimento (com o piscar e o recuo). No modo debug, o painel (F2) mostra **"Animações faltando"** da forma atual e avisa ao evoluir; no painel dos devs essas formas aparecem como parciais ("falta dano").
+
+### Outras fontes
+
+Os Digimon que ainda não têm folha em grade (Wormmon, Imperialdramon FM, Tankdramon, UlforceVeedramon e os inimigos Snow Goblimon, Snimon, LadyDevimon, Arukenimon, BlackWarGrowlmon e BlackWereGarurumon) usam sprites de V-pet (Vital Bracelet / Pendulum Color), de 2 quadros.
+
+As ferramentas antigas continuam no repositório para folhas avulsas: `tools/sprites/build-dw3.ts` (sprites de campo do Digimon World 3) e `tools/sprites/cut-chatgpt.sh` / `cut-gemini.sh` (folhas geradas por IA, recortadas em `assets-src/sprites/gemini/`). As folhas DW3, ChatGPT e Gemini usadas antes foram apagadas em 2026-11-10, quando a grade as substituiu; elas continuam no histórico do git.
+
+O jogo assume que os sprites de lado **olham para a esquerda**.
 
 ## Próximos passos
 
@@ -206,10 +206,11 @@ A lista completa e atualizada fica no painel dos devs (`npm run painel`). Os pri
 
 DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Bandai Namco, a Toei Animation ou qualquer detentor dos direitos. Digimon, seus personagens, nomes e imagens são © Akiyoshi Hongo, Toei Animation e Bandai.
 
-- **Sprites do Digimon World 3** (Veemon, Guilmon, Bakemon, Guardromon; o Agumon usou até 2026-11): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
+- **Folhas em grade de andar, correr, parado e derrota** (52 Digimon, desde 2026-11-10): modelos 3D renderizados em 8 direções; origem e autoria a confirmar.
+- **Sprites do Digimon World 3** (usados até 2026-11-10 no Agumon, Veemon, Guilmon, Bakemon e Guardromon): rips de Ragey e Artzei no [The Spriters Resource](https://www.spriters-resource.com/playstation/digiworld3/).
 - **Sprites de V-pet:** extraídos dos aparelhos Digimon Vital Bracelet e Pendulum Color (© Bandai), consultados no acervo [humulos.com](https://humulos.com/digimon/).
-- **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
-- **Folhas geradas no ChatGPT** a partir de descrições dos personagens: Agumon, Greymon, MetalGreymon e WarGreymon (andar em 5 direções, dano e morte, câmera de 30°), os inimigos Gazimon, Kuwagamon e Hagurumon (mesmo formato), Garurumon (base), Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
+- **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões; ficaram só os dos Digimon sem folha em grade): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
+- **Folhas geradas no ChatGPT** a partir de descrições dos personagens (usadas até 2026-11-10, substituídas pela grade): Agumon, Greymon, MetalGreymon e WarGreymon (andar em 5 direções, dano e morte, câmera de 30°), os inimigos Gazimon, Kuwagamon e Hagurumon (mesmo formato), Garurumon (base), Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
 - **Arte da tela inicial** (logo, Mundo Digital e a paisagem do fundo): imagens fornecidas pelo autor do projeto.
 - As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.

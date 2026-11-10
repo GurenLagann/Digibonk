@@ -6,7 +6,7 @@ import { createFixedLoop } from './core/loop';
 import { loadSave, storeSave } from './core/save';
 import { sanitizeDiscovery } from './sim/discovery';
 import { CARD_LIST, CARDS } from './data/cards';
-import { ENEMIES } from './data/enemies';
+import { BOSSES, ENEMIES, MINIBOSSES } from './data/enemies';
 import { FORMS } from './data/forms';
 import { ITEM_LIST, ITEMS } from './data/items';
 import { T } from './data/tuning';
@@ -14,7 +14,7 @@ import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
 import { createScene, follow } from './render/scene';
 import { Vfx } from './render/vfx';
-import { deathDuration, SpriteLibrary } from './render/sprites';
+import { deathDuration, missingAnimations, SpriteLibrary } from './render/sprites';
 import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './sim/run';
 import { showCardChoice } from './ui/cardmodal';
 import { canEvolve, showBlindEvolve, showEvolve } from './ui/evolve';
@@ -109,12 +109,29 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
     item: id => withRun(r => dbg.debugGiveItem(r, id))(),
     heal: withRun(r => dbg.debugHeal(r)),
     killAll: withRun(r => dbg.debugKillAll(r)),
+    die: withRun(r => dbg.debugDie(r)),
+    summons: [
+      ...ENEMIES.map(e => ({ id: e.id, name: e.name, group: 'inimigos' })),
+      ...MINIBOSSES.map(e => ({ id: e.id, name: e.name, group: 'mini-chefes' })),
+      ...BOSSES.map(e => ({ id: e.id, name: e.name, group: 'chefes' })),
+    ],
+    summon: id => withRun(r => { if (!dbg.debugSummon(r, id)) toast('Debug: limite de inimigos atingido', 'warn'); })(),
     god: () => { if (!run) return false; const on = dbg.debugToggleGod(run); toast(`Debug: invencível ${on ? 'ligado' : 'desligado'}`); return on; },
     revealAll: () => { dbg.debugRevealAll(save); toast('Debug: todas as evoluções reveladas'); },
     forgetAll: () => { dbg.debugForgetAll(save); toast('Debug: evoluções esquecidas'); },
     doubleSpeed: () => { if (!run) return false; const on = dbg.debugToggleDoubleSpeed(run); toast(`Debug: velocidade 2× ${on ? 'ligada' : 'desligada'}`); return on; },
   });
   addEventListener('keydown', e => { if (e.code === 'F2') { e.preventDefault(); panel.toggle(); } });
+  let animForm = '';
+  setInterval(() => {
+    const id = run?.prog.formId ?? '';
+    if (!id || id === animForm) return;
+    animForm = id;
+    const info = sprites.info(id), name = FORMS[id]?.name ?? id;
+    const missing = info ? missingAnimations(info) : ['sprite inteiro'];
+    panel.setAnim(name, missing);
+    if (missing.length) toast(`Debug: ${name} sem animação de ${missing.join(', ')}`, 'warn');
+  }, 500);
 }
 
 function announce(e: RunEvent) {

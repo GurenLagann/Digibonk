@@ -13,3 +13,5 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1020; fon
 .dbg-grid { display: flex; flex-wrap: wrap; gap: 3px; }
 .dbg-btn { background: #234; color: #eef; border: 1px solid #456; border-radius: 4px; padding: 2px 6px; font: inherit; cursor: pointer; }
 .dbg-btn:hover { background: #345; }
+.dbg-anim { color: #fb8; background: #3a2418; border: 1px dashed #b74; border-radius: 4px; padding: 2px 6px; }
+.dbg-anim.dbg-anim-ok { color: #9e9; background: #183a24; border-color: #4b7; }

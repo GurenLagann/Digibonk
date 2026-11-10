@@ -18,23 +18,10 @@ type Dirs = Record<Dir, At>;
 /** file: folha em assets-src/sprites/dw3 (padrão <id>.png); direções ausentes caem nas de lado no jogo */
 interface Sheet { file?: string; idle?: Partial<Dirs>; walk: Partial<Dirs>; walkFrames: number; run?: Partial<Dirs>; runFrames?: number }
 const ROW0_IDLE: Dirs = { up: [0, 0], diagup: [0, 4], side: [0, 8], diagdown: [0, 12], down: [0, 16] };
-// agumon saiu daqui em 2026-11-09: agora usa a folha do ChatGPT (assets-src/sprites/gemini/agumon); a folha DW3 continua
-// em assets-src/sprites/dw3/agumon.png caso seja preciso voltar (walk/run em 5 direções, linhas 1-3).
-const CONFIG: Record<string, Sheet> = {
-  veemon: {
-    idle: ROW0_IDLE, walkFrames: 5, runFrames: 6,
-    walk: { up: [0, 20], diagup: [1, 0], side: [1, 5], diagdown: [1, 10], down: [1, 15] },
-    run: { up: [2, 0], diagup: [2, 6], side: [2, 12], diagdown: [3, 0], down: [3, 6] },
-  },
-  // inimigos (folha "Various Digimon 1"): só a caminhada de lado, virada para o jogador
-  bakemon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [3, 6] }, walk: { side: [3, 6] }, walkFrames: 3 },
-  guardromon: { file: 'extra/various_digimon_01_02__187606.png', idle: { side: [1, 0] }, walk: { side: [1, 0] }, walkFrames: 3 },
-  guilmon: { // folha rotulada (IDLE / WALK / RUN)
-    idle: { up: [0, 0], diagup: [0, 3], side: [0, 6], diagdown: [1, 0], down: [1, 3] }, walkFrames: 4, runFrames: 5,
-    walk: { up: [2, 0], diagup: [2, 4], side: [3, 0], diagdown: [3, 4], down: [4, 0] },
-    run: { up: [5, 0], diagup: [5, 5], side: [6, 0], diagdown: [6, 5], down: [7, 0] },
-  },
-};
+// 2026-11-10: Veemon, Guilmon, Bakemon e Guardromon passaram para as folhas em grade (build-grid.ts) e as folhas DW3
+// foram apagadas de assets-src/sprites/dw3 (ficam no histórico do git). Para voltar a usar uma folha DW3, recoloque-a lá e
+// descreva aqui: ex. veemon: { idle: ROW0_IDLE, walkFrames: 5, runFrames: 6, walk: { up: [0, 20], ... }, run: { ... } }.
+const CONFIG: Record<string, Sheet> = {};
 const SUFFIX: Record<Dir, string> = { side: '', up: 'up', down: 'down', diagup: 'diagup', diagdown: 'diagdown' };
 const IDLE: Record<Dir, string> = { side: 'idle1', up: 'idleup', down: 'idledown', diagup: 'idlediagup', diagdown: 'idlediagdown' };
 const SRC = 'assets-src/sprites/dw3', OUT = 'public/sprites', SCALE = 2;

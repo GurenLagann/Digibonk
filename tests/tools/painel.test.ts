@@ -1,11 +1,12 @@
 import { FORMS } from '../../src/data/forms';
 import { lineOf, reqLabels, spriteStatus, frameIndex } from '../../tools/painel/dados.ts';
 
-const info = (frames: string[]) => ({ file: 'x.png', frameW: 10, frameH: 10, frames, source: 0 });
+const info = (frames: string[], defaults?: string[]) => ({ file: 'x.png', frameW: 10, frameH: 10, frames, source: 0, defaults });
 
-test('spriteStatus: completo, ajustar, só parado e sem sprite', () => {
-  expect(spriteStatus('agumon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'])).st).toBe('done');
-  expect(spriteStatus('omnimon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'])).st).toBe('adjust');
+test('spriteStatus: completo, falta animação, só parado e sem sprite', () => {
+  expect(spriteStatus('agumon', info(['idle1', 'walk1', 'run1', 'walkdiagup1', 'hurt1', 'death1'])).st).toBe('done');
+  expect(spriteStatus('agumon', info(['idle1', 'walk1', 'run1', 'walkdiagup1'], ['idle'])))
+    .toEqual({ st: 'partial', note: '4 quadros, 8 direções; falta parado, dano, morte' });
   expect(spriteStatus('gabumon', info(['idle1', 'idle2']))).toEqual({ st: 'idle', note: 'só parado (2 quadros)' });
   expect(spriteStatus('megidramon', undefined).st).toBe('none');
   expect(spriteStatus('x', info(['idle1', 'walk1'])).st).toBe('partial');

@@ -22,6 +22,7 @@ Side and diagonal frames must face **LEFT**; the game mirrors them. `up` = back 
 
 ## Process
 
+0. **Grid sheets first.** If the Digimon exists in the user's grid folder (`<id>_walk/run/idle/defeat.png`, 1280×2048, 8 rows × 5), run `npm run sprites:grid -- <folder> <id>` then `npm run sprites:vpet` — no frame mapping needed (see `tools/sprites/grid.ts`). The DW3/ChatGPT/Gemini sheets below were deleted on 2026-11-10 (still in git history).
 1. **Find the source.** Child forms: DW3 field sprites (`assets-src/sprites/dw3/`). Forms DW3 lacks: ask the user for ChatGPT sheets, a base sheet and then a diagonal sheet. Give the prompts from `chatgpt-prompt.md`, filled in for that Digimon, with the files to attach. Gemini (`gemini-prompt.md`) is the fallback.
 2. **Map the frames.**
    ```bash

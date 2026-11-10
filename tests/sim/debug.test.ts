@@ -1,9 +1,9 @@
 import { createRun, playerSpeed, stepRun } from '../../src/sim/run';
 import { drawPool } from '../../src/sim/discovery';
-import { debugForgetAll, debugRevealAll, debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
+import { debugDie, debugSummon, SUMMON_HP, debugForgetAll, debugRevealAll, debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
 import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
-import { ENEMIES } from '../../src/data/enemies';
+import { BOSSES, ENEMIES } from '../../src/data/enemies';
 
 const mk = () => createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: null });
 
@@ -92,4 +92,22 @@ test('debugRevealAll esvazia o sorteio e debugForgetAll zera tudo', () => {
   debugRevealAll(s, null); expect(drawPool(s)).toEqual([]);
   s.revealedReqs['x->y'] = ['level'];
   debugForgetAll(s, null); expect(s.discoveredEvos).toEqual([]); expect(s.revealedReqs).toEqual({});
+});
+
+test('debugDie ends the run in defeat even when invincible', () => {
+  const r = mk(); r.debug.god = true;
+  debugDie(r);
+  for (let i = 0; i < 5 && !r.ended; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(r.ended).toBe('defeat');
+});
+
+test('debugSummon spawns the chosen enemy or boss next to the player, with extra hp', () => {
+  const r = mk(); r.pool.clearAll();
+  expect(debugSummon(r, BOSSES[0].id)).toBe(true);
+  const e = r.pool.all.find(x => x && x.alive && x.def === BOSSES[0].id)!;
+  expect(e).toBeTruthy();
+  expect(Math.hypot(e.x - r.px, e.z - r.pz)).toBeCloseTo(6);
+  expect(e.boss).toBe(false); // sem barra de chefe nem missão
+  expect(e.hp).toBeCloseTo(BOSSES[0].hp * SUMMON_HP);
+  expect(debugSummon(r, 'nao_existe')).toBe(false);
 });

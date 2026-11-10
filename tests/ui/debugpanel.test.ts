@@ -9,6 +9,8 @@ function actions(log: string[]): DebugActions {
     items: [{ id: 'fusion_garurumon', name: 'Dados de Fusão' }],
     evolve: id => log.push('evolve:' + id), levelUp: () => log.push('level'), card: id => log.push('card:' + id),
     item: id => log.push('item:' + id), heal: () => log.push('heal'), killAll: () => log.push('kill'),
+    die: () => log.push('die'), summon: id => log.push('summon:' + id),
+    summons: [{ id: 'gazimon', name: 'Gazimon', group: 'inimigos' }, { id: 'devimon', name: 'Devimon', group: 'chefes' }],
     god: () => (god = !god),
     doubleSpeed: () => false,
     revealAll: () => log.push('reveal'), forgetAll: () => log.push('forget'),
@@ -51,4 +53,14 @@ test('botões de revelar e esquecer evoluções', () => {
   mountDebugPanel(root, actions(log));
   btn(root, 'Revelar todas as evoluções').click(); btn(root, 'Esquecer evoluções').click();
   expect(log).toEqual(['reveal', 'forget']);
+});
+
+test('Morrer e Invocar (uma seção por grupo)', () => {
+  const root = document.createElement('div'); const log: string[] = [];
+  mountDebugPanel(root, actions(log));
+  btn(root, 'Morrer').click(); btn(root, 'Gazimon').click(); btn(root, 'Devimon').click();
+  expect(log).toEqual(['die', 'summon:gazimon', 'summon:devimon']);
+  const titles = [...root.querySelectorAll('.dbg-title')].map(t => t.textContent);
+  expect(titles).toContain('Invocar — inimigos');
+  expect(titles).toContain('Invocar — chefes');
 });

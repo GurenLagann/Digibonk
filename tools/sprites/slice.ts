@@ -134,6 +134,20 @@ export function buildStrip(frames: Image[]): { strip: Image; frameW: number; fra
   return { strip, frameW, frameH };
 }
 
+/** como buildStrip, mas em grade de `cols` quadros por linha (o jogo lê `cols` do manifesto) */
+export function buildGrid(frames: Image[], cols: number): { strip: Image; frameW: number; frameH: number } {
+  const one = buildStrip(frames), { frameW, frameH } = one, rows = Math.ceil(frames.length / cols);
+  const w = frameW * cols, h = frameH * rows, data = new Uint8Array(w * h * 4);
+  frames.forEach((_, i) => {
+    const ox = (i % cols) * frameW, oy = Math.floor(i / cols) * frameH;
+    for (let y = 0; y < frameH; y++) {
+      const si = (y * one.strip.w + i * frameW) * 4;
+      data.set(one.strip.data.subarray(si, si + frameW * 4), ((oy + y) * w + ox) * 4);
+    }
+  });
+  return { strip: { w, h, data }, frameW, frameH };
+}
+
 export interface SheetOverride { roles?: Role[]; extraBg?: number[]; minShare?: number; count?: number; ignore?: Rect[] }
 export function rolesFor(id: string, overrides: Record<string, SheetOverride>): Role[] {
   return overrides[id]?.roles ?? DEFAULT_ROLES;

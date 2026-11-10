@@ -5,7 +5,8 @@
  */
 export interface Pose { y: number; sx: number; sy: number; tilt: number }
 /** drawnWalk: o sprite tem quadros de caminhada desenhados → sem pulinho/balanço ao andar */
-export interface MotionInput { t: number; phase: number; moving: boolean; attack: number; hurt: number; drawnWalk?: boolean }
+/** drawnIdle: o sprite tem o parado desenhado (standN) → sem respiração procedural */
+export interface MotionInput { t: number; phase: number; moving: boolean; attack: number; hurt: number; drawnWalk?: boolean; drawnIdle?: boolean }
 
 /** altura máxima do pulinho, fração da altura do sprite */
 export const HOP = 0.03; // era 0.12: os sprites sem caminhada desenhada pareciam flutuar
@@ -16,7 +17,7 @@ const BREATH = 0.03;
 const ATTACK_TIME = 0.18, ATTACK_STRETCH = 0.25;
 const HURT_TILT = 0.3;
 
-export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false }: MotionInput): Pose {
+export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false, drawnIdle = false }: MotionInput): Pose {
   let y = 0, tilt = 0, sy: number;
   if (moving && drawnWalk) {
     sy = 1;
@@ -26,6 +27,8 @@ export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false }
     y = HOP * up;
     tilt = WADDLE * s;
     sy = 1 - LAND * (1 - up) ** 4;
+  } else if (drawnIdle) {
+    sy = 1;
   } else {
     sy = 1 + BREATH * Math.sin(2 * Math.PI * 1.2 * (t + phase));
   }
@@ -35,6 +38,17 @@ export function motionPose({ t, phase, moving, attack, hurt, drawnWalk = false }
   return { y, sx: 1 / sy, sy, tilt };
 }
 
-/** altura do parceiro em cena por estágio: as evoluções ficam um pouco maiores a cada estágio */
-const STAGE_HEIGHT: Record<string, number> = { child: 2, adult: 2.3, perfect: 2.55, ultimate: 2.8 };
-export function playerHeightFor(stage: string): number { return STAGE_HEIGHT[stage] ?? 2; }
+/** altura do Child (Rookie) em cena; cada estágio acima fica 25% maior que o anterior */
+export const CHILD_HEIGHT = 2;
+export const STAGE_GROWTH = 1.25;
+const STAGE_ORDER = ['child', 'adult', 'perfect', 'ultimate'];
+const stageIndex = (stage: string) => Math.max(0, STAGE_ORDER.indexOf(stage));
+/** altura do parceiro em cena por estágio: Child 2 → Adult 2,5 → Perfect 3,125 → Ultimate ≈ 3,9 */
+export function playerHeightFor(stage: string): number {
+  return CHILD_HEIGHT * STAGE_GROWTH ** stageIndex(stage);
+}
+/** inimigos: o Child fica no tamanho de hoje; cada estágio acima, +15% sobre o anterior */
+export const ENEMY_STAGE_GROWTH = 1.15;
+export function enemyStageScale(stage: string | undefined): number {
+  return ENEMY_STAGE_GROWTH ** stageIndex(stage ?? 'child');
+}

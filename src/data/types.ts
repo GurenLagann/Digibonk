@@ -51,8 +51,8 @@ export interface CardDef {
   forPartners?: string[];
 }
 export interface ItemDef { id: string; name: string; kind: 'digiegg' | 'fusion' | 'egg'; forPartners?: string[]; unlockPartner?: string; requiresUnlocked?: string[] }
-export interface EnemyDef { id: string; name: string; attribute: AttributeId; element: ElementId; hp: number; dmg: number; speed: number; xp: number; size: number; color: number; minPhase: number }
-export interface BossDef { id: string; name: string; attribute: AttributeId; element: ElementId; phase: number; hp: number; dmg: number; speed: number; size: number; color: number; moves: string[] }
+export interface EnemyDef { id: string; name: string; attribute: AttributeId; element: ElementId; hp: number; dmg: number; speed: number; xp: number; size: number; color: number; minPhase: number; stage: string }
+export interface BossDef { id: string; name: string; attribute: AttributeId; element: ElementId; phase: number; hp: number; dmg: number; speed: number; size: number; color: number; stage: string; moves: string[] }
 
 export type RelicEffect = 'regen' | 'pickup' | 'xp' | 'elite' | 'revive' | 'digidata';
 /** relíquia da Zona Digital: +statPct% num status e um efeito (value: ver src/sim/relics.ts) */

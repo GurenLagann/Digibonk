@@ -2,14 +2,12 @@
 import { CARDS, FORMS, ITEMS, PARTNERS } from '../../src/data/generated/gamedata.ts';
 import type { EvoReq } from '../../src/data/types.ts';
 
-export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: string[]; source: number }
+export interface SpriteInfo { file: string; frameW: number; frameH: number; frames: string[]; source: number; defaults?: string[]; cols?: number }
 export type SpriteState = 'done' | 'adjust' | 'partial' | 'idle' | 'none';
 
 /** folhas que existem mas têm defeitos conhecidos (revisar quando as folhas novas chegarem) */
-export const SPRITE_ADJUST: Record<string, string> = {
-  omnimon: 'diagonais da corrida', exveemon: 'diagonais da corrida',
-  gallantmon: 'linha de costas da corrida cortada',
-};
+// (omnimon, exveemon e gallantmon saíram em 2026-11-10: as folhas com defeito foram trocadas pelas da grade)
+export const SPRITE_ADJUST: Record<string, string> = {};
 
 export function spriteStatus(id: string, s: SpriteInfo | undefined): { st: SpriteState; note: string } {
   if (!s) return { st: 'none', note: 'sem sprite (círculo no jogo)' };
@@ -17,7 +15,10 @@ export function spriteStatus(id: string, s: SpriteInfo | undefined): { st: Sprit
   const fr = s.frames;
   const walk = fr.some(f => f.startsWith('walk')), run = fr.some(f => f.startsWith('run')), diag = fr.some(f => f.includes('diag'));
   if (!walk) return { st: 'idle', note: `só parado (${fr.length} quadros)` };
-  if (run && diag) return { st: 'done', note: `${fr.length} quadros, 8 direções` };
+  // dano/morte/parado ainda não desenhados: o jogo usa um quadro padrão, mas fica marcado como parcial
+  const falta = [s.defaults?.includes('idle') ? 'parado' : '', fr.some(f => f.startsWith('hurt')) ? '' : 'dano', fr.some(f => f.startsWith('death')) ? '' : 'morte'].filter(Boolean);
+  if (run && diag && !falta.length) return { st: 'done', note: `${fr.length} quadros, 8 direções` };
+  if (run && diag) return { st: 'partial', note: `${fr.length} quadros, 8 direções; falta ${falta.join(', ')}` };
   return { st: 'partial', note: `${fr.length} quadros${diag ? '' : ', sem diagonais'}${run ? '' : ', sem corrida'}` };
 }
 
