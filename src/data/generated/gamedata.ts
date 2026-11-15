@@ -1,6 +1,6 @@
 // GERADO por tools/db/export.ts a partir de db/migrations + db/seeds — não editar à mão.
 // Para mudar dados: edite o seed (db/seeds) e rode `npm run db:build`.
-import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, MoveDef, PartnerDef, RelicDef } from '../types';
+import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, LabUpgradeDef, MoveDef, PartnerDef, RelicDef } from '../types';
 
 export const MOVES: Record<string, MoveDef> = {
  "baby_flame": {
@@ -5726,5 +5726,48 @@ export const RELICS: Record<string, RelicDef> = {
   "statPct": 6,
   "effect": "elite",
   "value": 35
+ }
+};
+export const LAB_UPGRADES: Record<string, LabUpgradeDef> = {
+ "lab_reroll": {
+  "id": "lab_reroll",
+  "name": "Atualizar+",
+  "description": "Mais atualizações de opções por partida.",
+  "effect": "reroll",
+  "costs": [
+   100,
+   250,
+   500
+  ]
+ },
+ "lab_skip": {
+  "id": "lab_skip",
+  "name": "Pular+",
+  "description": "Mais pulos de escolha por partida.",
+  "effect": "skip",
+  "costs": [
+   100,
+   250,
+   500
+  ]
+ },
+ "lab_ban": {
+  "id": "lab_ban",
+  "name": "Banir+",
+  "description": "Mais banimentos de opções por partida.",
+  "effect": "ban",
+  "costs": [
+   150,
+   400
+  ]
+ },
+ "lab_offer": {
+  "id": "lab_offer",
+  "name": "Quarta opção",
+  "description": "Cada escolha mostra uma opção a mais.",
+  "effect": "offer",
+  "costs": [
+   800
+  ]
  }
 };

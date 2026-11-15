@@ -92,7 +92,11 @@ export function exportGameData(db: Db) {
   const RELICS = Object.fromEntries(all('SELECT * FROM relics ORDER BY ord').map(r => [r.id, {
     id: r.id, name: r.name, description: r.description, stat: r.stat, statPct: r.stat_pct, effect: r.effect, value: r.effect_value }]));
 
-  return { FORMS, MOVES, CARDS, ITEMS, PARTNERS, ENEMIES, MINIBOSSES, BOSSES, ATTRIBUTE_CHART, ELEMENT_CHART, RELICS };
+  const LAB_UPGRADES = Object.fromEntries(all('SELECT * FROM lab_upgrades ORDER BY ord').map(u => [u.id, {
+    id: u.id, name: u.name, description: u.description, effect: u.effect,
+    costs: all('SELECT cost FROM lab_upgrade_costs WHERE upgrade_id = ? ORDER BY level', u.id).map(c => c.cost) }]));
+
+  return { FORMS, MOVES, CARDS, ITEMS, PARTNERS, ENEMIES, MINIBOSSES, BOSSES, ATTRIBUTE_CHART, ELEMENT_CHART, RELICS, LAB_UPGRADES };
 }
 
 export const GENERATED = 'src/data/generated/gamedata.ts';
@@ -103,7 +107,7 @@ export function exportToFile(db: Db, path = GENERATED): string {
   const j = (v: unknown) => JSON.stringify(v, null, 1);
   const src = `// GERADO por tools/db/export.ts a partir de db/migrations + db/seeds — não editar à mão.
 // Para mudar dados: edite o seed (db/seeds) e rode \`npm run db:build\`.
-import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, MoveDef, PartnerDef, RelicDef } from '../types';
+import type { AttributeId, BossDef, CardDef, ElementId, EnemyDef, FormDef, ItemDef, LabUpgradeDef, MoveDef, PartnerDef, RelicDef } from '../types';
 
 export const MOVES: Record<string, MoveDef> = ${j(g.MOVES)};
 export const FORMS: Record<string, FormDef> = ${j(g.FORMS)};
@@ -116,6 +120,7 @@ export const BOSSES: BossDef[] = ${j(g.BOSSES)};
 export const ATTRIBUTE_CHART: Record<AttributeId, Record<AttributeId, number>> = ${j(g.ATTRIBUTE_CHART)};
 export const ELEMENT_CHART: Record<ElementId, Record<ElementId, number>> = ${j(g.ELEMENT_CHART)};
 export const RELICS: Record<string, RelicDef> = ${j(g.RELICS)};
+export const LAB_UPGRADES: Record<string, LabUpgradeDef> = ${j(g.LAB_UPGRADES)};
 `;
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, src);

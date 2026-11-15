@@ -55,3 +55,16 @@ test('an enemy pointing at a missing Digimon fails the export with its id (even 
   d.exec("INSERT INTO enemies (digimon_id, role, hp, dmg, speed, xp, size, min_phase, ord) VALUES ('numemon', 'enemy', 1, 1, 1, 1, 1, 1, 99)");
   expect(() => exportGameData(d)).toThrow(/numemon/);
 });
+
+test('Laboratório: 4 melhorias com preços por nível', () => {
+  const full = openDb(':memory:');
+  migrate(full, 'db/migrations');
+  seed(full, 'db/seeds'); // todos os seeds: o Laboratório vem depois da migração
+  const gl = exportGameData(full) as any;
+  expect(Object.values(gl.LAB_UPGRADES).map((u: any) => [u.id, u.effect, u.costs])).toEqual([
+    ['lab_reroll', 'reroll', [100, 250, 500]],
+    ['lab_skip', 'skip', [100, 250, 500]],
+    ['lab_ban', 'ban', [150, 400]],
+    ['lab_offer', 'offer', [800]],
+  ]);
+});

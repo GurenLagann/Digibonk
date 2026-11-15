@@ -57,3 +57,6 @@ export interface BossDef { id: string; name: string; attribute: AttributeId; ele
 export type RelicEffect = 'regen' | 'pickup' | 'xp' | 'elite' | 'revive' | 'digidata';
 /** relíquia da Zona Digital: +statPct% num status e um efeito (value: ver src/sim/relics.ts) */
 export interface RelicDef { id: string; name: string; description: string; stat: 'hp' | 'atk' | 'def' | 'spd'; statPct: number; effect: RelicEffect; value: number }
+export type LabEffect = 'reroll' | 'skip' | 'ban' | 'offer';
+/** melhoria do Laboratório (comprada com Cristais): costs[i] = preço do nível i+1; costs.length = nível máximo */
+export interface LabUpgradeDef { id: string; name: string; description: string; effect: LabEffect; costs: number[] }
