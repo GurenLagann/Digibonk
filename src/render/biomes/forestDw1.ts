@@ -151,7 +151,8 @@ export function buildForestDw1(): BiomeView {
   group.add(instanced(bag, 'border-dead', deadGeometry(bag), deadMat, dead), instanced(bag, 'border-giant', giantGeometry(bag), barkMat, giantMats));
 
   // decoração baixa sem colisão (semente fixa, ≥ 2 dos obstáculos)
-  const free = (x: number, z: number) => Math.abs(x) <= H - 1 && Math.abs(z) <= H - 1 && MAP_OBSTACLES.every(o => Math.hypot(o.x - x, o.z - z) - o.r >= 2.05);
+  // fora do ponto de nascimento (raio 4 em volta de 0,0) e longe dos obstáculos
+  const free = (x: number, z: number) => Math.abs(x) <= H - 1 && Math.abs(z) <= H - 1 && Math.hypot(x, z) >= 4 && MAP_OBSTACLES.every(o => Math.hypot(o.x - x, o.z - z) - o.r >= 2.05);
   const scatter = (n: number, fn: (x: number, z: number) => THREE.Matrix4) => {
     const out: THREE.Matrix4[] = [];
     for (let tries = 0; out.length < n && tries < n * 20; tries++) {

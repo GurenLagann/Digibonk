@@ -71,6 +71,8 @@ test.each(IDS)('%s: decoração afastada ≥ 2 dos obstáculos e igual a cada mo
   expect(pa.length).toBeGreaterThan(50);
   expect(pos(b)).toEqual(pa);
   for (const [x, z] of pa) for (const o of MAP_OBSTACLES) expect(Math.hypot(o.x - x, o.z - z) - o.r).toBeGreaterThanOrEqual(2);
+  // ponto de nascimento (0,0) livre: nada de toco/moita debaixo do parceiro
+  for (const [x, z] of pa) expect(Math.hypot(x, z)).toBeGreaterThanOrEqual(4);
   a.dispose(); b.dispose();
 });
 
