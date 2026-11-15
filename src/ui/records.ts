@@ -39,7 +39,7 @@ export function showRecords(root: HTMLElement, save: SaveData, back: () => void)
       portrait(child, { size: 48 }),
       h('strong', { class: 'rec-name' }, FORMS[child].name),
       h('span', { class: 'rec-medal', title: medal ?? 'sem medalha' }, medal ? MEDAL_ICON[medal] : '—'),
-      stat('Melhor tempo', fmtClock(r.bestTime)), stat('Vitórias', r.wins), stat('Partidas', r.runs), stat('Abates', r.bestKills));
+      stat('Melhor tempo', fmtClock(r.bestTime)), stat('Melhor fase', r.bestPhase), stat('Vitórias', r.wins), stat('Partidas', r.runs), stat('Abates', r.bestKills));
   };
 
   let sort: RecordSort = 'time';
