@@ -1,0 +1,13 @@
+{
+  "floresta-dw1/grama.webp":        { "fonte": "public/cenarios_dw1/MAYO03_0.webp",  "x": 420,  "y": 400,  "w": 180, "h": 180 },
+  "floresta-dw1/grama-escura.webp": { "fonte": "public/cenarios_dw1/MAYO02_0.webp",  "x": 165,  "y": 250,  "w": 140, "h": 140 },
+  "floresta-dw1/copa.webp":         { "fonte": "public/cenarios_dw1/MAYO04B_0.webp", "x": 10,   "y": 480,  "w": 150, "h": 150 },
+  "floresta-dw1/casca.webp":        { "fonte": "public/cenarios_dw1/MAYO04B_0.webp", "x": 390,  "y": 545,  "w": 70,  "h": 70 },
+  "floresta-dw1/pedra.webp":        { "fonte": "public/cenarios_dw1/MAYO00_0.webp",  "x": 5,    "y": 20,   "w": 110, "h": 110 },
+  "floresta-dw3/grama.webp":        { "fonte": "public/cenarios_dw3/S350.webp",      "x": 40,   "y": 600,  "w": 160, "h": 160 },
+  "floresta-dw3/trilha.webp":       { "fonte": "public/cenarios_dw3/S400.webp",      "x": 1452, "y": 240,  "w": 50,  "h": 40 },
+  "floresta-dw3/pinheiro.webp":     { "fonte": "public/cenarios_dw3/S350.webp",      "x": 1150, "y": 600,  "w": 160, "h": 160 },
+  "floresta-dw3/casca.webp":        { "fonte": "public/cenarios_dw3/S400.webp",      "x": 432,  "y": 703,  "w": 44,  "h": 10 },
+  "floresta-dw3/penhasco.webp":     { "fonte": "public/cenarios_dw3/S400.webp",      "x": 1580, "y": 250,  "w": 110, "h": 100 },
+  "floresta-dw3/metal.webp":        { "fonte": "public/cenarios_dw3/S350.webp",      "x": 490,  "y": 530,  "w": 22,  "h": 60 }
+}
