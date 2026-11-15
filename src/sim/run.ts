@@ -2,7 +2,7 @@ import { createRng, type Rng } from '../core/rng';
 import { labBonuses } from '../core/lab';
 import { storeSave, type SaveData } from '../core/save';
 import { CARDS } from '../data/cards';
-import { BOSSES, MINIBOSSES } from '../data/enemies';
+import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { ITEMS } from '../data/items';
 import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
@@ -24,7 +24,7 @@ import { logDamage, newDamageLog, type DamageLog } from './damage';
 import { applyJogress, jogressPairs } from './jogress';
 import { medalFor, MEDAL_ORDER, type Medal } from '../core/medals';
 import { placeAltars, rollTrades, type Altar, type AltarKind, type Trade } from './altars';
-import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
+import { clampToArena, openPortal, relicChoices, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
 import type { StatKey } from '../data/types';
 
 export interface InputState { mx: number; mz: number }
@@ -33,7 +33,7 @@ export type RunEvent =
   | { type: 'overtime' } | { type: 'phaseCleared'; phase: number } | { type: 'victory' } | { type: 'defeat' }
   | { type: 'cardFound'; cardId: string } | { type: 'itemFound'; itemId: string } | { type: 'partnerUnlocked'; partnerId: string }
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
-  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number; kind: Chest['kind'] } | { type: 'chestLocked'; missing: number } | { type: 'playerHit'; dmg: number }
+  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number; kind: Chest['kind'] } | { type: 'chestLocked'; missing: number } | { type: 'ambush' } | { type: 'ambushCleared' } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
   | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
@@ -72,6 +72,8 @@ export interface RunState {
   reviveUsed: boolean;
   /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
   portals: Portal[]; zone: ZoneState | null; relicOffer: string[] | null;
+  /** emboscada do baú amaldiçoado: ids dos Bakemon vivos (no pool do mapa) */
+  ambush: { ids: number[] } | null;
   /** Jogress de golpes: Terminal no mapa, pares oferecidos (espaços) e se já foi usado nesta partida */
   /** Altares: os da fase, a escolha aberta, Corrupção acumulada e o guardião do Desafio */
   altars: Altar[]; altarOffer: { altarId: number; kind: AltarKind; trades?: Trade[] } | null; altarAway: number | null;
@@ -102,7 +104,7 @@ function setupPhase(r: RunState, n: number) {
   r.combat.projectiles.length = 0; r.combat.areas.length = 0; r.combat.hostiles.length = 0; r.combat.bosses.clear();
   r.px = 0; r.pz = 0;
   r.director = { pool: r.pool, phase: n, t: 0, acc: 0, px: 0, pz: 0 };
-  r.chests = placeChests(n, r.rng); r.portals = []; r.jogressSpot = null;
+  r.chests = placeChests(n, r.rng); r.ambush = null; r.portals = []; r.jogressSpot = null;
   r.altars = placeAltars(n, r.dataRng); r.altarAway = null;
   if (r.phase.mission.kind === 'collect') for (const p of r.phase.mission.points) r.pickups.push({ id: r.nextPickupId++, x: p.x, z: p.z, kind: 'fragment', value: 1 });
   placeDigiData(r);
@@ -152,7 +154,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, ambush: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -215,6 +217,38 @@ function lootRoll(r: RunState, alsoOwned: string[] = []): { kind: 'card' | 'item
 
 function spawnPickup(r: RunState, x: number, z: number, roll: { kind: 'card' | 'item' | 'heal'; ref?: string }) {
   r.pickups.push({ id: r.nextPickupId++, x, z, kind: roll.kind, value: 0, ref: roll.ref });
+}
+
+/** anel de Bakemon fortes ao redor do jogador */
+function startAmbush(r: RunState, ev: RunEvent[]) {
+  const def = ENEMIES.find(e => e.id === 'bakemon')!;
+  const d = difficulty(r.phase.phase, r.phase.t);
+  const ids: number[] = [];
+  const a0 = r.rng.next() * Math.PI * 2;
+  for (let i = 0; i < T.CURSED.COUNT; i++) {
+    const a = a0 + (i / T.CURSED.COUNT) * Math.PI * 2;
+    const x = clamp(r.px + Math.cos(a) * T.CURSED.RADIUS, -T.MAP_HALF, T.MAP_HALF);
+    const z = clamp(r.pz + Math.sin(a) * T.CURSED.RADIUS, -T.MAP_HALF, T.MAP_HALF);
+    const e = r.pool.spawn(def, x, z, { hp: d.hpMul * T.CURSED.HP, dmg: d.dmgMul * T.CURSED.DMG });
+    if (e) ids.push(e.id);
+  }
+  if (!ids.length) return;
+  r.ambush = { ids };
+  ev.push({ type: 'ambush' });
+}
+
+/** fim da emboscada: relíquia (ou carta rara) e Bits */
+function stepAmbush(r: RunState, ev: RunEvent[]) {
+  const a = r.ambush!;
+  a.ids = a.ids.filter(id => r.pool.get(id)); // ids mortos saem (o pool reaproveita ids)
+  if (a.ids.length) return;
+  r.ambush = null;
+  ev.push({ type: 'ambushCleared' });
+  r.bits += T.CURSED.BITS_PER_PHASE * r.phase.phase;
+  const offer = relicChoices(r, 3);
+  if (offer.length) { r.relicOffer = offer; return; }
+  const rares = Object.values(CARDS).filter(c => c.kind === 'rare' && (c.forPartners ?? []).includes(r.partnerId) && !r.prog.items.includes(c.id));
+  spawnPickup(r, r.px, r.pz, rares.length ? { kind: 'card', ref: r.rng.pick(rares).id } : { kind: 'heal' });
 }
 
 function needsChoice(r: RunState, cardId: string): boolean {
@@ -327,17 +361,20 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     if (c.opened) continue;
     const inside = Math.hypot(c.x - r.px, c.z - r.pz) <= CHEST_RADIUS;
     const entered = inside && !c.near; c.near = inside;
-    if (!inside || c.kind === 'cursed') continue; // amaldiçoado: Task 6
+    if (!inside) continue;
     if (c.kind === 'paid') {
       const price = chestPrice(r.chestsBought);
       if (r.bits < price) { if (entered) ev.push({ type: 'chestLocked', missing: price - r.bits }); continue; }
       r.bits -= price; r.chestsBought++;
     }
     c.opened = true; ev.push({ type: 'chestOpened', x: c.x, z: c.z, kind: c.kind });
+    if (c.kind === 'cursed') { startAmbush(r, ev); continue; }
     const eggs = c.kind === 'paid' ? eggsForPartner(r.partnerId, r.prog.items) : [];
     if (eggs.length && r.rng.next() < T.CHESTS.EGG_CHANCE) spawnPickup(r, c.x, c.z, { kind: 'item', ref: r.rng.pick(eggs) });
     else spawnPickup(r, c.x, c.z, lootRoll(r));
   }
+
+  if (!r.zone && r.ambush) stepAmbush(r, ev);
 
   // Zona Digital: dentro, ondas/Alfa/saída; fora, portais
   if (r.zone) stepZone(r, dt, ev, extra => { for (let k = 0; k < 1 + extra + relicEffects(r.prog).digidata; k++) collectDigiData(r, ev); });

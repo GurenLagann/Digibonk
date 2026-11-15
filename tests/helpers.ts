@@ -23,11 +23,12 @@ export function maxedProg(formId: string): PlayerProg {
   return p;
 }
 
-import { chooseBlind, chooseOffer, resolveCard, type RunState } from '../src/sim/run';
+import { chooseBlind, chooseOffer, chooseRelic, resolveCard, type RunState } from '../src/sim/run';
 export function autoResolveModals(r: RunState) {
   if (r.offers) chooseOffer(r, 0);
   if (r.pendingCard) resolveCard(r, { passiveSlot: null });
   if (r.blindChoice) chooseBlind(r, 0);
+  if (r.relicOffer) chooseRelic(r, 0);
 }
 export const circleInput = (i: number) => ({ mx: Math.cos(i / 120), mz: Math.sin(i / 120) });
 

@@ -97,6 +97,15 @@ function spawnAlpha(r: RunState, ev: RunEvent[]) {
   ev.push({ type: 'zoneAlpha', name: def.name });
 }
 
+/** oferta de até `n` relíquias ainda não tidas; vazia se os espaços estão cheios ou não resta nenhuma */
+export function relicChoices(r: RunState, n: number): string[] {
+  const free = RELIC_LIST.filter(x => !r.prog.relics.includes(x.id));
+  if (r.prog.relics.length >= RELIC_SLOTS || !free.length) return [];
+  const pick: string[] = [];
+  while (pick.length < Math.min(n, free.length)) { const c = r.rng.pick(free).id; if (!pick.includes(c)) pick.push(c); }
+  return pick;
+}
+
 /** dentro da arena, depois do combate: ondas, Alfa, recompensa e saída. `reward` revela o Digi Data (run.ts) */
 export function stepZone(r: RunState, dt: number, ev: RunEvent[], reward: (extra: number) => void): void {
   const z = r.zone!;
@@ -111,12 +120,8 @@ export function stepZone(r: RunState, dt: number, ev: RunEvent[], reward: (extra
     const alpha = z.alphaId !== null ? r.pool.get(z.alphaId) : undefined;
     if (!alpha) {
       reward(z.rare ? 1 : 0);
-      const free = RELIC_LIST.filter(x => !r.prog.relics.includes(x.id));
-      if (r.prog.relics.length < RELIC_SLOTS && free.length) {
-        const pick: string[] = [];
-        while (pick.length < Math.min(z.rare ? 4 : 3, free.length)) { const c = r.rng.pick(free).id; if (!pick.includes(c)) pick.push(c); }
-        r.relicOffer = pick;
-      }
+      const pick = relicChoices(r, z.rare ? 4 : 3);
+      if (pick.length) r.relicOffer = pick;
       finish(r, ev, true);
     } else if (z.alphaT <= 0) {
       r.pool.clearAll();

@@ -51,12 +51,6 @@ test('baú grátis abre sem Bits e não muda chestsBought', () => {
   stepRun(r, idle, 1 / 60);
   expect(c.opened).toBe(true); expect(r.chestsBought).toBe(0); expect(r.bits).toBe(0);
 });
-test('baú amaldiçoado não abre nesta tarefa', () => {
-  const r = mk(); r.bits = 999;
-  const c = r.chests.find(x => x.kind === 'cursed')!; goTo(r, c);
-  stepRun(r, idle, 1 / 60);
-  expect(c.opened).toBe(false);
-});
 test('eggsForPartner', () => {
   const v = eggsForPartner('veemon', []);
   expect(v).toEqual(expect.arrayContaining(['digiegg_courage', 'digiegg_friendship', 'digiegg_miracles']));

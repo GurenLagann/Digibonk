@@ -49,6 +49,8 @@ export const T = {
   BITS: { DROP_CHANCE: 0.05, PER_PHASE: 1, GUARDIAN_PER_PHASE: 25, BOSS_PER_PHASE: 60 },
   /** baús do mapa: 2 grátis + 6 pagos (preço sobe a cada compra) + 1 amaldiçoado */
   CHESTS: { FREE: 2, PAID: 6, PRICES: [20, 35, 55, 80, 110, 145, 185, 230], PRICE_STEP: 50, EGG_CHANCE: 0.05 },
+  /** baú amaldiçoado: emboscada de Bakemon (vida/dano × o normal) e prêmio em Bits (× fase) */
+  CURSED: { COUNT: 12, RADIUS: 9, HP: 2.5, DMG: 1.5, BITS_PER_PHASE: 40 },
   PICKUP: { MAGNET: 4, PULL_START: 6, PULL_ACCEL: 40 },
   CAMERA: {
     DIST: 8, LOOK_HEIGHT: 1.4, PITCH: 0.38, PITCH_MIN: 0.15, PITCH_MAX: 0.8, FOV: 60,
