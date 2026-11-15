@@ -60,3 +60,16 @@ test('horizontalHalfFov usa o aspect da câmera', () => {
   const v = (T.CAMERA.FOV / 2) * (Math.PI / 180);
   expect(o.horizontalHalfFov()).toBeCloseTo(Math.atan(Math.tan(v) * (16 / 9)));
 });
+
+test('follow com altura do chão: sobe câmera e alvo; com dt suaviza, sem dt encaixa', () => {
+  const o = make();
+  o.follow(0, 0);
+  const y0 = o.camera.position.y;
+  o.follow(0, 0, 2);
+  expect(o.camera.position.y).toBeCloseTo(y0 + 2);
+  o.follow(0, 0, 0, 1 / 60);
+  expect(o.camera.position.y).toBeGreaterThan(y0);
+  expect(o.camera.position.y).toBeLessThan(y0 + 2);
+  for (let i = 0; i < 120; i++) o.follow(0, 0, 0, 1 / 60);
+  expect(o.camera.position.y).toBeCloseTo(y0, 2);
+});

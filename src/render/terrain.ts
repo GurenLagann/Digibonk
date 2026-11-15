@@ -27,13 +27,13 @@ function waves(seed: number, minLen: number, maxLen: number, count = 4) {
   return (x: number, z: number) => comps.reduce((s, c) => s + c.w * Math.sin(c.kx * x + c.kz * z + c.ph), 0) / total;
 }
 
-/** colinas suaves de até `amp`; metade do mapa fica no plano 0 */
+/** colinas suaves de até `amp`; vales (≈ 1/4 do mapa) ficam no plano 0 */
 export function hills(seed: number, amp: number): HeightFn {
-  const n = waves(seed, 70, 110);
+  const n = waves(seed, 35, 60);
   return (x, z) => {
     const m = mask(x, z);
     if (m === 0) return 0;
-    return amp * smooth(n(x, z) * 1.4) * m;
+    return amp * smooth((n(x, z) + 0.45) * 1.1) * m;
   };
 }
 

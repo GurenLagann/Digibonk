@@ -9,6 +9,7 @@ import { deathFrame, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFra
 import { enableInstanceFrames, setInstanceFrame } from './instanceFrames';
 import { viewFacing } from '../core/view';
 import { footPads, keepsFloating, readPixels } from './footPad';
+import { groundY } from './terrain';
 
 const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -131,11 +132,11 @@ export class Billboards {
         if (FLIP_SPRITES && v.right && (mirrorsWithDir(v.facing) || !verticalRole(role))) flip = -1;
       }
       const pose = motionPose({ t: time, phase, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
-      this.m.compose(this.p.set(e.x, (pose.y - pad * pose.sy) * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
+      this.m.compose(this.p.set(e.x, groundY(e.x, e.z) + (pose.y - pad * pose.sy) * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
       if (sh < T.MAX_ENEMIES + 31) {
-        this.m.compose(this.p.set(e.x, 0.02, e.z), this.ident, this.s.set(e.size, 1, e.size * 0.6));
+        this.m.compose(this.p.set(e.x, groundY(e.x, e.z) + 0.02, e.z), this.ident, this.s.set(e.size, 1, e.size * 0.6));
         this.shadows.setMatrixAt(sh++, this.m);
       }
     }
@@ -185,11 +186,11 @@ export class Billboards {
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
       : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)), drawnIdle: this.playerFrames.some(f => /^stand/.test(f)) });
-    this.player.position.set(run.px, (pose.y - pad * pose.sy) * this.playerHeight, run.pz);
+    this.player.position.set(run.px, groundY(run.px, run.pz) + (pose.y - pad * pose.sy) * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
     mat.color.copy(c.invuln > 0.35 && !death ? this.flash : this.white);
-    this.m.compose(this.p.set(run.px, 0.02, run.pz), this.ident, this.s.set(f.size, 1, f.size * 0.6));
+    this.m.compose(this.p.set(run.px, groundY(run.px, run.pz) + 0.02, run.pz), this.ident, this.s.set(f.size, 1, f.size * 0.6));
     this.shadows.setMatrixAt(sh++, this.m);
     this.shadows.count = sh;
     this.shadows.instanceMatrix.needsUpdate = true;

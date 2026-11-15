@@ -14,10 +14,10 @@ test.each(GENS)('%s: limites, nascimento plano, longe plano, determinístico', (
   expect(f(37.3, -12.1)).toBe(f(37.3, -12.1));
 });
 
-test('hills: inclinação suave (≤ 0,45)', () => {
+test('hills: inclinação suave (≤ 0,6)', () => {
   const f = hills(7, 1.8), e = 0.25; let worst = 0;
   grid((x, z) => { worst = Math.max(worst, Math.abs(f(x + e, z) - f(x, z)) / e, Math.abs(f(x, z + e) - f(x, z)) / e); }, 1.7);
-  expect(worst).toBeLessThanOrEqual(0.45);
+  expect(worst).toBeLessThanOrEqual(0.6);
 });
 
 test('terraces: maioria num nível exato, com mais de um nível', () => {

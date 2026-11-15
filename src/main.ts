@@ -14,6 +14,7 @@ import { T } from './data/tuning';
 import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
 import { BIOME_NAMES } from './render/biomes';
+import { groundY } from './render/terrain';
 import { createScene } from './render/scene';
 import { OrbitCamera } from './render/camera';
 import { rotateByYaw } from './core/view';
@@ -249,9 +250,10 @@ function frame(now: number) {
   hadModal = modal;
   const t = now / 1000;
   if (run) {
-    orbit.follow(run.px, run.pz);
+    const gy = groundY(run.px, run.pz);
+    orbit.follow(run.px, run.pz, gy, dt);
     map.sync(run, t);
-    map.update(t, camera.position, partnerPos.set(run.px, 1, run.pz));
+    map.update(t, camera.position, partnerPos.set(run.px, gy + 1, run.pz));
     boards.sync(run, t, orbit.yaw);
     vfx.sync(run, events, Math.min(dt, 0.25), t);
     hud.update(run);

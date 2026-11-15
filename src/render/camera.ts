@@ -20,10 +20,16 @@ export class OrbitCamera {
     this.pitch = Math.min(C.PITCH_MAX, Math.max(C.PITCH_MIN, this.pitch + dy));
   }
 
-  follow(x: number, z: number): void {
-    const h = Math.cos(this.pitch) * C.DIST;
-    this.camera.position.set(x + Math.sin(this.yaw) * h, C.LOOK_HEIGHT + Math.sin(this.pitch) * C.DIST, z + Math.cos(this.yaw) * h);
-    this.camera.lookAt(x, C.LOOK_HEIGHT, z);
+  /** altura do chão suavizada (degraus/rampas não dão tranco); null = ainda não seguiu ninguém */
+  private gy: number | null = null;
+
+  /** y = altura do chão no parceiro; com dt, a altura acompanha suave (~10/s); sem dt (ou salto > 5), encaixa */
+  follow(x: number, z: number, y = 0, dt?: number): void {
+    if (dt === undefined || this.gy === null || Math.abs(y - this.gy) > 5) this.gy = y;
+    else this.gy += (y - this.gy) * Math.min(1, dt * 10);
+    const h = Math.cos(this.pitch) * C.DIST, gy = this.gy;
+    this.camera.position.set(x + Math.sin(this.yaw) * h, gy + C.LOOK_HEIGHT + Math.sin(this.pitch) * C.DIST, z + Math.cos(this.yaw) * h);
+    this.camera.lookAt(x, gy + C.LOOK_HEIGHT, z);
   }
 
   reset(): void {

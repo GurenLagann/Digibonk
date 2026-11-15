@@ -4,6 +4,7 @@ import type { RunState } from '../sim/run';
 import { BIOME_IDS, biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
 import { ALTAR_DIGIMON, ALTAR_HEIGHT, altarFrame, contentBand } from './altarSprite';
 import { readPixels } from './footPad';
+import { groundY, setGround } from './terrain';
 import { frameIndex, frameOffset, sheetGrid, type SpriteLibrary } from './sprites';
 
 export interface SceneLights { hemi: THREE.HemisphereLight; sun: THREE.DirectionalLight }
@@ -113,7 +114,7 @@ export class MapView {
       const p = run.portals[i];
       g.visible = !!p && !run.zone;
       if (!p) return;
-      g.position.set(p.x, 0, p.z);
+      g.position.set(p.x, groundY(p.x, p.z), p.z);
       const c = PORTAL_COLORS[p.attr] ?? 0xffffff;
       for (const m of g.children) ((m as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(c);
       g.rotation.y = time * 1.8;
@@ -122,7 +123,7 @@ export class MapView {
     });
     const ex = run.zone?.exit;
     this.exitPortal.visible = !!ex && run.relicOffer === null;
-    if (ex) { this.exitPortal.position.set(ex.x, 0, ex.z); this.exitPortal.rotation.y = time * 1.8; }
+    if (ex) { this.exitPortal.position.set(ex.x, groundY(ex.x, ex.z), ex.z); this.exitPortal.rotation.y = time * 1.8; }
     // altares da fase: o Digimon (Etemon, Datamon, Ogremon no Desafio) parado no mapa como NPC; usado fica cinza e para
     const ak = run.altars.map(a => a.id).join(',');
     if (ak !== this.altarKey) {
@@ -147,7 +148,7 @@ export class MapView {
           crystal.position.y = 1.2;
           g.add(crystal);
         }
-        g.position.set(a.x, 0, a.z);
+        g.position.set(a.x, groundY(a.x, a.z), a.z);
         this.scene.add(g); this.altarMeshes.set(a.id, g);
       }
     }
@@ -167,7 +168,7 @@ export class MapView {
     }
     const js = run.jogressSpot;
     this.terminal.visible = !!js && !run.zone;
-    if (js) { this.terminal.position.set(js.x, 0, js.z); this.terminal.rotation.y = time * 2; this.terminal.children[1].rotation.x = time * 3; }
+    if (js) { this.terminal.position.set(js.x, groundY(js.x, js.z), js.z); this.terminal.rotation.y = time * 2; this.terminal.children[1].rotation.x = time * 3; }
     // dentro da arena: céu e nevoeiro escuros
     const z = !!run.zone;
     if (z !== this.inZone) { this.inZone = z; this.applySky(); }
@@ -188,6 +189,7 @@ export class MapView {
     if (this.view) { this.scene.remove(this.view.group); this.view.dispose(); }
     this.biomeId = id;
     this.view = buildBiome(id);
+    setGround(this.view.height);
     this.scene.add(this.view.group);
     this.applySky();
   }
@@ -228,17 +230,17 @@ export class MapView {
     if (key !== this.phaseKey || run !== this.lastRun) {
       this.lastRun = run;
       this.phaseKey = key;
-      this.altar.position.set(ph.bossAltar.x, 0, ph.bossAltar.z);
+      this.altar.position.set(ph.bossAltar.x, groundY(ph.bossAltar.x, ph.bossAltar.z), ph.bossAltar.z);
       for (const pt of this.points) this.scene.remove(pt);
       this.points = [];
       if (ph.mission.kind === 'activate') for (const p of ph.mission.points) {
         const ring = new THREE.Mesh(new THREE.RingGeometry(2.6, 3, 32), new THREE.MeshBasicMaterial({ color: 0x5affd8, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
-        ring.rotation.x = -Math.PI / 2; ring.position.set(p.x, 0.05, p.z); this.scene.add(ring); this.points.push(ring);
+        ring.rotation.x = -Math.PI / 2; ring.position.set(p.x, groundY(p.x, p.z) + 0.05, p.z); this.scene.add(ring); this.points.push(ring);
       }
       for (const c of this.chests.values()) this.scene.remove(c);
       this.chests.clear();
       for (const c of run.chests) {
-        const mesh = new THREE.Mesh(this.chestGeo, this.chestMat); mesh.position.set(c.x, 0.45, c.z); this.scene.add(mesh); this.chests.set(c.id, mesh);
+        const mesh = new THREE.Mesh(this.chestGeo, this.chestMat); mesh.position.set(c.x, groundY(c.x, c.z) + 0.45, c.z); this.scene.add(mesh); this.chests.set(c.id, mesh);
       }
     }
     for (const c of run.chests) { const m = this.chests.get(c.id); if (m) m.visible = !c.opened; }

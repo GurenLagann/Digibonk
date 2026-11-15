@@ -27,7 +27,7 @@
 ### Task 1: Geradores de altura (`src/render/terrain.ts`)
 **Interfaces — Produces:**
 - `type HeightFn = (x: number, z: number) => number`
-- `hills(seed: number, amp: number): HeightFn` (suave; inclinação ≤ 0.45)
+- `hills(seed: number, amp: number): HeightFn` (suave; inclinação ≤ 0.6)
 - `terraces(seed: number, step: number, levels: number, ramp: number): HeightFn` (valores em {0, step, 2·step…} exceto nas rampas)
 - `setGround(fn: HeightFn): void`, `groundY(x: number, z: number): number` (padrão: 0)
 - `isFlat(fn, x, z, halfW, halfD, rot): boolean` (cantos e centro do retângulo com a mesma altura ±0.01)

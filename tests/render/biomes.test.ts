@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { biomeForPhase, buildBiome } from '../../src/render/biomes';
 import { crownOccludes } from '../../src/render/biomes/common';
-import { isFlat } from '../../src/render/terrain';
+import { groundY, isFlat } from '../../src/render/terrain';
 import { MAP_OBSTACLES } from '../../src/sim/map';
 import { T } from '../../src/data/tuning';
 import { MapView } from '../../src/render/map';
@@ -29,7 +29,7 @@ test.each([['fabrica', 'tank', 'machine'], ['nucleo', 'gear', 'console']] as con
   expect(count(low)).toBe(rocks);
   for (const k of ['n', 's', 'e', 'w']) expect(b.group.children.some(c => c.name.startsWith('border-') && c.name.endsWith(`-${k}`) && (c as THREE.InstancedMesh).count > 5)).toBe(true);
   const o = MAP_OBSTACLES.find(x => x.kind === 'tree')!;
-  b.update(0, new THREE.Vector3(o.x, 4, o.z + 5), new THREE.Vector3(o.x, 1, o.z - 5));
+  b.update(0, new THREE.Vector3(o.x, b.height(o.x, o.z) + 4, o.z + 5), new THREE.Vector3(o.x, b.height(o.x, o.z) + 1, o.z - 5));
   expect(count(`${tall}-faded`)).toBeGreaterThanOrEqual(1);
   b.dispose();
 });
@@ -142,14 +142,14 @@ test('update troca copas entre opaca e transparente', () => {
   const o = MAP_OBSTACLES.find(x => x.kind === 'tree')!;
   const opaque = b.group.getObjectByName('tree-crown') as THREE.InstancedMesh;
   const faded = b.group.getObjectByName('tree-crown-faded') as THREE.InstancedMesh;
-  const target = new THREE.Vector3(o.x, 1, o.z - 5), cam = new THREE.Vector3(o.x, 4, o.z + 5);
+  const gy = b.height(o.x, o.z), target = new THREE.Vector3(o.x, gy + 1, o.z - 5), cam = new THREE.Vector3(o.x, gy + 4, o.z + 5);
   b.update(0, cam, target);
   expect(faded.count).toBeGreaterThanOrEqual(1);
   expect((faded.material as THREE.Material).opacity).toBeCloseTo(0.3, 1);
   expect(faded.visible).toBe(true);
   // a esfera de culling tem que ser recalculada com a copa nova (senão some no frustum)
   if (!faded.boundingSphere) faded.computeBoundingSphere();
-  expect(faded.boundingSphere!.containsPoint(new THREE.Vector3(o.x, 3, o.z))).toBe(true);
+  expect(faded.boundingSphere!.containsPoint(new THREE.Vector3(o.x, gy + 3, o.z))).toBe(true);
   b.update(0, new THREE.Vector3(500, 4, 500), new THREE.Vector3(500, 1, 492));
   expect(faded.count).toBe(0);
   expect(faded.visible).toBe(false);
@@ -186,7 +186,7 @@ test('Floresta DW3: pinheiro na frente do parceiro fica transparente', () => {
   const b = buildBiome('floresta-dw3');
   const o = MAP_OBSTACLES.find(x => x.kind === 'tree')!;
   const faded = b.group.getObjectByName('pine-crown-faded') as THREE.InstancedMesh;
-  b.update(0, new THREE.Vector3(o.x, 4, o.z + 5), new THREE.Vector3(o.x, 1, o.z - 5));
+  b.update(0, new THREE.Vector3(o.x, b.height(o.x, o.z) + 4, o.z + 5), new THREE.Vector3(o.x, b.height(o.x, o.z) + 1, o.z - 5));
   expect(faded.count).toBeGreaterThanOrEqual(1);
   b.update(0, new THREE.Vector3(500, 4, 500), new THREE.Vector3(500, 1, 492));
   expect(faded.count).toBe(0);
@@ -208,6 +208,15 @@ test('MapView.setBiome dw1 → dw3 → dw1 não deixa filhos sobrando', () => {
     view.setBiome('floresta-dw1');
     expect(names()).toEqual(['bioma-floresta-dw1']);
     expect(scene.children.length).toBe(before);
+    // a altura do chão acompanha o bioma montado
+    view.setBiome('fabrica');
+    const ref = buildBiome('fabrica');
+    let probe: [number, number] | null = null;
+    for (let x = -90; x <= 90 && !probe; x += 3) for (let z = -90; z <= 90 && !probe; z += 3) if (ref.height(x, z) > 0.5) probe = [x, z];
+    expect(probe).not.toBeNull();
+    expect(groundY(probe![0], probe![1])).toBe(ref.height(probe![0], probe![1]));
+    ref.dispose();
+    view.setBiome('floresta-dw1');
   } finally { vi.unstubAllGlobals(); }
 });
 

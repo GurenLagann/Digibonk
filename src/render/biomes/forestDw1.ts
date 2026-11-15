@@ -90,7 +90,7 @@ export function buildForestDw1(): BiomeView {
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
   const rng = createRng(0xd1f0e5), r = rng.next;
-  const height = hills(0xd1f0e5, 1.8);
+  const height = hills(0xd1f0e5, 3.5);
   const tmp = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), s = new THREE.Vector3();
   const mat4 = (x: number, y: number, z: number, rot: number, sx: number, sy = sx, sz = sx) =>
     tmp.clone().compose(p.set(x, y + height(x, z), z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
@@ -219,7 +219,7 @@ export function buildForestDw1(): BiomeView {
     sky: { background, fog },
     height,
     // luz mais fechada e esverdeada
-    light: { sky: 0xcfe8c0, ground: 0x2c4a24, hemi: 1.15, sun: 0xfff1cc, sunIntensity: 1.05 },
+    light: { sky: 0xcfe8c0, ground: 0x2c4a24, hemi: 0.95, sun: 0xfff1cc, sunIntensity: 1.35 },
     update(_time, camPos, target) {
       near.position.set(camPos.x, 0, camPos.z); far.position.set(camPos.x, 0, camPos.z);
       treeFade.update(camPos, target);

@@ -101,7 +101,7 @@ export function buildFactory(): BiomeView {
   const ID = 'fabrica';
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
-  const height = terraces(0xfac701, 0.9, 2, 3);
+  const height = terraces(0xfac701, 1.3, 2, 3);
   const { r, mat4, scatter, floorRects } = helpers(0xfac701, height);
 
   const chapa = loadTexture(ID, 'chapa', GROUND / 2.5), grade = loadTexture(ID, 'grade', 2);
@@ -180,7 +180,7 @@ export function buildFactory(): BiomeView {
     group,
     sky: { background, fog },
     height,
-    light: { sky: 0xeef0e4, ground: 0x5a4a3a, hemi: 1.2, sun: 0xfff0d8, sunIntensity: 1.1 },
+    light: { sky: 0xeef0e4, ground: 0x5a4a3a, hemi: 1.0, sun: 0xfff0d8, sunIntensity: 1.35 },
     update(_time, camPos, target) {
       near.position.set(camPos.x, 0, camPos.z); far.position.set(camPos.x, 0, camPos.z);
       tankFade.update(camPos, target);
@@ -218,7 +218,7 @@ export function buildFactoryCore(): BiomeView {
   const ID = 'nucleo';
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
-  const height = terraces(0xc0de06, 0.9, 2, 3);
+  const height = terraces(0xc0de06, 1.2, 2, 3);
   const { r, mat4, scatter, floorRects } = helpers(0xc0de06, height);
 
   const placa = loadTexture(ID, 'placa', GROUND / 8), tecido = loadTexture(ID, 'tecido', 1), engr = loadTexture(ID, 'engrenagens', 1);

@@ -12,7 +12,7 @@ export function createScene(canvas: HTMLCanvasElement) {
   const hemi = new THREE.HemisphereLight(0xdff2ff, 0x5a7a3a, 1.6);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffffff, 1.4);
-  sun.position.set(20, 40, 10);
+  sun.position.set(30, 20, 14); // sol mais baixo: as encostas do relevo ganham sombra
   scene.add(sun);
   const resize = () => {
     const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
