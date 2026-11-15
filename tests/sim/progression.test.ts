@@ -97,3 +97,19 @@ describe('raridade das cartas', () => {
     for (let i = 0; i < 200; i++) for (const o of rollOffers(p, r, banned)) expect(banned.has(offerKey(p, o))).toBe(false);
   });
 });
+
+describe('rollOffers com count', () => {
+  test('4 ofertas com quase tudo banido: sem undefined nem chaves repetidas', () => {
+    const p = maxedProg('agumon'); const r = createRng(5);
+    const banned = new Set(['stat:hp', 'stat:atk', 'stat:def', 'stat:spd']);
+    for (let i = 0; i < 100; i++) {
+      const o = rollOffers(p, r, banned, 4);
+      expect(o.every(x => x !== undefined)).toBe(true);
+      const keys = o.map(x => offerKey(p, x)); expect(new Set(keys).size).toBe(keys.length);
+      expect(o.length).toBeLessThanOrEqual(4);
+    }
+  });
+  test('count 4 devolve 4 num prog novo', () => {
+    expect(rollOffers(newPlayerProg('agumon'), createRng(1), new Set(), 4)).toHaveLength(4);
+  });
+});

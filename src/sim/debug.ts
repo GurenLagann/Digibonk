@@ -18,7 +18,7 @@ export function debugEvolve(r: RunState, formId: string): void {
 
 export function debugLevelUp(r: RunState): void {
   addXp(r.prog, xpToNext(r.prog.level));
-  if (r.prog.pendingLevelUps > 0 && r.offers === null) r.offers = rollOffers(r.prog, r.rng);
+  if (r.prog.pendingLevelUps > 0 && r.offers === null) r.offers = rollOffers(r.prog, r.rng, new Set(), r.offerCount);
 }
 
 export function debugGiveCard(r: RunState, cardId: string): RunEvent[] {

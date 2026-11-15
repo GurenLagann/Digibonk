@@ -265,6 +265,15 @@ test('a última melhoria escolhida não abre outra tela: os níveis restantes vi
 describe('atualizar, pular e banir', () => {
   const withOffers = () => { const r = createRun(opts()); r.prog.pendingLevelUps = 2; r.prog.level = 3; r.offers = rollOfferSet(r); return r; };
   const rollOfferSet = (r: RunState) => { stepRun(r, { mx: 0, mz: 0 }, 1 / 60); return r.offers; };
+  test('Laboratório soma usos e 4ª opção', () => {
+    const save = defaultSave(); save.lab = { lab_reroll: 3, lab_ban: 2, lab_offer: 1 };
+    const r = createRun({ ...opts(), save });
+    expect(r.levelTools).toEqual({ reroll: 5, skip: 2, ban: 3 });
+    expect(r.offerCount).toBe(4);
+    r.prog.pendingLevelUps = 1; r.prog.level = 2;
+    stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+    expect(r.offers).toHaveLength(4);
+  });
   test('começa com os usos do tuning', () => {
     expect(createRun(opts()).levelTools).toEqual(T.LEVEL_TOOLS);
   });

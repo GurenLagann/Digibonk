@@ -1,4 +1,5 @@
 import { createRng, type Rng } from '../core/rng';
+import { labBonuses } from '../core/lab';
 import { storeSave, type SaveData } from '../core/save';
 import { CARDS } from '../data/cards';
 import { BOSSES, MINIBOSSES } from '../data/enemies';
@@ -59,6 +60,8 @@ export interface RunState {
   blindChoice: string[] | null;
   /** usos restantes de atualizar/pular/banir no level up e as ofertas banidas (offerKey) */
   levelTools: { reroll: number; skip: number; ban: number }; banned: string[];
+  /** quantas cartas por level up (3 + 4ª opção do Laboratório) */
+  offerCount: number;
   /** dano causado por golpe (ficha da pausa e do resultado) */
   damage: DamageLog;
   /** relíquia de reviver já usada nesta partida */
@@ -139,12 +142,13 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
   const partner = PARTNERS.find(p => p.id === opts.partnerId);
   if (!partner) throw new Error(`unknown partner ${opts.partnerId}`);
   const prog = newPlayerProg(partner.childForm);
+  const lab = labBonuses(opts.save);
   const pool = new EnemyPool();
   const r: RunState = {
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -378,7 +382,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     const level = r.prog.level - r.prog.pendingLevelUps + 1;
     ev.push({ type: 'autoGain', level, ...autoGain(r.prog, r.rng) });
   }
-  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng, new Set(r.banned)); ev.push({ type: 'levelUp' }); }
+  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount); ev.push({ type: 'levelUp' }); }
   syncHp(r);
   return ev;
 }
@@ -395,7 +399,7 @@ export function chooseOffer(r: RunState, index: number): void {
   applyOffer(r.prog, o);
   r.offers = null;
   // sem nada para melhorar, os níveis restantes viram ganho automático no próximo passo (stepRun)
-  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
   syncHp(r);
 }
 
@@ -492,7 +496,7 @@ export function stayMature(r: RunState): void {
 export function rerollOffers(r: RunState): boolean {
   if (!r.offers || r.levelTools.reroll <= 0) return false;
   r.levelTools.reroll--;
-  r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
+  r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
   return true;
 }
 
@@ -503,7 +507,7 @@ export function skipOffer(r: RunState): { level: number; stat: StatKey; amount: 
   const level = r.prog.level - r.prog.pendingLevelUps + 1;
   const g = autoGain(r.prog, r.rng);
   r.offers = null;
-  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned));
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
   syncHp(r);
   return { level, ...g };
 }
@@ -515,7 +519,7 @@ export function banOffer(r: RunState, index: number): boolean {
   r.levelTools.ban--;
   r.banned.push(offerKey(r.prog, o));
   const onTable = new Set([...r.banned, ...r.offers.map(x => offerKey(r.prog, x))]);
-  const repl = rollOffers(r.prog, r.rng, onTable)[0];
+  const repl = rollOffers(r.prog, r.rng, onTable, r.offerCount)[0];
   r.offers = repl ? r.offers.map((x, i) => (i === index ? repl : x)) : r.offers.filter((_, i) => i !== index);
   return true;
 }

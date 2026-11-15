@@ -97,7 +97,7 @@ export function autoGain(p: PlayerProg, rng: Rng): { stat: StatKey; amount: numb
 }
 
 /** sorteia as ofertas do level up; `exclude` = chaves (offerKey) banidas ou já na mesa */
-export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string> = new Set()): LevelOffer[] {
+export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string> = new Set(), count: number = T.OFFERS_PER_LEVEL): LevelOffer[] {
   const ok = (o: LevelOffer) => !exclude.has(offerKey(p, o));
   const f = FORMS[p.formId];
   const pool: LevelOffer[] = [];
@@ -116,7 +116,7 @@ export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string>
   const statShuffled = [...stats];
   for (let i = statShuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [statShuffled[i], statShuffled[j]] = [statShuffled[j], statShuffled[i]]; }
   // one stat slot is always mixed in when pool is rich, so stat growth stays available
-  const want = T.OFFERS_PER_LEVEL;
+  const want = count;
   const fromPool = Math.min(shuffled.length, want - out.length - (shuffled.length >= want ? 1 : 0));
   out.push(...shuffled.slice(0, Math.max(0, fromPool)));
   for (const s of statShuffled) { if (out.length >= want) break; out.push(s); }
