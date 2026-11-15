@@ -4,6 +4,12 @@ import { biomeForPhase, buildBiome } from '../../src/render/biomes';
 import { crownOccludes } from '../../src/render/biomes/common';
 import { MAP_OBSTACLES } from '../../src/sim/map';
 import { T } from '../../src/data/tuning';
+import { MapView } from '../../src/render/map';
+import type { BiomeId } from '../../src/render/biomes';
+
+const IDS: BiomeId[] = ['floresta-dw1', 'floresta-dw3'];
+/** copa com transparência de cada bioma */
+const CROWN: Record<BiomeId, string> = { 'floresta-dw1': 'tree-crown', 'floresta-dw3': 'pine-crown' };
 
 // sem DOM: o TextureLoader devolve uma textura vazia
 beforeEach(() => { vi.spyOn(THREE.TextureLoader.prototype, 'load').mockImplementation(() => new THREE.Texture()); });
@@ -28,8 +34,8 @@ test('Floresta DW1: uma instância de árvore por obstáculo tree', () => {
   b.dispose();
 });
 
-test('nada alto (> 1.2) dentro do mapa fora das posições de obstáculo', () => {
-  const b = buildBiome('floresta-dw1');
+test.each(IDS)('%s: nada alto (> 1.2) dentro do mapa fora das posições de obstáculo', id => {
+  const b = buildBiome(id);
   b.group.updateMatrixWorld(true);
   const box = new THREE.Box3(), m = new THREE.Matrix4(), c = new THREE.Vector3();
   const bad: string[] = [];
@@ -51,7 +57,7 @@ test('nada alto (> 1.2) dentro do mapa fora das posições de obstáculo', () =>
   b.dispose();
 });
 
-test('decoração afastada ≥ 2 dos obstáculos e igual a cada montagem', () => {
+test.each(IDS)('%s: decoração afastada ≥ 2 dos obstáculos e igual a cada montagem', id => {
   const pos = (b: ReturnType<typeof buildBiome>) => {
     const out: [number, number][] = [], m = new THREE.Matrix4(), p = new THREE.Vector3();
     b.group.traverse(o => {
@@ -60,7 +66,7 @@ test('decoração afastada ≥ 2 dos obstáculos e igual a cada montagem', () =>
     });
     return out;
   };
-  const a = buildBiome('floresta-dw1'), b = buildBiome('floresta-dw1');
+  const a = buildBiome(id), b = buildBiome(id);
   const pa = pos(a);
   expect(pa.length).toBeGreaterThan(50);
   expect(pos(b)).toEqual(pa);
@@ -68,11 +74,11 @@ test('decoração afastada ≥ 2 dos obstáculos e igual a cada montagem', () =>
   a.dispose(); b.dispose();
 });
 
-test('dispose libera geometrias e materiais criados', () => {
+test.each(IDS)('%s: dispose libera geometrias e materiais criados', id => {
   const geo = vi.spyOn(THREE.BufferGeometry.prototype, 'dispose');
   const mat = vi.spyOn(THREE.Material.prototype, 'dispose');
   const tex = vi.spyOn(THREE.Texture.prototype, 'dispose');
-  const b = buildBiome('floresta-dw1');
+  const b = buildBiome(id);
   const geos = new Set<THREE.BufferGeometry>(), mats = new Set<THREE.Material>();
   b.group.traverse(o => { if (o instanceof THREE.Mesh) { geos.add(o.geometry); (Array.isArray(o.material) ? o.material : [o.material]).forEach(x => mats.add(x)); } });
   b.dispose();
@@ -82,7 +88,7 @@ test('dispose libera geometrias e materiais criados', () => {
   // céu é do bioma; as texturas carregadas ficam no cache (não são descartadas)
   const disposedTex = new Set(tex.mock.contexts);
   if (b.sky.background instanceof THREE.Texture) expect(disposedTex.has(b.sky.background)).toBe(true);
-  const crown = b.group.getObjectByName('tree-crown') as THREE.Mesh;
+  const crown = b.group.getObjectByName(CROWN[id]) as THREE.Mesh;
   expect(disposedTex.has((crown.material as THREE.MeshLambertMaterial).map!)).toBe(false);
 });
 
@@ -132,4 +138,58 @@ test('update troca copas entre opaca e transparente', () => {
   expect(faded.visible).toBe(false);
   expect(opaque.count).toBe(MAP_OBSTACLES.filter(x => x.kind === 'tree').length);
   b.dispose();
+});
+
+test('Floresta DW3: um pinheiro por tree, um objeto metálico por rock', () => {
+  const b = buildBiome('floresta-dw3');
+  expect(b.group.name).toBe('bioma-floresta-dw3');
+  const trees = MAP_OBSTACLES.filter(o => o.kind === 'tree').length, rocks = MAP_OBSTACLES.filter(o => o.kind === 'rock').length;
+  const count = (n: string) => (b.group.getObjectByName(n) as THREE.InstancedMesh).count;
+  expect(count('pine-trunk')).toBe(trees);
+  expect(count('pine-crown') + count('pine-crown-faded')).toBe(trees);
+  expect(count('metal-box') + count('metal-pipe')).toBe(rocks);
+  expect(count('metal-box')).toBeGreaterThan(0); expect(count('metal-pipe')).toBeGreaterThan(0);
+  // trilhas planas, borda de pinheiros por lado e penhasco além do limite
+  b.group.updateMatrixWorld(true);
+  const trail = b.group.getObjectByName('trail') as THREE.Mesh;
+  trail.geometry.computeBoundingBox();
+  expect(trail.geometry.boundingBox!.max.y).toBeLessThan(0.1);
+  for (const k of ['n', 's', 'e', 'w']) {
+    expect(count(`border-pine-crown-${k}`)).toBeGreaterThan(20);
+    const cliff = b.group.getObjectByName(`cliff-${k}`) as THREE.Mesh;
+    cliff.geometry.computeBoundingBox();
+    const c = cliff.geometry.boundingBox!.clone().applyMatrix4(cliff.matrixWorld).getCenter(new THREE.Vector3());
+    expect(Math.max(Math.abs(c.x), Math.abs(c.z))).toBeGreaterThan(T.MAP_HALF + 3);
+  }
+  expect(b.light.sunIntensity).toBeGreaterThan(buildBiome('floresta-dw1').light.sunIntensity);
+  b.dispose();
+});
+
+test('Floresta DW3: pinheiro na frente do parceiro fica transparente', () => {
+  const b = buildBiome('floresta-dw3');
+  const o = MAP_OBSTACLES.find(x => x.kind === 'tree')!;
+  const faded = b.group.getObjectByName('pine-crown-faded') as THREE.InstancedMesh;
+  b.update(0, new THREE.Vector3(o.x, 4, o.z + 5), new THREE.Vector3(o.x, 1, o.z - 5));
+  expect(faded.count).toBeGreaterThanOrEqual(1);
+  b.update(0, new THREE.Vector3(500, 4, 500), new THREE.Vector3(500, 1, 492));
+  expect(faded.count).toBe(0);
+  b.dispose();
+});
+
+test('MapView.setBiome dw1 → dw3 → dw1 não deixa filhos sobrando', () => {
+  // canvas falso para a textura da Zona Digital (sem DOM)
+  const ctx = new Proxy({}, { get: () => () => undefined, set: () => true });
+  vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx }) });
+  try {
+    const scene = new THREE.Scene(), view = new MapView(scene);
+    const before = scene.children.length;
+    const names = () => scene.children.map(c => c.name).filter(n => n.startsWith('bioma-'));
+    expect(names()).toEqual(['bioma-floresta-dw1']);
+    view.setBiome('floresta-dw3');
+    expect(names()).toEqual(['bioma-floresta-dw3']);
+    expect(scene.children.length).toBe(before);
+    view.setBiome('floresta-dw1');
+    expect(names()).toEqual(['bioma-floresta-dw1']);
+    expect(scene.children.length).toBe(before);
+  } finally { vi.unstubAllGlobals(); }
 });

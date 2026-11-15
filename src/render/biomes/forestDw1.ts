@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createRng } from '../../core/rng';
 import { T } from '../../data/tuning';
 import { MAP_OBSTACLES } from '../../sim/map';
-import { Bag, FadeCrowns, loadTexture, silhouette, skyTexture, type Crown } from './common';
+import { Bag, FadeCrowns, instanced, loadTexture, silhouette, skyTexture, type Crown } from './common';
 import type { BiomeView } from './types';
 
 const ID = 'floresta-dw1';
@@ -83,14 +83,6 @@ function treeParts(x: number, z: number, k: number, rot: number, tint: number) {
     c: new THREE.Color().setHSL(0.3 + tint * 0.04, 0.35, 0.75 + tint * 0.15),
   };
   return { trunk, crown };
-}
-
-function instanced(bag: Bag, name: string, geo: THREE.BufferGeometry, mat: THREE.Material, mats: THREE.Matrix4[], decor = false): THREE.InstancedMesh {
-  const mesh = bag.inst(new THREE.InstancedMesh(geo, mat, Math.max(1, mats.length)));
-  mesh.name = name; mesh.count = mats.length;
-  mats.forEach((m, i) => mesh.setMatrixAt(i, m));
-  if (decor) mesh.userData.decor = true; // decoração baixa sem colisão
-  return mesh;
 }
 
 export function buildForestDw1(): BiomeView {

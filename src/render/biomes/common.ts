@@ -19,6 +19,15 @@ export class Bag {
   }
 }
 
+/** InstancedMesh com uma matriz por instância */
+export function instanced(bag: Bag, name: string, geo: THREE.BufferGeometry, mat: THREE.Material, mats: THREE.Matrix4[], decor = false): THREE.InstancedMesh {
+  const mesh = bag.inst(new THREE.InstancedMesh(geo, mat, Math.max(1, mats.length)));
+  mesh.name = name; mesh.count = mats.length;
+  mats.forEach((m, i) => mesh.setMatrixAt(i, m));
+  if (decor) mesh.userData.decor = true; // decoração baixa sem colisão
+  return mesh;
+}
+
 /** cache por URL: a troca de bioma não baixa de novo nem pisca preto; essas texturas não entram no dispose do bioma */
 const textureCache = new Map<string, THREE.Texture>();
 

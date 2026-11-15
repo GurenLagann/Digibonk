@@ -1,4 +1,5 @@
 import { buildForestDw1 } from './forestDw1';
+import { buildForestDw3 } from './forestDw3';
 import type { BiomeId, BiomeView } from './types';
 
 export type { BiomeId, BiomeView, BiomeLight } from './types';
@@ -12,8 +13,7 @@ export function biomeForPhase(phase: number): BiomeId {
 
 export function buildBiome(id: BiomeId): BiomeView {
   switch (id) {
-    // DW3 entra na Task 8; até lá usa a DW1
-    case 'floresta-dw3':
+    case 'floresta-dw3': return buildForestDw3();
     case 'floresta-dw1':
     default: return buildForestDw1();
   }
