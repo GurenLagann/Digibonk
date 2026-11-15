@@ -1,4 +1,4 @@
-import { footPads } from '../../src/render/footPad';
+import { footPads, keepsFloating } from '../../src/render/footPad';
 
 /** folha RGBA com quadros de cellW×cellH; `fill` pinta um retângulo opaco num quadro */
 function sheet(cols: number, rows: number, cellW: number, cellH: number) {
@@ -30,4 +30,9 @@ test('última linha incompleta da grade: só os quadros existentes', () => {
   const { px, fill } = sheet(2, 2, 4, 4);
   fill(2, 0, 0, 4, 2);
   expect(footPads(px, 3, 2, 2)).toEqual([0, 0, 0.5]);
+});
+
+test('Bakemon (fantasma) continua flutuando; os outros encostam no chão', () => {
+  expect(keepsFloating('bakemon')).toBe(true);
+  expect(keepsFloating('agumon')).toBe(false);
 });

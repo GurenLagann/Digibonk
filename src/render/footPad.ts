@@ -5,6 +5,10 @@
  */
 export interface Pixels { width: number; height: number; data: ArrayLike<number> }
 
+/** sprites que flutuam de propósito (fantasmas): mantêm a margem da folha */
+const FLOATING = new Set(['bakemon']);
+export function keepsFloating(id: string): boolean { return FLOATING.has(id); }
+
 /** pixel com alfa abaixo disso é franja e não conta como pé */
 const ALPHA_MIN = 128;
 

@@ -8,7 +8,7 @@ import { enemyStageScale, motionPose, playerHeightFor } from './motion';
 import { deathFrame, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, sheetGrid, type Role, type SpriteLibrary } from './sprites';
 import { enableInstanceFrames, setInstanceFrame } from './instanceFrames';
 import { viewFacing } from '../core/view';
-import { footPads, readPixels } from './footPad';
+import { footPads, keepsFloating, readPixels } from './footPad';
 
 const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -64,6 +64,7 @@ export class Billboards {
 
   /** fração vazia abaixo dos pés de cada quadro, para encostar o desenho no chão */
   private padsFor(id: string): number[] {
+    if (keepsFloating(id)) return [];
     let pads = this.padCache.get(id);
     if (!pads) {
       const info = this.lib.info(id), img = this.lib.image(id), px = img ? readPixels(img) : null;
