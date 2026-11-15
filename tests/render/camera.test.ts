@@ -73,3 +73,12 @@ test('follow com altura do chão: sobe câmera e alvo; com dt suaviza, sem dt en
   for (let i = 0; i < 120; i++) o.follow(0, 0, 0, 1 / 60);
   expect(o.camera.position.y).toBeCloseTo(y0, 2);
 });
+
+test('follow com chão: câmera não entra na colina atrás do parceiro', () => {
+  const o = make();
+  o.turn(0, -10); // pitch mínimo: câmera baixa
+  const hill = (_x: number, z: number) => (z > 3 ? 4 : 0); // parceiro no vale, colina de 4 atrás (+z)
+  o.follow(0, 0, 0, undefined, hill);
+  const p = o.camera.position;
+  expect(p.y).toBeGreaterThanOrEqual(hill(p.x, p.z) + 0.5);
+});

@@ -12,7 +12,7 @@ export const BIOME_NAMES: Record<BiomeId, string> = {
 export const BIOME_IDS = Object.keys(BIOME_NAMES) as BiomeId[];
 
 /** sequência das fases: Floresta DW1 → Floresta DW3 → Fábrica → Núcleo → Floresta DW1 */
-const BY_PHASE: BiomeId[] = ['floresta-dw1', 'floresta-dw3', 'fabrica', 'nucleo', 'floresta-dw1'];
+const BY_PHASE: BiomeId[] = ['floresta-dw1', 'floresta-dw3', 'fabrica', 'nucleo'];
 export function biomeForPhase(phase: number): BiomeId {
   return BY_PHASE[(Math.max(1, phase) - 1) % BY_PHASE.length];
 }

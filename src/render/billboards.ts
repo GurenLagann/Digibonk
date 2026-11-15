@@ -9,7 +9,7 @@ import { deathFrame, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFra
 import { enableInstanceFrames, setInstanceFrame } from './instanceFrames';
 import { viewFacing } from '../core/view';
 import { footPads, keepsFloating, readPixels } from './footPad';
-import { groundY } from './terrain';
+import { groundNormal, groundY } from './terrain';
 
 const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -43,6 +43,12 @@ export class Billboards {
   private padCache = new Map<string, number[]>();
   private shadows: THREE.InstancedMesh;
   private m = new THREE.Matrix4(); private p = new THREE.Vector3(); private s = new THREE.Vector3();
+  /** sombra deitada na encosta (normal do chão em x, z) */
+  private up = new THREE.Vector3(0, 1, 0); private nrm = new THREE.Vector3(); private qs = new THREE.Quaternion();
+  private slope(x: number, z: number): THREE.Quaternion {
+    const n = groundNormal(groundY, x, z);
+    return this.qs.setFromUnitVectors(this.up, this.nrm.set(n.x, n.y, n.z));
+  }
   private ident = new THREE.Quaternion(); private qt = new THREE.Quaternion(); private qz = new THREE.Quaternion();
   private zAxis = new THREE.Vector3(0, 0, 1);
   private white = new THREE.Color(1, 1, 1); private flash = new THREE.Color(3, 3, 3);
@@ -132,11 +138,12 @@ export class Billboards {
         if (FLIP_SPRITES && v.right && (mirrorsWithDir(v.facing) || !verticalRole(role))) flip = -1;
       }
       const pose = motionPose({ t: time, phase, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
-      this.m.compose(this.p.set(e.x, groundY(e.x, e.z) + (pose.y - pad * pose.sy) * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
+      const gy = groundY(e.x, e.z); // uma vez por inimigo: sprite e sombra
+      this.m.compose(this.p.set(e.x, gy + (pose.y - pad * pose.sy) * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
       if (sh < T.MAX_ENEMIES + 31) {
-        this.m.compose(this.p.set(e.x, groundY(e.x, e.z) + 0.02, e.z), this.ident, this.s.set(e.size, 1, e.size * 0.6));
+        this.m.compose(this.p.set(e.x, gy + 0.02, e.z), this.slope(e.x, e.z), this.s.set(e.size, 1, e.size * 0.6));
         this.shadows.setMatrixAt(sh++, this.m);
       }
     }
@@ -186,11 +193,12 @@ export class Billboards {
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
       : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)), drawnIdle: this.playerFrames.some(f => /^stand/.test(f)) });
-    this.player.position.set(run.px, groundY(run.px, run.pz) + (pose.y - pad * pose.sy) * this.playerHeight, run.pz);
+    const gy = groundY(run.px, run.pz);
+    this.player.position.set(run.px, gy + (pose.y - pad * pose.sy) * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
     mat.color.copy(c.invuln > 0.35 && !death ? this.flash : this.white);
-    this.m.compose(this.p.set(run.px, groundY(run.px, run.pz) + 0.02, run.pz), this.ident, this.s.set(f.size, 1, f.size * 0.6));
+    this.m.compose(this.p.set(run.px, gy + 0.02, run.pz), this.slope(run.px, run.pz), this.s.set(f.size, 1, f.size * 0.6));
     this.shadows.setMatrixAt(sh++, this.m);
     this.shadows.count = sh;
     this.shadows.instanceMatrix.needsUpdate = true;

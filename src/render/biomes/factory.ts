@@ -133,7 +133,9 @@ export function buildFactory(): BiomeView {
       machines.push(mat4(o.x, 0, o.z, rot, w, h, w * 0.9));
       bands.push(mat4(o.x, 0, o.z, rot, w * 1.03, 0.22, w * 0.93));
       // filete de neon na frente da máquina (detalhe do "núcleo" aparecendo por fora)
-      lights.push(mat4(o.x + Math.sin(rot) * w * 0.455, h * 0.6, o.z + Math.cos(rot) * w * 0.455, rot, w * 0.7, 0.06, 0.04));
+      // na base da máquina (o ponto da frente pode cair em outro nível do degrau)
+      const lx = o.x + Math.sin(rot) * w * 0.455, lz = o.z + Math.cos(rot) * w * 0.455;
+      lights.push(mat4(lx, h * 0.6 + height(o.x, o.z) - height(lx, lz), lz, rot, w * 0.7, 0.06, 0.04));
     }
   }
   const tankFade = new FadeCrowns(bag, 'tank', tankGeometry(bag), tankMat, tankFadedMat, tanks);
@@ -151,7 +153,11 @@ export function buildFactory(): BiomeView {
       const [x, z] = k === 'n' ? [a, -depth] : k === 's' ? [a, depth] : k === 'e' ? [depth, a] : [-depth, a];
       if (sideOf(x, z) !== k) continue;
       sheds.push(mat4(x, 0, z, 0, w, hgt, 6 + r() * 4));
-      if (r() < 0.35) chims.push(mat4(x + (r() - 0.5) * 4, hgt, z + (r() - 0.5) * 4, 0, 1, 6 + r() * 8, 1));
+      if (r() < 0.35) {
+        // em cima do galpão: altura do chão na base do galpão, não no ponto da chaminé
+        const cx = x + (r() - 0.5) * 4, cz = z + (r() - 0.5) * 4;
+        chims.push(mat4(cx, hgt + height(x, z) - height(cx, cz), cz, 0, 1, 6 + r() * 8, 1));
+      }
     }
     group.add(instanced(bag, `border-shed-${k}`, box, shedMat, sheds), instanced(bag, `border-chimney-${k}`, chimGeo, chimMat, chims));
   }
@@ -254,7 +260,8 @@ export function buildFactoryCore(): BiomeView {
     } else {
       const w = o.r * 1.3, h = 0.8 + o.r * 0.5;
       consoles.push(mat4(o.x, 0, o.z, rot, w, h, w));
-      screens.push(mat4(o.x + Math.sin(rot) * w * 0.05, h * 0.95, o.z + Math.cos(rot) * w * 0.05, rot, w * 0.75, 0.04, w * 0.4));
+      const sx = o.x + Math.sin(rot) * w * 0.05, sz = o.z + Math.cos(rot) * w * 0.05;
+      screens.push(mat4(sx, h * 0.95 + height(o.x, o.z) - height(sx, sz), sz, rot, w * 0.75, 0.04, w * 0.4));
     }
   }
   const gearFade = new FadeCrowns(bag, 'gear', gearGeometry(bag), gearMat, gearFaded, gears);

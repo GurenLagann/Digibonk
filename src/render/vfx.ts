@@ -30,9 +30,13 @@ interface Floater { sprite: THREE.Sprite; life: number; vy: number; tex: THREE.C
 export class Vfx {
   private proj: Instanced; private hostile: Instanced; private pickups: Instanced;
   private areaMeshes: THREE.Mesh[] = [];
-  private circleGeo = new THREE.CircleGeometry(1, 32).rotateX(-Math.PI / 2);
-  private coneGeo = new THREE.CircleGeometry(1, 16, -Math.PI / 4, Math.PI / 2).rotateX(-Math.PI / 2);
-  private beamGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0.5, 0, 0);
+  /** moldes das áreas, subdivididos para deitar sobre o relevo; cada malha de área tem sua cópia */
+  private areaTemplates: Record<Area['shape'], THREE.BufferGeometry> = {
+    circle: new THREE.RingGeometry(0, 1, 32, 6).rotateX(-Math.PI / 2),
+    cone: new THREE.RingGeometry(0, 1, 16, 6, -Math.PI / 4, Math.PI / 2).rotateX(-Math.PI / 2),
+    beam: new THREE.PlaneGeometry(1, 1, 12, 4).rotateX(-Math.PI / 2).translate(0.5, 0, 0),
+  };
+  private tmpV = new THREE.Vector3();
   private floaters: Floater[] = []; private nextFloater = 0;
   /** ícones dos coletáveis (pixel art do DRA1 em public/itens-dra1) */
   private iconMats = new Map<string, THREE.SpriteMaterial>(); private iconSprites: THREE.Sprite[] = [];
@@ -59,7 +63,9 @@ export class Vfx {
 
   private areaMesh(i: number): THREE.Mesh {
     while (this.areaMeshes.length <= i) {
-      const m = new THREE.Mesh(this.circleGeo, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.5, depthWrite: false, depthTest: false, side: THREE.DoubleSide }));
+      // teste de profundidade ligado: a área fica atrás de paredes/sprites; deitada no relevo + polygonOffset para não sumir no chão
+      const m = new THREE.Mesh(undefined, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+      m.userData.geos = {};
       this.scene.add(m); this.areaMeshes.push(m);
     }
     return this.areaMeshes[i];
@@ -72,11 +78,23 @@ export class Vfx {
     const k = Math.max(0, a.life / a.maxLife);
     mat.opacity = a.hostile && a.delay > 0 ? 0.25 + 0.15 * Math.sin(performance.now() / 60) : 0.55 * k;
     mesh.visible = true;
-    mesh.position.set(a.x, groundY(a.x, a.z) + 0.06, a.z);
+    mesh.position.set(a.x, 0, a.z);
     mesh.rotation.set(0, -Math.atan2(a.dz, a.dx), 0);
-    if (a.shape === 'circle') { mesh.geometry = this.circleGeo; mesh.scale.set(a.radius, 1, a.radius); }
-    else if (a.shape === 'cone') { mesh.geometry = this.coneGeo; mesh.scale.set(a.radius, 1, a.radius); }
-    else { mesh.geometry = this.beamGeo; mesh.scale.set(a.length, 1, a.radius * 2); }
+    if (a.shape === 'beam') mesh.scale.set(a.length, 1, a.radius * 2);
+    else mesh.scale.set(a.radius, 1, a.radius);
+    // cópia do molde desta malha; cada vértice vai para a altura do chão onde cai no mundo
+    const geos = mesh.userData.geos as Record<string, THREE.BufferGeometry>;
+    const tpl = this.areaTemplates[a.shape];
+    const geo = (geos[a.shape] ??= tpl.clone());
+    mesh.geometry = geo;
+    mesh.updateMatrix();
+    const src = tpl.attributes.position, dst = geo.attributes.position as THREE.BufferAttribute, v = this.tmpV;
+    for (let i = 0; i < src.count; i++) {
+      v.set(src.getX(i), 0, src.getZ(i)).applyMatrix4(mesh.matrix);
+      dst.setY(i, groundY(v.x, v.z) + 0.06);
+    }
+    dst.needsUpdate = true;
+    geo.computeBoundingSphere();
   }
 
   private floatNumber(x: number, z: number, n: number) {

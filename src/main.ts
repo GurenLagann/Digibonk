@@ -251,7 +251,7 @@ function frame(now: number) {
   const t = now / 1000;
   if (run) {
     const gy = groundY(run.px, run.pz);
-    orbit.follow(run.px, run.pz, gy, dt);
+    orbit.follow(run.px, run.pz, gy, dt, groundY);
     map.sync(run, t);
     map.update(t, camera.position, partnerPos.set(run.px, gy + 1, run.pz));
     boards.sync(run, t, orbit.yaw);

@@ -39,3 +39,30 @@ test('groundY segue setGround (padrão 0)', () => {
   setGround(() => 1.5); expect(groundY(3, 3)).toBe(1.5);
   setGround(() => 0); expect(groundY(3, 3)).toBe(0);
 });
+
+test.each(GENS)('%s: plano antes do penhasco do DW3 (MAP_HALF+24) e além', (_n, f) => {
+  for (let a = -H - 30; a <= H + 30; a += 3) for (const d of [H + 23, H + 30, H + 40]) {
+    expect(f(d, a)).toBe(0); expect(f(-d, a)).toBe(0); expect(f(a, d)).toBe(0); expect(f(a, -d)).toBe(0);
+  }
+});
+
+test('terraces: rampa com a largura pedida (inclinação típica ≈ degrau/rampa, não um paredão)', () => {
+  const step = 1.3, ramp = 3, f = terraces(0xfac701, step, 2, ramp), e = 0.25;
+  const slopes: number[] = [];
+  grid((x, z) => {
+    const s = Math.hypot(f(x + e, z) - f(x - e, z), f(x, z + e) - f(x, z - e)) / (2 * e);
+    if (s > 0.01 && Math.abs(x) < H - 20 && Math.abs(z) < H - 20 && Math.hypot(x, z) > 20) slopes.push(s);
+  }, 0.5);
+  slopes.sort((a, b) => a - b);
+  const median = slopes[Math.floor(slopes.length / 2)];
+  expect(median).toBeLessThan((step / ramp) * 1.6);
+  expect(median).toBeGreaterThan((step / ramp) * 0.5);
+});
+
+test('groundNormal: plano = para cima; rampa x inclina para -x', async () => {
+  const { groundNormal } = await import('../../src/render/terrain');
+  const n = groundNormal(() => 0, 3, 4);
+  expect(n.y).toBeCloseTo(1); expect(n.x).toBeCloseTo(0); expect(n.z).toBeCloseTo(0);
+  const r = groundNormal(x => x * 0.5, 3, 4);
+  expect(r.x).toBeCloseTo(-0.5 / Math.hypot(1, 0.5), 3); expect(r.y).toBeCloseTo(1 / Math.hypot(1, 0.5), 3); expect(r.z).toBeCloseTo(0, 3);
+});

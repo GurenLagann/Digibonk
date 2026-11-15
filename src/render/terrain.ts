@@ -9,10 +9,10 @@ export type HeightFn = (x: number, z: number) => number;
 
 const H = T.MAP_HALF;
 const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
-/** 0 no nascimento (raio 6), 1 a partir de 16; some de novo entre MAP_HALF+25 e +40 */
+/** 0 no nascimento (raio 6), 1 a partir de 16; some de novo entre MAP_HALF+8 e +22 (antes do penhasco do DW3, em +24) */
 function mask(x: number, z: number): number {
   const spawn = smooth((Math.hypot(x, z) - 6) / 10);
-  const edge = 1 - smooth((Math.max(Math.abs(x), Math.abs(z)) - (H + 25)) / 15);
+  const edge = 1 - smooth((Math.max(Math.abs(x), Math.abs(z)) - (H + 8)) / 14);
   return spawn * edge;
 }
 
@@ -65,6 +65,13 @@ export function isFlat(fn: HeightFn, x: number, z: number, halfW: number, halfD:
     if (Math.abs(fn(x + lx * c + lz * s, z - lx * s + lz * c) - y0) > 0.01) return false;
   }
   return true;
+}
+
+/** normal do chão em (x, z) por diferenças centrais (para deitar sombras/decalques na encosta) */
+export function groundNormal(fn: HeightFn, x: number, z: number, e = 0.3): { x: number; y: number; z: number } {
+  const gx = (fn(x + e, z) - fn(x - e, z)) / (2 * e), gz = (fn(x, z + e) - fn(x, z - e)) / (2 * e);
+  const l = Math.hypot(gx, 1, gz);
+  return { x: -gx / l, y: 1 / l, z: -gz / l };
 }
 
 let current: HeightFn = () => 0;

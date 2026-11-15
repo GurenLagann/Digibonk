@@ -297,3 +297,36 @@ test('MapView: trocar bioma reposiciona altares no chão novo', async () => {
     view.setBiome('floresta-dw1');
   } finally { vi.unstubAllGlobals(); }
 });
+
+test.each([['fabrica', 'machine', 'machine-light', 0.6], ['nucleo', 'console', 'console-screen', 0.95]] as const)('%s: %s e seu detalhe na mesma base (mesmo na borda do degrau)', (id, parent, detail, frac) => {
+  const b = buildBiome(id);
+  const pm = b.group.getObjectByName(parent) as THREE.InstancedMesh, dm = b.group.getObjectByName(detail) as THREE.InstancedMesh;
+  expect(dm.count).toBe(pm.count);
+  const a = new THREE.Matrix4(), c = new THREE.Matrix4(), pa = new THREE.Vector3(), pc = new THREE.Vector3(), s = new THREE.Vector3(), q = new THREE.Quaternion();
+  for (let i = 0; i < pm.count; i++) {
+    pm.getMatrixAt(i, a); dm.getMatrixAt(i, c);
+    a.decompose(pa, q, s); c.decompose(pc, q, new THREE.Vector3());
+    expect(pc.y - pa.y).toBeCloseTo(s.y * frac, 4);
+  }
+  b.dispose();
+});
+
+test('fábrica: chaminé em cima do galpão', () => {
+  const b = buildBiome('fabrica');
+  const m = new THREE.Matrix4(), p = new THREE.Vector3(), s = new THREE.Vector3(), q = new THREE.Quaternion();
+  for (const k of ['n', 's', 'e', 'w']) {
+    const sheds = b.group.getObjectByName(`border-shed-${k}`) as THREE.InstancedMesh, chims = b.group.getObjectByName(`border-chimney-${k}`) as THREE.InstancedMesh;
+    const tops: { x: number; z: number; top: number; w: number; d: number }[] = [];
+    for (let i = 0; i < sheds.count; i++) { sheds.getMatrixAt(i, m); m.decompose(p, q, s); tops.push({ x: p.x, z: p.z, top: p.y + s.y, w: s.x, d: s.z }); }
+    for (let i = 0; i < chims.count; i++) {
+      chims.getMatrixAt(i, m); m.decompose(p, q, s);
+      const shed = tops.reduce((best, t) => (Math.hypot(t.x - p.x, t.z - p.z) < Math.hypot(best.x - p.x, best.z - p.z) ? t : best));
+      expect(p.y).toBeCloseTo(shed.top, 4);
+    }
+  }
+  b.dispose();
+});
+
+test('biomeForPhase: ciclo de 4 (fase 6 = DW3, não DW1 duas vezes)', () => {
+  expect([5, 6, 7, 8, 9].map(biomeForPhase)).toEqual(['floresta-dw1', 'floresta-dw3', 'fabrica', 'nucleo', 'floresta-dw1']);
+});
