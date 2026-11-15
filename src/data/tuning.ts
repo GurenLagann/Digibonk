@@ -41,4 +41,11 @@ export const T = {
   OFFERS_PER_LEVEL: 3,
   CARD_OFFER_CHANCE: 0.12,
   MAP_HALF: 100,
+  /** câmera orbital: distância, alturas, ângulos em rad, sensibilidades e névoa (valores iniciais, ajustáveis) */
+  CAMERA: {
+    DIST: 8, LOOK_HEIGHT: 1.4, PITCH: 0.38, PITCH_MIN: 0.15, PITCH_MAX: 0.8, FOV: 60,
+    /** rad/px */ MOUSE_SENS: 0.0025, /** rad/s */ PAD_SENS: 2.6, PAD_DEADZONE: 0.25,
+    FOG_NEAR: 45, FOG_FAR: 150, FAR: 320,
+    /** rad além do meio-FOV horizontal */ SPAWN_MARGIN: 0.25,
+  },
 } as const;

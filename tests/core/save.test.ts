@@ -65,3 +65,10 @@ test('último parceiro: padrão vazio, só aceita texto e faz round trip', () =>
   const t = fakeStorage({}); storeSave({ ...defaultSave(), lastPartner: 'guilmon' }, t);
   expect(loadSave(t).lastPartner).toBe('guilmon');
 });
+
+test('camera: save antigo recebe o padrão; sensibilidade limitada; eixo inválido volta ao padrão', () => {
+  const old = { ...defaultSave() } as Record<string, unknown>; delete old.camera;
+  expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(old) })).camera).toEqual({ mouseSens: 1, padSens: 1, invertY: false, padAxisX: 2, padAxisY: 3 });
+  const bad = { ...defaultSave(), camera: { mouseSens: 99, padSens: 0, invertY: 'x', padAxisX: -1, padAxisY: 1.5 } };
+  expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(bad) })).camera).toEqual({ mouseSens: 3, padSens: 0.25, invertY: false, padAxisX: 2, padAxisY: 3 });
+});

@@ -1,11 +1,13 @@
 import { createInput, DEFAULT_BINDINGS } from '../../src/core/input';
+import { defaultSave } from '../../src/core/save';
 
-function make(pads: { current: (Gamepad | null)[] } = { current: [] }, bindings: Record<string, string> = {}) {
-  const handlers: Record<string, ((e: { code: string; preventDefault?: () => void }) => void)[]> = {};
+function make(pads: { current: (Gamepad | null)[] } = { current: [] }, bindings: Record<string, string> = {}, locked = { on: true }) {
+  const handlers: Record<string, ((e: { code: string; movementX?: number; movementY?: number; preventDefault?: () => void }) => void)[]> = {};
   const target = { addEventListener: (t: string, h: never) => { (handlers[t] ??= []).push(h); } } as never;
-  const input = createInput(target, () => pads.current, bindings);
+  const input = createInput(target, () => pads.current, bindings, () => locked.on);
   const key = (type: 'keydown' | 'keyup', code: string) => handlers[type]?.forEach(h => h({ code, preventDefault() {} }));
-  return { input, key };
+  const mouse = (movementX: number, movementY: number) => handlers.mousemove?.forEach(h => h({ code: '', movementX, movementY }));
+  return { input, key, mouse, locked };
 }
 const pad = (axes: number[], pressed: number[] = []) =>
   ({ connected: true, axes, buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: pressed.includes(i), value: pressed.includes(i) ? 1 : 0 })) }) as unknown as Gamepad;
@@ -45,4 +47,32 @@ test('a tap between polls is not lost', () => {
 });
 test('captureNext resolves with next key', async () => {
   const { input, key } = make(); const p = input.captureNext(); key('keydown', 'KeyQ'); await expect(p).resolves.toBe('KeyQ');
+});
+
+const cam = defaultSave().camera;
+test('mouse com lock vira yaw e o acumulador zera no poll', () => {
+  const { input, mouse } = make(); mouse(100, 0); input.poll();
+  expect(input.look(1 / 60).dx).toBeCloseTo(100 * 0.0025);
+  input.poll(); expect(input.look(1 / 60).dx).toBe(0);
+});
+test('mouse sem lock é ignorado', () => {
+  const { input, mouse, locked } = make(); locked.on = false; mouse(100, 50); input.poll();
+  expect(input.look(1 / 60)).toEqual({ dx: 0, dy: 0 });
+});
+test('analógico direito com zona morta', () => {
+  const pads = { current: [pad([0, 0, 0.8, 0])] }; const { input } = make(pads); input.poll();
+  expect(input.look(0.5).dx).toBeCloseTo(0.8 * 2.6 * 0.5);
+  pads.current = [pad([0, 0, 0.2, 0])]; input.poll(); expect(input.look(0.5).dx).toBe(0);
+});
+test('invertY inverte dy', () => {
+  const { input, mouse } = make(); input.setCamera({ ...cam, invertY: true }); mouse(0, 40); input.poll();
+  expect(input.look(1 / 60).dy).toBeLessThan(0);
+});
+test('setCamera troca o eixo X do analógico', () => {
+  const pads = { current: [pad([0, 0, 0, 0, 0.9])] }; const { input } = make(pads);
+  input.setCamera({ ...cam, padAxisX: 4 }); input.poll(); expect(input.look(0.1).dx).toBeGreaterThan(0);
+});
+test('captureAxis resolve com o eixo movido', async () => {
+  const pads = { current: [pad([0, 0, 0, 0])] }; const { input } = make(pads);
+  const p = input.captureAxis(); pads.current = [pad([0, 0, 0, -0.9])]; input.poll(); await expect(p).resolves.toBe(3);
 });

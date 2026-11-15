@@ -3,6 +3,10 @@ export const STARTERS = ['agumon', 'veemon', 'guilmon'] as const;
 
 export interface PartnerRecord { runs: number; wins: number; bestPhase: number }
 
+/** opções de câmera: sensibilidades são multiplicadores (0.25–3); eixos do analógico direito (0–15) */
+export interface CameraSettings { mouseSens: number; padSens: number; invertY: boolean; padAxisX: number; padAxisY: number }
+export const defaultCamera = (): CameraSettings => ({ mouseSens: 1, padSens: 1, invertY: false, padAxisX: 2, padAxisY: 3 });
+
 export interface SaveData {
   version: 1;
   unlocked: string[];
@@ -17,16 +21,26 @@ export interface SaveData {
   partnerRecords: Record<string, PartnerRecord>;
   currency: number;
   bindings: Record<string, string>;
+  camera: CameraSettings;
 }
 
 export function defaultSave(): SaveData {
-  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {} };
+  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {}, camera: defaultCamera() };
 }
 
 const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x => typeof x === 'string') ? [...v] : null);
 /** como strArr, mas descarta só os itens inválidos */
 const strItems = (v: unknown): string[] | null => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : null);
 const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+
+const sens = (v: unknown) => Math.min(3, Math.max(0.25, num(v, 1)));
+const axisIdx = (v: unknown, d: number) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 15 ? v : d);
+function loadCamera(v: unknown): CameraSettings {
+  const d = defaultCamera();
+  if (!v || typeof v !== 'object') return d;
+  const c = v as Record<string, unknown>;
+  return { mouseSens: sens(c.mouseSens), padSens: sens(c.padSens), invertY: c.invertY === true, padAxisX: axisIdx(c.padAxisX, d.padAxisX), padAxisY: axisIdx(c.padAxisY, d.padAxisY) };
+}
 
 function storageOrGlobal(storage: Storage | null | undefined): Storage | null {
   if (storage !== undefined) return storage;
@@ -79,6 +93,7 @@ export function loadSave(storage?: Storage | null): SaveData {
     partnerRecords,
     currency: num(r.currency, 0),
     bindings,
+    camera: loadCamera(r.camera),
   };
 }
 

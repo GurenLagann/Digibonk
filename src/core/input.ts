@@ -1,3 +1,6 @@
+import { T } from '../data/tuning';
+import { defaultCamera, type CameraSettings } from './save';
+
 export type Action = 'up' | 'down' | 'left' | 'right' | 'confirm' | 'cancel' | 'evolve' | 'pause' | 'opt1' | 'opt2' | 'opt3' | 'reroll' | 'skip' | 'ban';
 export const ACTIONS: readonly Action[] = ['up', 'down', 'left', 'right', 'confirm', 'cancel', 'evolve', 'pause', 'opt1', 'opt2', 'opt3', 'reroll', 'skip', 'ban'];
 
@@ -30,13 +33,18 @@ export interface Input {
   codesFor(a: Action): string[];
   captureNext(): Promise<string>;
   padConnected(): boolean;
+  /** yaw/pitch (rad) deste quadro: mouse acumulado até o último poll() + analógico direito do último poll() */
+  look(dt: number): { dx: number; dy: number };
+  setCamera(s: CameraSettings): void;
+  /** resolve com o índice do eixo do gamepad que passar de 0.6 (em módulo) no próximo poll() */
+  captureAxis(): Promise<number>;
 }
 
-type KeyTarget = { addEventListener(type: string, h: (e: KeyboardEvent) => void): void };
+type KeyTarget = { addEventListener(type: string, h: (e: KeyboardEvent & MouseEvent) => void): void };
 const isPad = (c: string) => c.startsWith('pad:');
 const DEADZONE = 0.2;
 
-export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[], saved: Record<string, string>): Input {
+export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[], saved: Record<string, string>, isLocked: () => boolean = () => false): Input {
   const held = new Set<string>();
   const tapped = new Set<string>();
   let overrides: Record<string, string> = { ...saved };
@@ -44,12 +52,21 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
   let stick = { x: 0, y: 0 };
   let padOn = false;
   let capture: ((c: string) => void) | null = null;
+  let axisCapture: ((i: number) => void) | null = null;
+  let cam = defaultCamera();
+  // regra: o mouse acumula entre polls (acc) e é consumido no poll (mouse); o look() lê só o snapshot do último poll
+  let acc = { x: 0, y: 0 }, mouse = { x: 0, y: 0 };
+  let axes: readonly number[] = [];
 
   target.addEventListener('keydown', e => {
     if (capture) { const c = capture; capture = null; c(e.code); return; }
     held.add(e.code); tapped.add(e.code);
   });
   target.addEventListener('keyup', e => { held.delete(e.code); });
+  target.addEventListener('mousemove', e => {
+    if (!isLocked()) return;
+    acc.x += e.movementX || 0; acc.y += e.movementY || 0;
+  });
   target.addEventListener('blur', () => held.clear());
 
   const codesFor = (a: Action): string[] => {
@@ -73,6 +90,12 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
       const p = readPad();
       padOn = !!p;
       stick = { x: 0, y: 0 };
+      mouse = acc; acc = { x: 0, y: 0 };
+      axes = p ? [...p.axes] : [];
+      if (axisCapture) {
+        const i = axes.findIndex(v => Math.abs(v) > 0.6);
+        if (i >= 0) { const c = axisCapture; axisCapture = null; c(i); }
+      }
       if (p) {
         p.buttons.forEach((b, i) => { if (b.pressed) active.add(`pad:b${i}`); });
         p.axes.forEach((v, i) => { if (v > 0.5) active.add(`pad:a${i}+`); else if (v < -0.5) active.add(`pad:a${i}-`); });
@@ -102,5 +125,15 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
     codesFor,
     captureNext() { return new Promise<string>(res => { capture = res; }); },
     padConnected() { return padOn; },
+    look(dt) {
+      const dz = (v: number) => (Math.abs(v) > T.CAMERA.PAD_DEADZONE ? v : 0);
+      const ps = T.CAMERA.PAD_SENS * cam.padSens * dt;
+      const ms = T.CAMERA.MOUSE_SENS * cam.mouseSens;
+      const dx = mouse.x * ms + dz(axes[cam.padAxisX] ?? 0) * ps;
+      const dy = mouse.y * ms + dz(axes[cam.padAxisY] ?? 0) * ps;
+      return { dx, dy: cam.invertY ? -dy : dy };
+    },
+    setCamera(s) { cam = { ...s }; },
+    captureAxis() { return new Promise<number>(res => { axisCapture = res; }); },
   };
 }
