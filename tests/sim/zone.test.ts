@@ -99,3 +99,14 @@ test('com 3 relíquias não há escolha, só o Digi Data', () => {
   const a = r.pool.get(r.zone!.alphaId!)!; a.hp = -1; r.pool.kill(a.id); step(r);
   expect(r.relicOffer).toBeNull(); expect(r.zone!.stage).toBe('exit');
 });
+
+test('Bits largados na arena e não coletados vão para o saldo ao sair', () => {
+  const r = mk(); withPortal(r); step(r); clearWaves(r);
+  step(r, T.ZONE.ALPHA_SECONDS + 0.1);
+  expect(r.zone!.stage).toBe('exit');
+  r.pickups.push({ id: 9999, x: C.x + T.ZONE.RADIUS - 1, z: C.z, kind: 'bits', value: 37 });
+  const bits = r.bits;
+  r.px = r.zone!.exit!.x; r.pz = r.zone!.exit!.z; step(r);
+  expect(r.zone).toBeNull();
+  expect(r.bits).toBe(bits + 37);
+});

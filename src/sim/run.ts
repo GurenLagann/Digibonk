@@ -238,7 +238,7 @@ function startAmbush(r: RunState, ev: RunEvent[]) {
     const a = a0 + (i / T.CURSED.COUNT) * Math.PI * 2;
     const x = clamp(r.px + Math.cos(a) * T.CURSED.RADIUS, -T.MAP_HALF, T.MAP_HALF);
     const z = clamp(r.pz + Math.sin(a) * T.CURSED.RADIUS, -T.MAP_HALF, T.MAP_HALF);
-    const e = r.pool.spawn(def, x, z, { hp: d.hpMul * T.CURSED.HP, dmg: d.dmgMul * T.CURSED.DMG });
+    const e = r.pool.spawn(def, x, z, { hp: d.hpMul * T.CURSED.HP, dmg: d.dmgMul * T.CURSED.DMG }, { force: true });
     if (e) ids.push(e.id);
   }
   if (!ids.length) return;

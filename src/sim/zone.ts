@@ -63,6 +63,7 @@ function enterZone(r: RunState, p: Portal, ev: RunEvent[]) {
 
 function exitZone(r: RunState, ev: RunEvent[]) {
   const s = r.zone!.saved;
+  for (const p of r.pickups) if (p.kind === 'bits') r.bits += p.value; // Bits largados na arena não se perdem
   r.pool = s.pool; r.pickups = s.pickups; r.chests = s.chests; r.px = s.px; r.pz = s.pz;
   r.zone = null;
   clearCombat(r);

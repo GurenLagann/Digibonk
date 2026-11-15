@@ -110,3 +110,17 @@ test('ambushCleared com relíquias cheias vem com relic: false', () => {
   expect(ev).toContainEqual({ type: 'ambushCleared', relic: false });
   expect(r.relicSource).toBeNull();
 });
+
+test('com o mapa no limite de inimigos a emboscada ainda acontece (não abre vazio)', () => {
+  const r = mk();
+  r.pool.clearAll(); r.pickups.length = 0;
+  const def = ENEMIES[0];
+  for (let i = 0; i < T.MAX_ENEMIES; i++) r.pool.spawn(def, r.px + 60, r.pz + 60, { hp: 1, dmg: 0 });
+  expect(r.pool.spawn(def, 0, 0, { hp: 1, dmg: 0 })).toBeNull();
+  const c = r.chests.find(x => x.kind === 'cursed')!;
+  r.px = c.x; r.pz = c.z;
+  const ev = step(r);
+  expect(c.opened).toBe(true);
+  expect(ev.some(e => e.type === 'ambush')).toBe(true);
+  expect(r.ambush!.ids).toHaveLength(T.CURSED.COUNT);
+});

@@ -46,7 +46,7 @@ function labelSprite(text: string, cursed: boolean): THREE.Sprite | null {
   g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = cursed ? '#e2b8ff' : '#ffe27a'; g.fillText(text, 128, 33);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false }));
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
   sp.renderOrder = 10; sp.scale.set(2.4, 0.6, 1);
   return sp;
 }

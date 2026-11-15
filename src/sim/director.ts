@@ -15,9 +15,10 @@ export class EnemyPool {
   readonly all: Enemy[] = [];
   private free: number[] = [];
   private normalAlive = 0;
-  spawn(def: EnemyDef | BossDef, x: number, z: number, scale: { hp: number; dmg: number }, flags: { boss?: boolean; miniboss?: boolean } = {}): Enemy | null {
+  spawn(def: EnemyDef | BossDef, x: number, z: number, scale: { hp: number; dmg: number }, flags: { boss?: boolean; miniboss?: boolean; force?: boolean } = {}): Enemy | null {
     const special = !!(flags.boss || flags.miniboss);
-    if (!special && this.normalAlive >= T.MAX_ENEMIES) return null;
+    // force: eventos que não podem falhar (emboscada) passam do teto; o diretor só volta a gerar quando cair abaixo dele
+    if (!special && !flags.force && this.normalAlive >= T.MAX_ENEMIES) return null;
     const id = this.free.length ? this.free.pop()! : this.all.length;
     const hp = def.hp * scale.hp;
     const e: Enemy = { id, def: def.id, x, z, hp, maxHp: hp, dmg: def.dmg * scale.dmg, speed: def.speed, size: def.size,

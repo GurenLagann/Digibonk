@@ -47,6 +47,7 @@ const DEADZONE = 0.2;
 export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[], saved: Record<string, string>, isLocked: () => boolean = () => false): Input {
   const held = new Set<string>();
   const tapped = new Set<string>();
+  const resumed = new Set<string>(); // teclas re-seguradas pelo auto-repeat após um blur: valem como held, não como borda
   let overrides: Record<string, string> = { ...saved };
   let active = new Set<string>(), prev = new Set<string>();
   let stick = { x: 0, y: 0 };
@@ -62,7 +63,8 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
   target.addEventListener('keydown', e => {
     if (capture) { const c = capture; capture = null; c(e.code); return; }
     // auto-repeat não é um novo pressionar: depois de um blur (held limpo) ele geraria uma borda nova a cada repetição
-    if (e.repeat) return;
+    // mas se a tecla seguiu segurada durante o blur, o repeat a devolve ao held (sem borda) para o movimento voltar
+    if (e.repeat) { if (!held.has(e.code)) { held.add(e.code); resumed.add(e.code); } return; }
     held.add(e.code); tapped.add(e.code);
   });
   target.addEventListener('keyup', e => { held.delete(e.code); });
@@ -90,6 +92,8 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
       prev = active;
       active = new Set([...held, ...tapped]);
       tapped.clear();
+      for (const c of resumed) prev.add(c);
+      resumed.clear();
       const p = readPad();
       padOn = !!p;
       stick = { x: 0, y: 0 };

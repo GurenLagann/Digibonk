@@ -117,3 +117,19 @@ test('auto-repeat do teclado (mesmo após blur) não vira um novo pressionar', (
   fire('keydown', { code: 'Enter', repeat: true }); input.poll();
   expect(input.pressed('confirm')).toBe(false);
 });
+
+test('tecla segurada durante um blur volta a valer no auto-repeat, sem virar pressionar', () => {
+  const handlers: Record<string, ((e: unknown) => void)[]> = {};
+  const target = { addEventListener: (t: string, h: never) => { (handlers[t] ??= []).push(h); } } as never;
+  const input = createInput(target, () => [], {});
+  const fire = (t: string, e: object = {}) => handlers[t]?.forEach(h => h(e));
+  fire('keydown', { code: 'KeyW', repeat: false }); input.poll();
+  expect(input.move().mz).toBe(-1);
+  fire('blur'); input.poll();
+  expect(input.move().mz).toBe(0);
+  fire('keydown', { code: 'KeyW', repeat: true }); input.poll();
+  expect(input.move().mz).toBe(-1);
+  expect(input.pressed('up')).toBe(false);
+  fire('keyup', { code: 'KeyW' }); input.poll();
+  expect(input.move().mz).toBe(0);
+});

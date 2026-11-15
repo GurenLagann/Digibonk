@@ -24,3 +24,10 @@ test('labBonuses', () => {
   const s = { ...defaultSave(), lab: { lab_reroll: 2, lab_ban: 1, lab_offer: 1 } };
   expect(labBonuses(s)).toEqual({ reroll: 2, skip: 0, ban: 1, extraOffers: 1 });
 });
+
+test('chaves herdadas do Object (constructor, toString) não viram nível nem preço', () => {
+  const s = { ...defaultSave(), currency: 9999 };
+  expect(labLevel(s, 'constructor')).toBe(0);
+  expect(nextLabCost(s, 'toString')).toBeNull();
+  expect(buyLab(s, 'constructor')).toBe(false);
+});
