@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createRng } from '../../core/rng';
 import { T } from '../../data/tuning';
 import { MAP_OBSTACLES } from '../../sim/map';
-import { Bag, FadeCrowns, instanced, loadTexture, silhouette, skyTexture, type Crown } from './common';
+import { terraces, type HeightFn } from '../terrain';
+import { Bag, FadeCrowns, flatDecals, groundMesh, instanced, loadTexture, silhouette, skyTexture, type Crown } from './common';
 import type { BiomeView } from './types';
 
 /**
@@ -37,12 +38,12 @@ function hazardTexture(bag: Bag): THREE.DataTexture {
   return t;
 }
 
-/** utilidades de posição comuns aos dois biomas */
-function helpers(seed: number) {
+/** utilidades de posição comuns aos dois biomas; tudo assentado no relevo `height` */
+function helpers(seed: number, height: HeightFn) {
   const rng = createRng(seed), r = rng.next;
   const tmp = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), s = new THREE.Vector3();
   const mat4 = (x: number, y: number, z: number, rot: number, sx: number, sy = sx, sz = sx) =>
-    tmp.clone().compose(p.set(x, y, z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
+    tmp.clone().compose(p.set(x, y + height(x, z), z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
   const free = (x: number, z: number) => Math.abs(x) <= H - 1 && Math.abs(z) <= H - 1 && Math.hypot(x, z) >= 4 && MAP_OBSTACLES.every(o => Math.hypot(o.x - x, o.z - z) - o.r >= 2.05);
   const scatter = (n: number, fn: (x: number, z: number) => THREE.Matrix4) => {
     const out: THREE.Matrix4[] = [];
@@ -100,20 +101,20 @@ export function buildFactory(): BiomeView {
   const ID = 'fabrica';
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
-  const { r, mat4, scatter, floorRects } = helpers(0xfac701);
+  const height = terraces(0xfac701, 0.9, 2, 3);
+  const { r, mat4, scatter, floorRects } = helpers(0xfac701, height);
 
   const chapa = loadTexture(ID, 'chapa', GROUND / 2.5), grade = loadTexture(ID, 'grade', 2);
   const maquina = loadTexture(ID, 'maquina', 1), tanque = loadTexture(ID, 'tanque', 1);
   const hazard = hazardTexture(bag);
 
   // chão: chapa xadrez + grades enferrujadas + faixas de perigo
-  const ground = new THREE.Mesh(bag.geo(new THREE.PlaneGeometry(GROUND, GROUND).rotateX(-Math.PI / 2)), bag.mat(new THREE.MeshLambertMaterial({ map: chapa, color: 0xc4c2ba })));
-  ground.name = 'ground';
+  const ground = groundMesh(bag, height, bag.mat(new THREE.MeshLambertMaterial({ map: chapa, color: 0xc4c2ba })), GROUND);
   const d = decal(bag);
   group.add(ground,
-    instanced(bag, 'floor-panel', d, decalMat(bag, { map: chapa, color: 0x8e8a80 }), floorRects(90, 6, 12).map(m => { m.elements[13] = -0.007; return m; })),
-    instanced(bag, 'floor-grate', d, decalMat(bag, { map: grade, color: 0xe0c0a0 }), floorRects(220, 2.5, 4.5)),
-    instanced(bag, 'floor-hazard', d, decalMat(bag, { map: hazard }), floorRects(70, 0.6, 1).map(m => m.multiply(new THREE.Matrix4().makeScale(6, 1, 0.8)))));
+    instanced(bag, 'floor-panel', d, decalMat(bag, { map: chapa, color: 0x8e8a80 }), flatDecals(height, floorRects(150, 6, 12)).map(m => { m.elements[13] -= 0.007; return m; })),
+    instanced(bag, 'floor-grate', d, decalMat(bag, { map: grade, color: 0xe0c0a0 }), flatDecals(height, floorRects(300, 2.5, 4.5))),
+    instanced(bag, 'floor-hazard', d, decalMat(bag, { map: hazard }), flatDecals(height, floorRects(110, 0.6, 1).map(m => m.multiply(new THREE.Matrix4().makeScale(6, 1, 0.8))))));
 
   // obstáculos: tanques (tree) e máquinas (rock)
   const tankMat = bag.mat(new THREE.MeshLambertMaterial({ map: tanque, color: 0xf0e6dc }));
@@ -126,7 +127,7 @@ export function buildFactory(): BiomeView {
     const rot = r() * Math.PI * 2;
     if (o.kind === 'tree') {
       const rad = o.r * 0.95, hs = 1 + o.r * 0.45; // altura 3 × hs
-      tanks.push({ x: o.x, y: 1.5 * hs, z: o.z, r: Math.max(rad, 1.5 * hs) * 1.05, m: mat4(o.x, 0, o.z, rot, rad, hs, rad), c: new THREE.Color().setHSL(0.07, 0.25, 0.85 + r() * 0.15) });
+      tanks.push({ x: o.x, y: 1.5 * hs + height(o.x, o.z), z: o.z, r: Math.max(rad, 1.5 * hs) * 1.05, m: mat4(o.x, 0, o.z, rot, rad, hs, rad), c: new THREE.Color().setHSL(0.07, 0.25, 0.85 + r() * 0.15) });
     } else {
       const w = o.r * 1.35, h = 0.8 + o.r * 0.7;
       machines.push(mat4(o.x, 0, o.z, rot, w, h, w * 0.9));
@@ -178,6 +179,7 @@ export function buildFactory(): BiomeView {
   return {
     group,
     sky: { background, fog },
+    height,
     light: { sky: 0xeef0e4, ground: 0x5a4a3a, hemi: 1.2, sun: 0xfff0d8, sunIntensity: 1.1 },
     update(_time, camPos, target) {
       near.position.set(camPos.x, 0, camPos.z); far.position.set(camPos.x, 0, camPos.z);
@@ -216,13 +218,13 @@ export function buildFactoryCore(): BiomeView {
   const ID = 'nucleo';
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
-  const { r, mat4, scatter, floorRects } = helpers(0xc0de06);
+  const height = terraces(0xc0de06, 0.9, 2, 3);
+  const { r, mat4, scatter, floorRects } = helpers(0xc0de06, height);
 
   const placa = loadTexture(ID, 'placa', GROUND / 8), tecido = loadTexture(ID, 'tecido', 1), engr = loadTexture(ID, 'engrenagens', 1);
 
   // chão: placas pretas + piso trançado + grade de neon verde rente ao chão
-  const ground = new THREE.Mesh(bag.geo(new THREE.PlaneGeometry(GROUND, GROUND).rotateX(-Math.PI / 2)), bag.mat(new THREE.MeshLambertMaterial({ map: placa, color: 0x8c949a })));
-  ground.name = 'ground';
+  const ground = groundMesh(bag, height, bag.mat(new THREE.MeshLambertMaterial({ map: placa, color: 0x8c949a })), GROUND);
   const d = decal(bag);
   const neon = bag.mat(new THREE.MeshBasicMaterial({ color: 0x3dff7a, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
   const lines: THREE.Matrix4[] = [];
@@ -234,8 +236,8 @@ export function buildFactoryCore(): BiomeView {
     }
   }
   group.add(ground,
-    instanced(bag, 'floor-weave', d, decalMat(bag, { map: tecido, color: 0xb0b8b4 }), floorRects(120, 4, 9)),
-    instanced(bag, 'floor-neon', d, neon, lines));
+    instanced(bag, 'floor-weave', d, decalMat(bag, { map: tecido, color: 0xb0b8b4 }), flatDecals(height, floorRects(200, 4, 9))),
+    instanced(bag, 'floor-neon', d, neon, flatDecals(height, lines)));
 
   // obstáculos: engrenagens gigantes (tree) e consoles (rock)
   const gearMat = bag.mat(new THREE.MeshLambertMaterial({ map: engr, color: 0x9aa4a0 }));
@@ -248,7 +250,7 @@ export function buildFactoryCore(): BiomeView {
     const rot = r() * Math.PI * 2;
     if (o.kind === 'tree') {
       const k = o.r * 0.95 + 0.4; // raio externo ≈ k; altura total ≈ 2,3k
-      gears.push({ x: o.x, y: 1.15 * k, z: o.z, r: 1.25 * k, m: mat4(o.x, 0, o.z, rot, k), c: new THREE.Color().setHSL(0.38, 0.1, 0.8 + r() * 0.2) });
+      gears.push({ x: o.x, y: 1.15 * k + height(o.x, o.z), z: o.z, r: 1.25 * k, m: mat4(o.x, 0, o.z, rot, k), c: new THREE.Color().setHSL(0.38, 0.1, 0.8 + r() * 0.2) });
     } else {
       const w = o.r * 1.3, h = 0.8 + o.r * 0.5;
       consoles.push(mat4(o.x, 0, o.z, rot, w, h, w));
@@ -298,6 +300,7 @@ export function buildFactoryCore(): BiomeView {
   return {
     group,
     sky: { background, fog },
+    height,
     // luz própria verde: escuro, mas os inimigos continuam legíveis
     light: { sky: 0xb8ffd8, ground: 0x203028, hemi: 1.15, sun: 0xd8ffe8, sunIntensity: 0.75 },
     update(_time, camPos, target) {

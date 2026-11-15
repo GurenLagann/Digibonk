@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createRng } from '../../core/rng';
 import { T } from '../../data/tuning';
 import { MAP_OBSTACLES } from '../../sim/map';
-import { Bag, FadeCrowns, instanced, loadTexture, silhouette, skyTexture, type Crown } from './common';
+import { hills } from '../terrain';
+import { Bag, FadeCrowns, groundMesh, instanced, loadTexture, raise, raiseCrown, silhouette, skyTexture, type Crown } from './common';
 import type { BiomeView } from './types';
 
 const ID = 'floresta-dw3';
@@ -143,9 +144,15 @@ export function buildForestDw3(): BiomeView {
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
   const rng = createRng(0xd3f0e5), r = rng.next;
+  const height = hills(0xd3f0e5, 2);
   const tmp = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), s = new THREE.Vector3();
   const mat4 = (x: number, y: number, z: number, rot: number, sx: number, sy = sx, sz = sx) =>
-    tmp.clone().compose(p.set(x, y, z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
+    tmp.clone().compose(p.set(x, y + height(x, z), z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
+  /** pinheiro assentado no relevo */
+  const pine = (x: number, z: number, k: number, rot: number, tint: number) => {
+    const t = pineParts(x, z, k, rot, tint), h = height(x, z);
+    raise(t.trunk, h); raiseCrown(t.crown, h); return t;
+  };
 
   // texturas (um repeat por URL: o cache é compartilhado) e materiais
   const grama = loadTexture(ID, 'grama', GROUND / 6), trilha = loadTexture(ID, 'trilha'), pinheiro = loadTexture(ID, 'pinheiro', 2);
@@ -162,13 +169,16 @@ export function buildForestDw3(): BiomeView {
   const pineGeo = pineGeometry(bag, 10), boxGeo = bag.geo(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0)), pipeGeo = pipeGeometry(bag);
 
   // chão claro + trilhas de terra arenosa
-  const ground = new THREE.Mesh(bag.geo(new THREE.PlaneGeometry(GROUND, GROUND)), bag.mat(new THREE.MeshLambertMaterial({ map: grama, color: 0xf6f8e4 })));
-  ground.rotation.x = -Math.PI / 2; ground.name = 'ground';
+  const ground = groundMesh(bag, height, bag.mat(new THREE.MeshLambertMaterial({ map: grama, color: 0xf6f8e4 })), GROUND);
   const trail = new THREE.Mesh(trailGeometry(bag, trailPaths(r), 3.4), bag.mat(new THREE.MeshLambertMaterial({
     map: trilha, color: 0xf2e2bc, vertexColors: true, transparent: true, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
   })));
   trail.name = 'trail'; trail.renderOrder = 1;
+  // trilha deitada sobre o relevo (um fio acima do chão)
+  const tp = trail.geometry.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < tp.count; i++) tp.setY(i, tp.getY(i) + height(tp.getX(i), tp.getZ(i)));
+  tp.needsUpdate = true; trail.geometry.computeBoundingBox();
   group.add(ground, trail);
 
   // obstáculos: pinheiros nos tree; rock vira caixa ou cano de metal, alguns com poste
@@ -176,7 +186,7 @@ export function buildForestDw3(): BiomeView {
   const glows: THREE.Matrix4[] = [], posts: THREE.Matrix4[] = [];
   MAP_OBSTACLES.forEach((o, i) => {
     if (o.kind === 'tree') {
-      const t = pineParts(o.x, o.z, o.r, r() * Math.PI * 2, r() * 2 - 1);
+      const t = pine(o.x, o.z, o.r, r() * Math.PI * 2, r() * 2 - 1);
       trunks.push(t.trunk); crowns.push(t.crown);
       return;
     }
@@ -205,7 +215,7 @@ export function buildForestDw3(): BiomeView {
   for (let gx = -CLIFF; gx <= CLIFF; gx += 4.5) for (let gz = -CLIFF; gz <= CLIFF; gz += 4.5) {
     const x = gx + (r() * 2 - 1) * 1.6, z = gz + (r() * 2 - 1) * 1.6, m = Math.max(Math.abs(x), Math.abs(z));
     if (m < H + 4 || m > CLIFF - 2) continue;
-    const t = pineParts(x, z, 1.3 + r() * 1.3, r() * Math.PI * 2, r() * 2 - 1), k = sideOf(x, z);
+    const t = pine(x, z, 1.3 + r() * 1.3, r() * Math.PI * 2, r() * 2 - 1), k = sideOf(x, z);
     bTrunks[k].push(t.trunk); bCrowns[k].push(t.crown);
   }
   for (let t = -H; t <= H; t += 16) {
@@ -272,6 +282,7 @@ export function buildForestDw3(): BiomeView {
   return {
     group,
     sky: { background, fog },
+    height,
     // dia claro
     light: { sky: 0xf2fbff, ground: 0x7c8a48, hemi: 1.3, sun: 0xfff8e6, sunIntensity: 1.4 },
     update(_time, camPos, target) {

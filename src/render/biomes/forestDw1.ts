@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { createRng } from '../../core/rng';
 import { T } from '../../data/tuning';
 import { MAP_OBSTACLES } from '../../sim/map';
-import { Bag, FadeCrowns, instanced, loadTexture, silhouette, skyTexture, type Crown } from './common';
+import { hills } from '../terrain';
+import { Bag, FadeCrowns, flatDecals, groundMesh, instanced, loadTexture, raise, raiseCrown, silhouette, skyTexture, type Crown } from './common';
 import type { BiomeView } from './types';
 
 const ID = 'floresta-dw1';
@@ -89,9 +90,15 @@ export function buildForestDw1(): BiomeView {
   const bag = new Bag(), group = new THREE.Group();
   group.name = `bioma-${ID}`;
   const rng = createRng(0xd1f0e5), r = rng.next;
+  const height = hills(0xd1f0e5, 1.8);
   const tmp = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), s = new THREE.Vector3();
   const mat4 = (x: number, y: number, z: number, rot: number, sx: number, sy = sx, sz = sx) =>
-    tmp.clone().compose(p.set(x, y, z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
+    tmp.clone().compose(p.set(x, y + height(x, z), z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
+  /** árvore assentada no relevo */
+  const tree = (x: number, z: number, k: number, rot: number, tint: number) => {
+    const t = treeParts(x, z, k, rot, tint), h = height(x, z);
+    raise(t.trunk, h); raiseCrown(t.crown, h); return t;
+  };
 
   // texturas e materiais
   const grama = loadTexture(ID, 'grama', GROUND / 5), escura = loadTexture(ID, 'grama-escura', 2);
@@ -105,19 +112,18 @@ export function buildForestDw1(): BiomeView {
   const rockGeo = bag.geo(new THREE.DodecahedronGeometry(1, 0));
 
   // chão: grama + manchas de grama escura (bem mais escuras que a textura sozinha)
-  const ground = new THREE.Mesh(bag.geo(new THREE.PlaneGeometry(GROUND, GROUND)), bag.mat(new THREE.MeshLambertMaterial({ map: grama, color: 0xd8e6cc })));
-  ground.rotation.x = -Math.PI / 2; ground.name = 'ground';
+  const ground = groundMesh(bag, height, bag.mat(new THREE.MeshLambertMaterial({ map: grama, color: 0xd8e6cc })), GROUND);
   const patchMat = bag.mat(new THREE.MeshLambertMaterial({ map: escura, color: 0x6f8a62, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
   const patchGeo = bag.geo(new THREE.CircleGeometry(1, 14).rotateX(-Math.PI / 2));
   const patches: THREE.Matrix4[] = [];
   for (let i = 0; i < 220; i++) patches.push(mat4((r() * 2 - 1) * (H + 40), 0.02, (r() * 2 - 1) * (H + 40), r() * Math.PI, 3 + r() * 6, 1, 2 + r() * 4));
-  group.add(ground, instanced(bag, 'ground-patches', patchGeo, patchMat, patches));
+  group.add(ground, instanced(bag, 'ground-patches', patchGeo, patchMat, flatDecals(height, patches, 1)));
 
   // obstáculos: árvores de copa redonda e pedras musgosas
   const trunks: THREE.Matrix4[] = [], crowns: Crown[] = [], rocks: THREE.Matrix4[] = [];
   for (const o of MAP_OBSTACLES) {
     if (o.kind === 'tree') {
-      const t = treeParts(o.x, o.z, o.r, r() * Math.PI * 2, r() * 2 - 1);
+      const t = tree(o.x, o.z, o.r, r() * Math.PI * 2, r() * 2 - 1);
       trunks.push(t.trunk); crowns.push(t.crown);
     } else rocks.push(mat4(o.x, o.r * 0.4, o.z, o.x, o.r, o.r * 0.8, o.r));
   }
@@ -136,13 +142,13 @@ export function buildForestDw1(): BiomeView {
     if (m < H + 3 || m > H + 30) continue;
     if (giants.some(([ax, az]) => Math.hypot(ax - x, az - z) < 9)) continue;
     if (r() < 0.1) { dead.push(mat4(x, 0, z, r() * 6.28, 0.9 + r() * 0.6)); continue; }
-    const t = treeParts(x, z, 1.4 + r() * 1.2, r() * Math.PI * 2, r() * 2 - 1), k = sideOf(x, z);
+    const t = tree(x, z, 1.4 + r() * 1.2, r() * Math.PI * 2, r() * 2 - 1), k = sideOf(x, z);
     bTrunks[k].push(t.trunk); bCrowns[k].push(t.crown);
   }
   const giantMats = giants.map(([x, z]) => mat4(x, 0, z, r() * 6.28, 1));
   for (const [x, z] of giants) {
     const cr = 7.5;
-    bCrowns[sideOf(x, z + 0.01)].push({ x, y: 15, z, r: cr * 1.25, m: mat4(x, 15, z, r() * 6.28, cr, cr * 0.8, cr), c: new THREE.Color().setHSL(0.31, 0.3, 0.7) });
+    bCrowns[sideOf(x, z + 0.01)].push({ x, y: 15 + height(x, z), z, r: cr * 1.25, m: mat4(x, 15, z, r() * 6.28, cr, cr * 0.8, cr), c: new THREE.Color().setHSL(0.31, 0.3, 0.7) });
   }
   // copas da borda com poucos polígonos (são ~1000)
   const lowCrownGeo = crownGeometry(bag, 0);
@@ -211,6 +217,7 @@ export function buildForestDw1(): BiomeView {
   return {
     group,
     sky: { background, fog },
+    height,
     // luz mais fechada e esverdeada
     light: { sky: 0xcfe8c0, ground: 0x2c4a24, hemi: 1.15, sun: 0xfff1cc, sunIntensity: 1.05 },
     update(_time, camPos, target) {

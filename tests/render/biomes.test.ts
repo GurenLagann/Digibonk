@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { biomeForPhase, buildBiome } from '../../src/render/biomes';
 import { crownOccludes } from '../../src/render/biomes/common';
+import { isFlat } from '../../src/render/terrain';
 import { MAP_OBSTACLES } from '../../src/sim/map';
 import { T } from '../../src/data/tuning';
 import { MapView } from '../../src/render/map';
@@ -55,14 +56,14 @@ test.each(IDS)('%s: nada alto (> 1.2) dentro do mapa fora das posições de obst
   const bad: string[] = [];
   let checked = 0;
   b.group.traverse(o => {
-    if (!(o instanceof THREE.Mesh) || o.userData.backdrop) return;
+    if (!(o instanceof THREE.Mesh) || o.userData.backdrop || o.name === 'ground' || o.name === 'ground-far' || o.name === 'trail') return; // rentes ao relevo (conferidos vértice a vértice)
     o.geometry.computeBoundingBox();
     const n = o instanceof THREE.InstancedMesh ? o.count : 1;
     for (let i = 0; i < n; i++) {
       if (o instanceof THREE.InstancedMesh) o.getMatrixAt(i, m); else m.identity();
       box.copy(o.geometry.boundingBox!).applyMatrix4(m).applyMatrix4(o.matrixWorld);
       box.getCenter(c); checked++;
-      if (box.max.y <= 1.2 || Math.abs(c.x) > T.MAP_HALF || Math.abs(c.z) > T.MAP_HALF) continue;
+      if (box.max.y - b.height(c.x, c.z) <= 1.2 || Math.abs(c.x) > T.MAP_HALF || Math.abs(c.z) > T.MAP_HALF) continue;
       if (!MAP_OBSTACLES.some(ob => Math.hypot(ob.x - c.x, ob.z - c.z) < ob.r + 0.5)) bad.push(`${o.name}#${i} (${c.x.toFixed(1)}, ${c.z.toFixed(1)}) h=${box.max.y.toFixed(2)}`);
     }
   });
@@ -168,8 +169,8 @@ test('Floresta DW3: um pinheiro por tree, um objeto metálico por rock', () => {
   // trilhas planas, borda de pinheiros por lado e penhasco além do limite
   b.group.updateMatrixWorld(true);
   const trail = b.group.getObjectByName('trail') as THREE.Mesh;
-  trail.geometry.computeBoundingBox();
-  expect(trail.geometry.boundingBox!.max.y).toBeLessThan(0.1);
+  const tp = trail.geometry.attributes.position;
+  for (let i = 0; i < tp.count; i++) expect(tp.getY(i) - b.height(tp.getX(i), tp.getZ(i))).toBeLessThan(0.1);
   for (const k of ['n', 's', 'e', 'w']) {
     expect(count(`border-pine-crown-${k}`)).toBeGreaterThan(20);
     const cliff = b.group.getObjectByName(`cliff-${k}`) as THREE.Mesh;
@@ -224,4 +225,33 @@ test('MapView.resetForTitle: depois da Zona Digital, bioma visível e céu/nevoe
     expect(scene.background).toBe(priv.view.sky.background);
     expect(scene.fog!.color.getHex()).toBe(priv.view.sky.fog);
   } finally { vi.unstubAllGlobals(); }
+});
+
+test.each(IDS)('%s: relevo — altura > 0,5 em algum lugar, malha do chão segue a altura, decalques em trecho plano', id => {
+  const b = buildBiome(id);
+  let max = 0;
+  for (let x = -T.MAP_HALF; x <= T.MAP_HALF; x += 5) for (let z = -T.MAP_HALF; z <= T.MAP_HALF; z += 5) max = Math.max(max, b.height(x, z));
+  expect(max).toBeGreaterThan(0.5);
+  expect(b.height(0, 0)).toBe(0);
+  const ground = b.group.getObjectByName('ground') as THREE.Mesh;
+  const pos = ground.geometry.attributes.position;
+  for (let i = 0; i < pos.count; i += 997) expect(pos.getY(i)).toBeCloseTo(b.height(pos.getX(i), pos.getZ(i)), 5);
+  const m = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), e = new THREE.Euler();
+  b.group.traverse(o => {
+    if (!(o instanceof THREE.InstancedMesh) || !/^(floor-|ground-patches)/.test(o.name)) return;
+    const half = o.name === 'ground-patches' ? 1 : 0.5;
+    for (let i = 0; i < o.count; i++) {
+      o.getMatrixAt(i, m); m.decompose(p, q, sc); e.setFromQuaternion(q, 'YXZ');
+      expect(isFlat(b.height, p.x, p.z, sc.x * half, sc.z * half, e.y), `${o.name}#${i}`).toBe(true);
+    }
+  });
+  b.dispose();
+});
+
+test.each(IDS)('%s: obstáculos assentados no chão (base na altura do relevo)', id => {
+  const b = buildBiome(id);
+  const name = { 'floresta-dw1': 'tree-trunk', 'floresta-dw3': 'pine-trunk', fabrica: 'machine', nucleo: 'console' }[id];
+  const mesh = b.group.getObjectByName(name) as THREE.InstancedMesh, m = new THREE.Matrix4(), p = new THREE.Vector3();
+  for (let i = 0; i < mesh.count; i++) { mesh.getMatrixAt(i, m); p.setFromMatrixPosition(m); expect(p.y).toBeCloseTo(b.height(p.x, p.z), 5); }
+  b.dispose();
 });

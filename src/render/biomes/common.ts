@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { T } from '../../data/tuning';
+import { isFlat, type HeightFn } from '../terrain';
 
 /** guarda tudo que o bioma cria para o dispose */
 export class Bag {
@@ -142,4 +143,41 @@ export class FadeCrowns {
     });
     if (changed) this.write();
   }
+}
+
+// ───────────────────────────── relevo ─────────────────────────────
+
+/** sobe uma matriz (instância) em dy */
+export function raise(m: THREE.Matrix4, dy: number): THREE.Matrix4 { m.elements[13] += dy; return m; }
+/** sobe copa (matriz e centro de oclusão) em dy */
+export function raiseCrown(c: Crown, dy: number): Crown { c.y += dy; c.m.elements[13] += dy; return c; }
+
+/**
+ * chão com relevo: malha deslocada até MAP_HALF+42 (onde a altura já é 0) + plano grande por baixo.
+ * UV em coordenadas de mundo (u = (x+GROUND/2)/GROUND), para a textura repetir igual nos dois.
+ */
+export function groundMesh(bag: Bag, height: HeightFn, mat: THREE.Material, ground: number, cell = 1.5): THREE.Group {
+  const half = T.MAP_HALF + 42, n = Math.ceil((half * 2) / cell);
+  const g = bag.geo(new THREE.PlaneGeometry(half * 2, half * 2, n, n).rotateX(-Math.PI / 2));
+  const pos = g.attributes.position as THREE.BufferAttribute, uv = g.attributes.uv as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    pos.setY(i, height(x, z));
+    uv.setXY(i, (x + ground / 2) / ground, 1 - (z + ground / 2) / ground);
+  }
+  g.computeVertexNormals();
+  const mesh = new THREE.Mesh(g, mat); mesh.name = 'ground';
+  const far = new THREE.Mesh(bag.geo(new THREE.PlaneGeometry(ground, ground).rotateX(-Math.PI / 2).translate(0, -0.02, 0)), mat);
+  far.name = 'ground-far';
+  const grp = new THREE.Group(); grp.name = 'ground-group'; grp.add(mesh, far);
+  return grp;
+}
+
+const dp = new THREE.Vector3(), dq = new THREE.Quaternion(), ds = new THREE.Vector3(), de = new THREE.Euler();
+/** decalques planos (geometria 1×1 → meia-extensão = escala × `half`): só os que ficam inteiros num trecho plano */
+export function flatDecals(height: HeightFn, mats: THREE.Matrix4[], half = 0.5): THREE.Matrix4[] {
+  return mats.filter(m => {
+    m.decompose(dp, dq, ds); de.setFromQuaternion(dq, 'YXZ');
+    return isFlat(height, dp.x, dp.z, ds.x * half, ds.z * half, de.y);
+  });
 }
