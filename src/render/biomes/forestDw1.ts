@@ -11,9 +11,9 @@ const H = T.MAP_HALF;
 const GROUND = 600;
 
 /** copa redonda e fofa: icosaedros agrupados, centrada em x/z */
-function crownGeometry(bag: Bag): THREE.BufferGeometry {
+function crownGeometry(bag: Bag, detail = 1): THREE.BufferGeometry {
   const blobs = [[0, 0, 0, 1], [0.65, -0.25, 0.2, 0.7], [-0.55, -0.2, -0.35, 0.72], [0.1, 0.45, -0.4, 0.6], [-0.2, -0.3, 0.6, 0.62]];
-  const parts = blobs.map(([x, y, z, r]) => new THREE.IcosahedronGeometry(r, 1).translate(x, y, z));
+  const parts = blobs.map(([x, y, z, r]) => new THREE.IcosahedronGeometry(r, detail).translate(x, y, z));
   const g = bag.geo(mergeGeometries(parts)!);
   parts.forEach(p => p.dispose());
   g.computeBoundingBox();
@@ -102,8 +102,8 @@ export function buildForestDw1(): BiomeView {
     tmp.clone().compose(p.set(x, y, z), q.setFromAxisAngle(up, rot), s.set(sx, sy, sz));
 
   // texturas e materiais
-  const grama = loadTexture(bag, ID, 'grama', GROUND / 5), escura = loadTexture(bag, ID, 'grama-escura', 2);
-  const copa = loadTexture(bag, ID, 'copa', 1.5), casca = loadTexture(bag, ID, 'casca'), pedra = loadTexture(bag, ID, 'pedra');
+  const grama = loadTexture(ID, 'grama', GROUND / 5), escura = loadTexture(ID, 'grama-escura', 2);
+  const copa = loadTexture(ID, 'copa', 1.5), casca = loadTexture(ID, 'casca'), pedra = loadTexture(ID, 'pedra');
   const crownMat = bag.mat(new THREE.MeshLambertMaterial({ map: copa }));
   const crownFaded = bag.mat(new THREE.MeshLambertMaterial({ map: copa, transparent: true, opacity: 0.3, depthWrite: false }));
   const barkMat = bag.mat(new THREE.MeshLambertMaterial({ map: casca }));
@@ -134,23 +134,29 @@ export function buildForestDw1(): BiomeView {
 
   // borda: muralha de mata densa além de MAP_HALF, com árvores secas e gigantes nos cantos
   const giants = [[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([sx, sz]) => [sx * (H + 16), sz * (H + 16)] as const);
-  const bTrunks: THREE.Matrix4[] = [], bCrowns: Crown[] = [], dead: THREE.Matrix4[] = [];
+  // dividida por lado (n/s/e/w) para o frustum culling descartar o que fica atrás da câmera
+  const SIDES = ['n', 's', 'e', 'w'] as const;
+  const sideOf = (x: number, z: number) => Math.abs(x) > Math.abs(z) ? (x > 0 ? 'e' : 'w') : (z > 0 ? 's' : 'n');
+  const bTrunks = Object.fromEntries(SIDES.map(k => [k, [] as THREE.Matrix4[]])), bCrowns = Object.fromEntries(SIDES.map(k => [k, [] as Crown[]]));
+  const dead: THREE.Matrix4[] = [];
   for (let gx = -H - 30; gx <= H + 30; gx += 5) for (let gz = -H - 30; gz <= H + 30; gz += 5) {
     const x = gx + (r() * 2 - 1) * 1.8, z = gz + (r() * 2 - 1) * 1.8, m = Math.max(Math.abs(x), Math.abs(z));
     if (m < H + 3 || m > H + 30) continue;
     if (giants.some(([ax, az]) => Math.hypot(ax - x, az - z) < 9)) continue;
     if (r() < 0.1) { dead.push(mat4(x, 0, z, r() * 6.28, 0.9 + r() * 0.6)); continue; }
-    const t = treeParts(x, z, 1.4 + r() * 1.2, r() * Math.PI * 2, r() * 2 - 1);
-    bTrunks.push(t.trunk); bCrowns.push(t.crown);
+    const t = treeParts(x, z, 1.4 + r() * 1.2, r() * Math.PI * 2, r() * 2 - 1), k = sideOf(x, z);
+    bTrunks[k].push(t.trunk); bCrowns[k].push(t.crown);
   }
   const giantMats = giants.map(([x, z]) => mat4(x, 0, z, r() * 6.28, 1));
   for (const [x, z] of giants) {
     const cr = 7.5;
-    bCrowns.push({ x, y: 15, z, r: cr * 1.25, m: mat4(x, 15, z, r() * 6.28, cr, cr * 0.8, cr), c: new THREE.Color().setHSL(0.31, 0.3, 0.7) });
+    bCrowns[sideOf(x, z + 0.01)].push({ x, y: 15, z, r: cr * 1.25, m: mat4(x, 15, z, r() * 6.28, cr, cr * 0.8, cr), c: new THREE.Color().setHSL(0.31, 0.3, 0.7) });
   }
-  const borderFade = new FadeCrowns(bag, 'border-crown', crownGeo, crownMat, crownFaded, bCrowns);
-  group.add(instanced(bag, 'border-trunk', trunkGeo, barkMat, bTrunks), borderFade.opaque, borderFade.faded,
-    instanced(bag, 'border-dead', deadGeometry(bag), deadMat, dead), instanced(bag, 'border-giant', giantGeometry(bag), barkMat, giantMats));
+  // copas da borda com poucos polígonos (são ~1000)
+  const lowCrownGeo = crownGeometry(bag, 0);
+  const borderFades = SIDES.map(k => new FadeCrowns(bag, `border-crown-${k}`, lowCrownGeo, crownMat, crownFaded, bCrowns[k]));
+  for (const [i, k] of SIDES.entries()) group.add(instanced(bag, `border-trunk-${k}`, trunkGeo, barkMat, bTrunks[k]), borderFades[i].opaque, borderFades[i].faded);
+  group.add(instanced(bag, 'border-dead', deadGeometry(bag), deadMat, dead), instanced(bag, 'border-giant', giantGeometry(bag), barkMat, giantMats));
 
   // decoração baixa sem colisão (semente fixa, ≥ 2 dos obstáculos)
   const free = (x: number, z: number) => Math.abs(x) <= H - 1 && Math.abs(z) <= H - 1 && MAP_OBSTACLES.every(o => Math.hypot(o.x - x, o.z - z) - o.r >= 2.05);
@@ -217,7 +223,7 @@ export function buildForestDw1(): BiomeView {
     update(_time, camPos, target) {
       near.position.set(camPos.x, 0, camPos.z); far.position.set(camPos.x, 0, camPos.z);
       treeFade.update(camPos, target);
-      borderFade.update(camPos, target);
+      for (const f of borderFades) f.update(camPos, target);
     },
     dispose() { bag.dispose(); },
   };

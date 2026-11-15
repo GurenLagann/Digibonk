@@ -79,8 +79,31 @@ test('dispose libera geometrias e materiais criados', () => {
   const disposedGeo = new Set(geo.mock.contexts), disposedMat = new Set(mat.mock.contexts);
   for (const g of geos) expect(disposedGeo.has(g)).toBe(true);
   for (const m of mats) expect(disposedMat.has(m)).toBe(true);
-  expect(tex).toHaveBeenCalled();
-  if (b.sky.background instanceof THREE.Texture) expect(new Set(tex.mock.contexts).has(b.sky.background)).toBe(true);
+  // céu é do bioma; as texturas carregadas ficam no cache (não são descartadas)
+  const disposedTex = new Set(tex.mock.contexts);
+  if (b.sky.background instanceof THREE.Texture) expect(disposedTex.has(b.sky.background)).toBe(true);
+  const crown = b.group.getObjectByName('tree-crown') as THREE.Mesh;
+  expect(disposedTex.has((crown.material as THREE.MeshLambertMaterial).map!)).toBe(false);
+});
+
+test('texturas carregadas uma vez por URL entre remontagens', () => {
+  const map = (b: ReturnType<typeof buildBiome>) => ((b.group.getObjectByName('tree-crown') as THREE.Mesh).material as THREE.MeshLambertMaterial).map;
+  const a = buildBiome('floresta-dw1'); a.dispose();
+  const load = THREE.TextureLoader.prototype.load as unknown as ReturnType<typeof vi.fn>;
+  load.mockClear();
+  const b = buildBiome('floresta-dw1');
+  expect(load).not.toHaveBeenCalled();
+  expect(map(b)).toBe(map(a));
+  b.dispose();
+});
+
+test('borda dividida por lado, com copas de poucos polígonos', () => {
+  const b = buildBiome('floresta-dw1');
+  const sides = ['n', 's', 'e', 'w'].map(k => b.group.getObjectByName(`border-crown-${k}`) as THREE.InstancedMesh);
+  for (const m of sides) { expect(m).toBeInstanceOf(THREE.InstancedMesh); expect(m.count).toBeGreaterThan(20); }
+  const tree = b.group.getObjectByName('tree-crown') as THREE.InstancedMesh;
+  expect(sides[0].geometry.attributes.position.count).toBeLessThan(tree.geometry.attributes.position.count / 2);
+  b.dispose();
 });
 
 test('crownOccludes: copa perto da linha câmera→parceiro', () => {
@@ -100,8 +123,13 @@ test('update troca copas entre opaca e transparente', () => {
   b.update(0, cam, target);
   expect(faded.count).toBeGreaterThanOrEqual(1);
   expect((faded.material as THREE.Material).opacity).toBeCloseTo(0.3, 1);
+  expect(faded.visible).toBe(true);
+  // a esfera de culling tem que ser recalculada com a copa nova (senão some no frustum)
+  if (!faded.boundingSphere) faded.computeBoundingSphere();
+  expect(faded.boundingSphere!.containsPoint(new THREE.Vector3(o.x, 3, o.z))).toBe(true);
   b.update(0, new THREE.Vector3(500, 4, 500), new THREE.Vector3(500, 1, 492));
   expect(faded.count).toBe(0);
+  expect(faded.visible).toBe(false);
   expect(opaque.count).toBe(MAP_OBSTACLES.filter(x => x.kind === 'tree').length);
   b.dispose();
 });

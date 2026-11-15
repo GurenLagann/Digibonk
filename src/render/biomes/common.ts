@@ -19,9 +19,14 @@ export class Bag {
   }
 }
 
-/** textura repetível de public/biomas/<bioma>/<nome>.webp */
-export function loadTexture(bag: Bag, biome: string, name: string, repeat = 1): THREE.Texture {
-  const t = bag.tex(new THREE.TextureLoader().load(`./biomas/${biome}/${name}.webp`));
+/** cache por URL: a troca de bioma não baixa de novo nem pisca preto; essas texturas não entram no dispose do bioma */
+const textureCache = new Map<string, THREE.Texture>();
+
+/** textura repetível de public/biomas/<bioma>/<nome>.webp (compartilhada entre montagens) */
+export function loadTexture(biome: string, name: string, repeat = 1): THREE.Texture {
+  const url = `./biomas/${biome}/${name}.webp`;
+  let t = textureCache.get(url);
+  if (!t) { t = new THREE.TextureLoader().load(url); textureCache.set(url, t); }
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat);
   t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;
@@ -111,6 +116,9 @@ export class FadeCrowns {
     });
     this.opaque.count = a; this.faded.count = b;
     for (const m of [this.opaque, this.faded]) {
+      // a esfera de culling é calculada uma vez só: zera para recalcular com as instâncias novas
+      m.boundingSphere = null; m.boundingBox = null;
+      m.visible = m.count > 0;
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
