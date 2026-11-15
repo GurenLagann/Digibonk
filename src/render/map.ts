@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
+import { chestPrice, type Chest } from '../sim/loot';
 import { BIOME_IDS, biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
 import { ALTAR_DIGIMON, ALTAR_HEIGHT, altarFrame, contentBand } from './altarSprite';
 import { readPixels } from './footPad';
@@ -28,6 +29,28 @@ const PORTAL_COLORS: Record<string, number> = { vaccine: 0x3d9bff, data: 0x3dff9
 
 const ALTAR_COLORS: Record<string, number> = { etemon: 0x9a3dff, datamon: 0x3dff8a, challenge: 0xff3a4a };
 
+/** texto flutuante sobre o baú fechado: preço (pago), "Grátis…?" (amaldiçoado) ou nada (grátis) */
+export function chestLabel(kind: Chest['kind'], bought: number): string | null {
+  if (kind === 'paid') return `${chestPrice(bought)} Bits`;
+  if (kind === 'cursed') return 'Grátis…?';
+  return null;
+}
+
+/** sprite de canvas com o texto do rótulo (null se o canvas não estiver disponível) */
+function labelSprite(text: string, cursed: boolean): THREE.Sprite | null {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d'); if (!g) return null;
+  g.fillStyle = cursed ? 'rgba(40,10,70,.85)' : 'rgba(8,22,43,.85)';
+  g.beginPath(); g.roundRect(4, 6, 248, 52, 14); g.fill();
+  g.strokeStyle = cursed ? '#b04dff' : '#ffd43b'; g.lineWidth = 3; g.stroke();
+  g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = cursed ? '#e2b8ff' : '#ffe27a'; g.fillText(text, 128, 33);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false }));
+  sp.renderOrder = 10; sp.scale.set(2.4, 0.6, 1);
+  return sp;
+}
+
 export class MapView {
   private arena: THREE.Group;
   private arenaRing: THREE.Mesh;
@@ -44,6 +67,10 @@ export class MapView {
   private chests = new Map<number, THREE.Mesh>();
   private chestGeo = new THREE.BoxGeometry(1.2, 0.9, 0.9);
   private chestMat = new THREE.MeshLambertMaterial({ color: 0xc8892a });
+  /** baú amaldiçoado: escuro, com brilho roxo */
+  private cursedMat = new THREE.MeshLambertMaterial({ color: 0x2a1a3a, emissive: 0x8a2be2, emissiveIntensity: 0.9 });
+  /** rótulo flutuante de cada baú (texto atual guardado para só refazer a textura quando mudar) */
+  private chestLabels = new Map<number, { sprite: THREE.Sprite; text: string }>();
   private phaseKey = -1;
   private lastRun: RunState | null = null;
 
@@ -175,6 +202,30 @@ export class MapView {
     (this.arenaRing.material as THREE.MeshBasicMaterial).color.setHex(Math.sin(time * 3) > 0 ? 0x5ae8ff : 0x1fd6ff);
   }
 
+  private clearChestLabels() {
+    for (const l of this.chestLabels.values()) { this.scene.remove(l.sprite); l.sprite.material.map?.dispose(); l.sprite.material.dispose(); }
+    this.chestLabels.clear();
+  }
+
+  /** preço sobre baú pago fechado (refeito quando o preço muda), "Grátis…?" no amaldiçoado; some quando aberto */
+  private syncChestLabels(run: RunState, time: number) {
+    for (const c of run.chests) {
+      const text = chestLabel(c.kind, run.chestsBought);
+      const cur = this.chestLabels.get(c.id);
+      if (!text || c.opened) { if (cur) cur.sprite.visible = false; continue; }
+      let l = cur;
+      if (!l || l.text !== text) {
+        if (l) { this.scene.remove(l.sprite); l.sprite.material.map?.dispose(); l.sprite.material.dispose(); this.chestLabels.delete(c.id); }
+        const sprite = labelSprite(text, c.kind === 'cursed');
+        if (!sprite) continue;
+        this.scene.add(sprite);
+        l = { sprite, text }; this.chestLabels.set(c.id, l);
+      }
+      l.sprite.visible = !run.zone;
+      l.sprite.position.set(c.x, groundY(c.x, c.z) + 1.7 + Math.sin(time * 2 + c.id) * 0.08, c.z);
+    }
+  }
+
   /** folhas de sprite (carregadas depois do mapa): altares passam a mostrar o Digimon */
   setSprites(lib: SpriteLibrary): void { this.sprites = lib; this.altarKey = ''; }
 
@@ -241,11 +292,13 @@ export class MapView {
       }
       for (const c of this.chests.values()) this.scene.remove(c);
       this.chests.clear();
+      this.clearChestLabels();
       for (const c of run.chests) {
-        const mesh = new THREE.Mesh(this.chestGeo, this.chestMat); mesh.position.set(c.x, groundY(c.x, c.z) + 0.45, c.z); this.scene.add(mesh); this.chests.set(c.id, mesh);
+        const mesh = new THREE.Mesh(this.chestGeo, c.kind === 'cursed' ? this.cursedMat : this.chestMat); mesh.position.set(c.x, groundY(c.x, c.z) + 0.45, c.z); this.scene.add(mesh); this.chests.set(c.id, mesh);
       }
     }
     for (const c of run.chests) { const m = this.chests.get(c.id); if (m) m.visible = !c.opened; }
+    this.syncChestLabels(run, time);
     if (ph.mission.kind === 'activate') ph.mission.points.forEach((p, i) => {
       const ring = this.points[i]; if (!ring) return;
       const mat = ring.material as THREE.MeshBasicMaterial;

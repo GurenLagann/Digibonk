@@ -79,6 +79,7 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
           num('Melhor fase', String(rec.bestPhase), run.newRecord ? h('span', { class: 'res-rec' }, 'Novo recorde!') : null),
           win ? num('Melhor tempo', fmtClock(rec.bestTime), run.newTimeRecord ? h('span', { class: 'res-rec' }, 'Novo recorde de tempo!') : null) : null,
           win && run.medalEarned ? num('Medalha', `${MEDAL_ICON[run.medalEarned]} ${MEDAL_NAME[run.medalEarned]}`) : null),
+        h('div', { class: 'b2-panel res-crystals' }, h('b', {}, `Cristais +${run.crystalsEarned} 💠`), h('span', { class: 'b2-label' }, ` (total ${run.save.currency.toLocaleString('pt-BR')})`)),
         run.prog.relics.length ? h('div', { class: 'b2-panel res-relics' },
           h('div', { class: 'b2-label' }, 'Relíquias'), ...run.prog.relics.map(id => h('div', { class: 'res-dline' }, RELICS[id]?.name ?? id))) : null,
         data.length ? h('div', { class: 'b2-panel res-data' },

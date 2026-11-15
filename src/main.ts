@@ -32,6 +32,7 @@ import { showLevelUp } from './ui/levelup';
 import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
 import { showRecords } from './ui/records';
+import { showLab } from './ui/lab';
 import { showPartnerSelect } from './ui/partnerSelect';
 import { showTitle } from './ui/title';
 import { activeModal, ignoreBackFor } from './ui/modal';
@@ -94,6 +95,7 @@ const toTitle = () => {
     play: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'pick', back: toTitle }); },
     partners: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'view', back: toTitle }); },
     records: () => { m.close(); app.go('records'); showRecords(ui, save, toTitle); },
+    lab: () => { m.close(); app.go('lab'); showLab(ui, save, toTitle); },
     settings: () => { m.close(); app.go('settings'); openSettings(); },
     credits: () => { m.close(); app.go('credits'); showCredits(ui, toTitle); },
   }, lastPartner);
@@ -176,6 +178,9 @@ function announce(e: RunEvent) {
     case 'itemFound': toast(`${ITEMS[e.itemId].name}!`, 'rare'); break;
     case 'partnerUnlocked': toast(`Ovo encontrado! ${FORMS[e.partnerId]?.name ?? e.partnerId} desbloqueado!`, 'rare'); break;
     case 'formDiscovered': toast(`Nova forma liberada! ${FORMS[e.formId].name}`, 'rare'); break;
+    case 'chestLocked': toast(`Faltam ${e.missing} Bits`, 'warn'); break;
+    case 'ambush': toast('Emboscada!', 'warn'); break;
+    case 'ambushCleared': toast('Emboscada vencida! Escolha sua recompensa', 'rare'); break;
     case 'digiData': toast('Digi Data coletado'); break;
     case 'autoGain': break; // somados num aviso só, no loop
     case 'revived': toast('Reviveu com a relíquia!', 'rare'); break;

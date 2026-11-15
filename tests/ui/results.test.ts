@@ -186,3 +186,10 @@ describe('recorde de tempo e medalha', () => {
     for (const e of ['🥉', '🥈', '🥇', '🏆']) expect(text()).not.toContain(e);
   });
 });
+
+test('resultado mostra Cristais ganhos e o total', () => {
+  const r = endedRun(); r.crystalsEarned = 85; r.save.currency = 205;
+  const { text } = show(r);
+  expect(text()).toContain('Cristais +85 💠');
+  expect(text()).toContain('(total 205)');
+});

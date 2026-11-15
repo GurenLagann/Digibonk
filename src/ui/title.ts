@@ -6,15 +6,15 @@ import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 
-export interface TitleNav { play(): void; partners(): void; records(): void; settings(): void; credits(): void; wiki?(): void }
+export interface TitleNav { play(): void; partners(): void; records(): void; lab(): void; settings(): void; credits(): void; wiki?(): void }
 
 /** página da wiki dos Digimon World (public/dw-wiki.html) */
 export const WIKI_URL = './dw-wiki.html';
 
-/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Controles, 4 Créditos, 5 DW Wiki) */
+/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Laboratório, 4 Controles, 5 Créditos, 6 DW Wiki) */
 const NAV = {
-  right: [1, 1, 2, 4, 5, 5], left: [0, 0, 0, 3, 3, 4],
-  down: [3, 2, 4, 3, 4, 5], up: [0, 1, 1, 0, 2, 2],
+  right: [1, 1, 2, 3, 5, 6, 6], left: [0, 0, 0, 0, 4, 4, 5],
+  down: [4, 2, 3, 5, 4, 5, 6], up: [0, 1, 1, 2, 0, 3, 3],
 };
 
 /** volume do vídeo de fundo do menu (0–1) */
@@ -96,7 +96,8 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     h('span', { class: 'tt-side-ico' }, icon), h('span', { class: 'tt-card-txt' }, h('b', {}, title), h('span', {}, sub))), go);
   const stack = h('div', { class: 'tt-stack' },
     side('tt-partners', '🥚', 'Parceiros', `${unlocked.length} / ${partners.length} liberados · evoluções e golpes`, nav.partners),
-    side('tt-records', '🏆', 'Recordes', `Melhor fase ${rec.bestPhase} · ${rec.wins} vitórias`, nav.records));
+    side('tt-records', '🏆', 'Recordes', `Melhor fase ${rec.bestPhase} · ${rec.wins} vitórias`, nav.records),
+    side('tt-lab', '🧪', 'Laboratório', `${save.currency.toLocaleString('pt-BR')} 💠 · melhorias permanentes`, nav.lab));
 
   // fileira de atalhos
   const tile = (icon: string, title: string, sub: string, color: string, go: () => void) => item(h('button', { type: 'button', class: 'tt-tile', style: `--tt-c:${color}` },
@@ -138,7 +139,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     close() { if (!closed) { closed = true; screen.querySelector('video')?.pause(); screen.remove(); } },
     handle(input) {
       if (closed) return;
-      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes (ao lado); 3 Controles | 4 Créditos | 5 DW Wiki (embaixo)
+      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes / 3 Laboratório (ao lado); 4 Controles | 5 Créditos | 6 DW Wiki (embaixo)
       if (input.pressed('right')) select(NAV.right[sel]);
       else if (input.pressed('left')) select(NAV.left[sel]);
       else if (input.pressed('down')) select(NAV.down[sel]);

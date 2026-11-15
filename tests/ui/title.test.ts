@@ -13,7 +13,7 @@ function setup(patch: (s: ReturnType<typeof defaultSave>) => void = () => {}) {
   const save = defaultSave(); patch(save);
   const app = createApp({ save, storage: fakeStorage({}), startRun: () => {} });
   const calls: string[] = [];
-  const nav = { play: () => calls.push('play'), partners: () => calls.push('partners'), records: () => calls.push('records'), settings: () => calls.push('settings'), credits: () => calls.push('credits'), wiki: () => calls.push('wiki') };
+  const nav = { play: () => calls.push('play'), partners: () => calls.push('partners'), records: () => calls.push('records'), lab: () => calls.push('lab'), settings: () => calls.push('settings'), credits: () => calls.push('credits'), wiki: () => calls.push('wiki') };
   const root = document.createElement('div');
   const m = showTitle(root, app, save, nav, 'veemon');
   return { root, m, calls, save };
@@ -21,7 +21,7 @@ function setup(patch: (s: ReturnType<typeof defaultSave>) => void = () => {}) {
 
 test('title shows the items and the progress from the save', () => {
   const { root } = setup(s => { s.records = { bestPhase: 3, wins: 2, runs: 14 }; s.unlocked = ['agumon', 'gabumon', 'patamon']; });
-  for (const t of ['Jogar', 'Parceiros', 'Recordes', 'Controles', 'Créditos', 'DW Wiki', 'Seus parceiros']) expect(root.textContent).toContain(t);
+  for (const t of ['Jogar', 'Parceiros', 'Recordes', 'Laboratório', 'Controles', 'Créditos', 'DW Wiki', 'Seus parceiros']) expect(root.textContent).toContain(t);
   expect(root.textContent).toContain('3 / 11');
   expect(root.textContent).toContain('14');
   expect(root.textContent).toContain('Vitórias');
@@ -87,13 +87,18 @@ describe('menu no estilo de cartões', () => {
     expect(go('right', 'down')).toBe('records');
     expect(go('down')).toBe('settings');
     expect(go('down', 'right')).toBe('credits');
+    expect(go('right', 'down', 'down')).toBe('lab');
     expect(go('down', 'up')).toBe('play');
     expect(go('left')).toBe('play');
-    expect(go('right', 'down', 'down')).toBe('credits');
+    expect(go('right', 'down', 'down', 'down')).toBe('credits');
     expect(go('right', 'left')).toBe('play');
     expect(go('down', 'right', 'right')).toBe('wiki');
     expect(go('down', 'right', 'right', 'left')).toBe('credits');
-    expect(go('down', 'right', 'right', 'up')).toBe('records');
+    expect(go('down', 'right', 'right', 'up')).toBe('lab');
+  });
+  test('cartão Laboratório mostra o saldo de Cristais', () => {
+    const { root } = setup(s => { s.currency = 85; });
+    expect(root.querySelector('.tt-lab')!.textContent).toContain('85 💠');
   });
   test('cada cartão abre uma tela diferente', () => {
     const { root } = setup();
