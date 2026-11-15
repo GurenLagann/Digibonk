@@ -33,11 +33,20 @@ export class Vfx {
   private coneGeo = new THREE.CircleGeometry(1, 16, -Math.PI / 4, Math.PI / 2).rotateX(-Math.PI / 2);
   private beamGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0.5, 0, 0);
   private floaters: Floater[] = []; private nextFloater = 0;
+  /** ícones dos coletáveis (pixel art do DRA1 em public/itens-dra1) */
+  private iconMats = new Map<string, THREE.SpriteMaterial>(); private iconSprites: THREE.Sprite[] = [];
 
   constructor(private scene: THREE.Scene) {
     this.proj = new Instanced(scene, new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial(), 1024);
     this.hostile = new Instanced(scene, new THREE.SphereGeometry(1, 8, 6), new THREE.MeshBasicMaterial(), 256);
     this.pickups = new Instanced(scene, new THREE.OctahedronGeometry(0.3), new THREE.MeshLambertMaterial(), 2048);
+    for (const k of ['heal', 'item', 'card', 'fragment', 'digidata', 'xp', 'xpbig']) {
+      new THREE.TextureLoader().load(`./itens-dra1/${k}.png`, t => {
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+        this.iconMats.set(k, new THREE.SpriteMaterial({ map: t, transparent: true }));
+      }, undefined, () => {});
+    }
     for (let i = 0; i < 64; i++) {
       const c = document.createElement('canvas'); c.width = 64; c.height = 32;
       const tex = new THREE.CanvasTexture(c);
@@ -98,10 +107,22 @@ export class Vfx {
     for (const a of run.combat.areas) this.drawArea(this.areaMesh(ai++), a);
     for (let i = ai; i < this.areaMeshes.length; i++) this.areaMeshes[i].visible = false;
     this.pickups.begin();
+    let si = 0;
     for (const p of run.pickups) {
+      const key = p.kind === 'xp' && p.value >= 10 ? 'xpbig' : p.kind;
+      const mat = this.iconMats.get(key);
+      if (mat) {
+        let sp = this.iconSprites[si];
+        if (!sp) { sp = new THREE.Sprite(mat); this.scene.add(sp); this.iconSprites.push(sp); }
+        const sz = key === 'xp' ? 0.55 : key === 'xpbig' ? 0.9 : 1.1;
+        sp.material = mat; sp.visible = true; sp.scale.set(sz, sz, 1);
+        sp.position.set(p.x, 0.35 + sz * 0.4 + Math.sin(time * 3 + p.id) * 0.12, p.z); si++;
+        continue;
+      }
       const big = p.kind === 'xp' ? 0.8 : 1.6;
       this.pickups.add(p.x, 0.5 + Math.sin(time * 3 + p.id) * 0.12, p.z, big, PICKUP_COLORS[p.kind] ?? 0xffffff, time * 2 + p.id);
     }
     this.pickups.end();
+    for (let i = si; i < this.iconSprites.length; i++) this.iconSprites[i].visible = false;
   }
 }
