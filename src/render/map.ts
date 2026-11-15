@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
-import { biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
+import { BIOME_IDS, biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
 import { ALTAR_DIGIMON, ALTAR_HEIGHT, altarFrame, contentBand } from './altarSprite';
 import { readPixels } from './footPad';
 import { frameIndex, frameOffset, sheetGrid, type SpriteLibrary } from './sprites';
@@ -192,9 +192,9 @@ export class MapView {
     this.applySky();
   }
 
-  /** debug: força o outro bioma e devolve o novo */
+  /** debug: força o próximo bioma da lista e devolve o novo */
   cycleBiome(): BiomeId {
-    this.biomeOverride = this.biomeId === 'floresta-dw1' ? 'floresta-dw3' : 'floresta-dw1';
+    this.biomeOverride = BIOME_IDS[(BIOME_IDS.indexOf(this.biomeId) + 1) % BIOME_IDS.length];
     this.setBiome(this.biomeOverride);
     return this.biomeOverride;
   }

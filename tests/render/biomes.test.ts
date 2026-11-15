@@ -7,16 +7,30 @@ import { T } from '../../src/data/tuning';
 import { MapView } from '../../src/render/map';
 import type { BiomeId } from '../../src/render/biomes';
 
-const IDS: BiomeId[] = ['floresta-dw1', 'floresta-dw3'];
+const IDS: BiomeId[] = ['floresta-dw1', 'floresta-dw3', 'fabrica', 'nucleo'];
 /** copa com transparência de cada bioma */
-const CROWN: Record<BiomeId, string> = { 'floresta-dw1': 'tree-crown', 'floresta-dw3': 'pine-crown' };
+const CROWN: Record<BiomeId, string> = { 'floresta-dw1': 'tree-crown', 'floresta-dw3': 'pine-crown', fabrica: 'tank', nucleo: 'gear' };
 
 // sem DOM: o TextureLoader devolve uma textura vazia
 beforeEach(() => { vi.spyOn(THREE.TextureLoader.prototype, 'load').mockImplementation(() => new THREE.Texture()); });
 afterEach(() => vi.restoreAllMocks());
 
-test('biomeForPhase: ímpar = DW1, par = DW3', () => {
-  expect([1, 2, 3, 4, 5].map(biomeForPhase)).toEqual(['floresta-dw1', 'floresta-dw3', 'floresta-dw1', 'floresta-dw3', 'floresta-dw1']);
+test('biomeForPhase: Floresta DW1 → DW3 → Fábrica → Núcleo → Floresta DW1', () => {
+  expect([1, 2, 3, 4, 5].map(biomeForPhase)).toEqual(['floresta-dw1', 'floresta-dw3', 'fabrica', 'nucleo', 'floresta-dw1']);
+});
+
+test.each([['fabrica', 'tank', 'machine'], ['nucleo', 'gear', 'console']] as const)('%s: um %s por tree, uma %s por rock; alto na frente do parceiro fica transparente', (id, tall, low) => {
+  const b = buildBiome(id);
+  expect(b.group.name).toBe(`bioma-${id}`);
+  const trees = MAP_OBSTACLES.filter(o => o.kind === 'tree').length, rocks = MAP_OBSTACLES.filter(o => o.kind === 'rock').length;
+  const count = (n: string) => (b.group.getObjectByName(n) as THREE.InstancedMesh).count;
+  expect(count(tall) + count(`${tall}-faded`)).toBe(trees);
+  expect(count(low)).toBe(rocks);
+  for (const k of ['n', 's', 'e', 'w']) expect(b.group.children.some(c => c.name.startsWith('border-') && c.name.endsWith(`-${k}`) && (c as THREE.InstancedMesh).count > 5)).toBe(true);
+  const o = MAP_OBSTACLES.find(x => x.kind === 'tree')!;
+  b.update(0, new THREE.Vector3(o.x, 4, o.z + 5), new THREE.Vector3(o.x, 1, o.z - 5));
+  expect(count(`${tall}-faded`)).toBeGreaterThanOrEqual(1);
+  b.dispose();
 });
 
 test('Floresta DW1: uma instância de árvore por obstáculo tree', () => {

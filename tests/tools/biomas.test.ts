@@ -8,6 +8,8 @@ const TEXTURAS = [
   'floresta-dw1/casca.webp', 'floresta-dw1/pedra.webp',
   'floresta-dw3/grama.webp', 'floresta-dw3/trilha.webp', 'floresta-dw3/pinheiro.webp',
   'floresta-dw3/casca.webp', 'floresta-dw3/penhasco.webp', 'floresta-dw3/metal.webp',
+  'fabrica/chapa.webp', 'fabrica/grade.webp', 'fabrica/maquina.webp', 'fabrica/tanque.webp',
+  'nucleo/tecido.webp', 'nucleo/placa.webp', 'nucleo/engrenagens.webp',
 ];
 const N = 256;
 

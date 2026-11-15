@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 
-export type BiomeId = 'floresta-dw1' | 'floresta-dw3';
+export type BiomeId = 'floresta-dw1' | 'floresta-dw3' | 'fabrica' | 'nucleo';
 
 /** luz do bioma: hemisfério (céu/chão) e sol */
 export interface BiomeLight { sky: number; ground: number; hemi: number; sun: number; sunIntensity: number }
