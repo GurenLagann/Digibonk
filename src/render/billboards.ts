@@ -8,6 +8,7 @@ import { enemyStageScale, motionPose, playerHeightFor } from './motion';
 import { deathFrame, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, sheetGrid, type Role, type SpriteLibrary } from './sprites';
 import { enableInstanceFrames, setInstanceFrame } from './instanceFrames';
 import { viewFacing } from '../core/view';
+import { footPads, readPixels } from './footPad';
 
 const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -24,7 +25,7 @@ function spriteMaterial(tex: THREE.Texture) {
   return new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: true, side: THREE.DoubleSide });
 }
 
-interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; cols?: number; height: number }
+interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; cols?: number; height: number; pads: number[] }
 
 export class Billboards {
   private species = new Map<string, Species>();
@@ -34,6 +35,9 @@ export class Billboards {
   private playerFrames: Role[] = [];
   private playerCols: number | undefined;
   private playerHeight = 1;
+  private playerPads: number[] = [];
+  /** margem vazia abaixo dos pés por quadro, por folha (calculada uma vez) */
+  private padCache = new Map<string, number[]>();
   private shadows: THREE.InstancedMesh;
   private m = new THREE.Matrix4(); private p = new THREE.Vector3(); private s = new THREE.Vector3();
   private ident = new THREE.Quaternion(); private qt = new THREE.Quaternion(); private qz = new THREE.Quaternion();
@@ -52,10 +56,23 @@ export class Billboards {
     scene.add(this.shadows);
   }
 
-  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[]; cols?: number } {
+  private geometryFor(id: string): { geo: THREE.BufferGeometry; tex: THREE.Texture | null; frames: Role[]; cols?: number; pads: number[] } {
     const info = this.lib.info(id), tex = this.lib.texture(id);
-    if (!info || !tex) return { geo: unitPlane, tex: null, frames: [] };
-    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, cols: info.cols };
+    if (!info || !tex) return { geo: unitPlane, tex: null, frames: [], pads: [] };
+    return { geo: new THREE.PlaneGeometry(info.frameW / info.frameH, 1).translate(0, 0.5, 0), tex, frames: info.frames, cols: info.cols, pads: this.padsFor(id) };
+  }
+
+  /** fração vazia abaixo dos pés de cada quadro, para encostar o desenho no chão */
+  private padsFor(id: string): number[] {
+    let pads = this.padCache.get(id);
+    if (!pads) {
+      const info = this.lib.info(id), img = this.lib.image(id), px = img ? readPixels(img) : null;
+      if (!info || !px) return [];
+      const g = sheetGrid(info);
+      pads = footPads(px, info.frames.length, g.cols, g.rows);
+      this.padCache.set(id, pads);
+    }
+    return pads;
   }
 
   private speciesFor(def: string, size: number): Species {
@@ -72,7 +89,7 @@ export class Billboards {
       this.scene.add(mesh);
       // inimigos: altura pelo tamanho de jogo (as folhas foram ripadas em escalas diferentes), +15% por estágio acima do Child
       const height = g.tex ? size * ENEMY_VIS * enemyStageScale(d.stage) : size * VIS;
-      sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height };
+      sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height, pads: g.pads };
       this.species.set(def, sp);
     }
     return sp;
@@ -102,15 +119,16 @@ export class Billboards {
       // vista relativa à câmera: o inimigo olha para o parceiro
       const v = viewFacing(run.px - e.x, run.pz - e.z, yaw);
       const phase = (e.id * 0.618) % 1;
-      let flip = 1;
+      let flip = 1, pad = 0;
       if (sp.tex) {
-        const role = moveFrame(time, phase, true, sp.frames, v.facing);
-        setInstanceFrame(sp.mesh, i, frameOffset(frameIndex(role, sp.frames), { frames: sp.frames, cols: sp.cols }));
+        const role = moveFrame(time, phase, true, sp.frames, v.facing), fi = frameIndex(role, sp.frames);
+        setInstanceFrame(sp.mesh, i, frameOffset(fi, { frames: sp.frames, cols: sp.cols }));
+        pad = sp.pads[fi] ?? 0;
         // sem a vista na folha o moveFrame cai no quadro de lado, que espelha
         if (FLIP_SPRITES && v.right && (mirrorsWithDir(v.facing) || !verticalRole(role))) flip = -1;
       }
       const pose = motionPose({ t: time, phase, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
-      this.m.compose(this.p.set(e.x, pose.y * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
+      this.m.compose(this.p.set(e.x, (pose.y - pad * pose.sy) * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
       if (sh < T.MAX_ENEMIES + 31) {
@@ -131,7 +149,7 @@ export class Billboards {
       this.playerForm = f.id;
       const g = this.geometryFor(f.id);
       this.playerTex?.dispose();
-      this.playerTex = g.tex; this.playerFrames = g.frames; this.playerCols = g.cols;
+      this.playerTex = g.tex; this.playerFrames = g.frames; this.playerCols = g.cols; this.playerPads = g.pads;
       this.player.geometry = g.geo;
       mat.map = g.tex ?? placeholderTexture('form:' + f.id, f.name, f.color);
       mat.needsUpdate = true;
@@ -153,16 +171,18 @@ export class Billboards {
     // quadros de dano/morte são de lado: viram para o último lado andado
     // (morte desenhada por direção, deathupN…, segue a direção como o andar)
     const sideOnly = (death !== null && /^death\d/.test(death)) || (hurtRole !== null && hurtRole !== 'hurt');
+    let pad = 0;
     if (this.playerTex) {
       // ataque não troca a pose: o golpe sai sem o sprite virar
       const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, view.facing, playerSpeed(run.prog) >= 2 * run.baseSpeed);
       this.setFrame(this.playerTex, this.playerFrames, role, this.playerCols);
+      pad = this.playerPads[frameIndex(role, this.playerFrames)] ?? 0;
     }
     const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(view.facing) || sideOnly) && view.right ? -1 : 1;
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
       : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)), drawnIdle: this.playerFrames.some(f => /^stand/.test(f)) });
-    this.player.position.set(run.px, pose.y * this.playerHeight, run.pz);
+    this.player.position.set(run.px, (pose.y - pad * pose.sy) * this.playerHeight, run.pz);
     this.player.quaternion.copy(this.tilted(q, pose.tilt * flip));
     this.player.scale.set(this.playerHeight * flip * pose.sx, this.playerHeight * pose.sy, 1);
     mat.color.copy(c.invuln > 0.35 && !death ? this.flash : this.white);
