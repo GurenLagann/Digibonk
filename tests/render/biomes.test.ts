@@ -264,3 +264,36 @@ test.each(IDS)('%s: obstáculos assentados no chão (base na altura do relevo)',
   for (let i = 0; i < mesh.count; i++) { mesh.getMatrixAt(i, m); p.setFromMatrixPosition(m); expect(p.y).toBeCloseTo(b.height(p.x, p.z), 5); }
   b.dispose();
 });
+
+test('Floresta DW3: trilha rente ao relevo também entre as quinas (não flutua nem afunda)', () => {
+  const b = buildBiome('floresta-dw3');
+  const trail = b.group.getObjectByName('trail') as THREE.Mesh;
+  const tp = trail.geometry.attributes.position, idx = trail.geometry.index!;
+  let worst = 0;
+  // centro de cada triângulo (interpolado na malha) contra o chão naquele ponto
+  for (let i = 0; i < idx.count; i += 3) {
+    let x = 0, y = 0, z = 0;
+    for (let k = 0; k < 3; k++) { const v = idx.getX(i + k); x += tp.getX(v) / 3; y += tp.getY(v) / 3; z += tp.getZ(v) / 3; }
+    worst = Math.max(worst, Math.abs(y - b.height(x, z)));
+  }
+  expect(worst).toBeLessThan(0.15);
+  b.dispose();
+});
+
+test('MapView: trocar bioma reposiciona altares no chão novo', async () => {
+  const ctx = new Proxy({}, { get: () => () => undefined, set: () => true });
+  vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx }) });
+  try {
+    const { createRun } = await import('../../src/sim/run');
+    const { defaultSave } = await import('../../src/core/save');
+    const { fakeStorage } = await import('../helpers');
+    const run = createRun({ partnerId: 'agumon', seed: 4, save: defaultSave(), storage: fakeStorage({}) });
+    const scene = new THREE.Scene(), view = new MapView(scene);
+    view.sync(run, 0);
+    view.cycleBiome(); // DW1 → DW3 (colinas em outros lugares)
+    view.sync(run, 0);
+    const meshes = (view as unknown as { altarMeshes: Map<number, THREE.Group> }).altarMeshes;
+    for (const a of run.altars) expect(meshes.get(a.id)!.position.y).toBeCloseTo(groundY(a.x, a.z), 5);
+    view.setBiome('floresta-dw1');
+  } finally { vi.unstubAllGlobals(); }
+});

@@ -190,6 +190,8 @@ export class MapView {
     this.biomeId = id;
     this.view = buildBiome(id);
     setGround(this.view.height);
+    // chão novo: altares, anel do chefe, pontos e baús são postos na altura do chão só ao criar → recriar no próximo sync
+    this.altarKey = ''; this.phaseKey = -1;
     this.scene.add(this.view.group);
     this.applySky();
   }

@@ -68,6 +68,16 @@ function trailPaths(r: () => number): [number, number][][] {
   return out;
 }
 
+/** pontos a cada ≤ step na linha: as quinas ficam a 13–22 de distância e o trecho reto entre elas não acompanharia as colinas */
+function densify(pts: [number, number][], step: number): [number, number][] {
+  const out: [number, number][] = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, az] = pts[i - 1], [bx, bz] = pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / step));
+    for (let k = 1; k <= n; k++) out.push([ax + (bx - ax) * k / n, az + (bz - az) * k / n]);
+  }
+  return out;
+}
+
 /** faixa plana sobre o chão seguindo a linha; bordas somem pela transparência dos vértices */
 function trailGeometry(bag: Bag, paths: [number, number][][], width: number): THREE.BufferGeometry {
   const across = [-1, -0.6, 0, 0.6, 1], alpha = [0, 0.85, 1, 0.85, 0];
@@ -170,7 +180,7 @@ export function buildForestDw3(): BiomeView {
 
   // chão claro + trilhas de terra arenosa
   const ground = groundMesh(bag, height, bag.mat(new THREE.MeshLambertMaterial({ map: grama, color: 0xf6f8e4 })), GROUND);
-  const trail = new THREE.Mesh(trailGeometry(bag, trailPaths(r), 3.4), bag.mat(new THREE.MeshLambertMaterial({
+  const trail = new THREE.Mesh(trailGeometry(bag, trailPaths(r).map(p => densify(p, 1.5)), 3.4), bag.mat(new THREE.MeshLambertMaterial({
     map: trilha, color: 0xf2e2bc, vertexColors: true, transparent: true, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
   })));
