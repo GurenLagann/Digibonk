@@ -216,3 +216,10 @@ test('Corrupção aparece no topo da fase', () => {
   const { run, hud, q } = setup(); run.corruption = 2; hud.update(run);
   expect(q('.hud-top').textContent).toContain('Corrupção ×2');
 });
+
+test('mostra os Bits da partida sob a barra de vida', () => {
+  const { run, hud, q } = setup();
+  expect(q('.hud-partner .hud-bits').textContent).toBe('Bits 0');
+  run.bits = 1234; hud.update(run);
+  expect(q('.hud-partner .hud-bits').textContent).toBe('Bits 1.234');
+});

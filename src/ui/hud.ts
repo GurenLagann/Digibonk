@@ -57,12 +57,14 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
   const hpFill = h('i'), hpText = h('span', { class: 'hud-hptext' });
   const xpFill = h('i');
   const items = h('div', { class: 'hud-items' });
+  const bitsEl = h('div', { class: 'hud-bits' });
   const partner = h('div', { class: 'b2-panel hud-partner' }, port,
     h('div', { class: 'hud-pinfo' },
       h('div', { class: 'hud-prow' }, name, lv),
       chips,
       h('div', { class: 'b2-bar hud-hp' }, hpFill),
       h('div', { class: 'hud-hprow' }, h('div', { class: 'b2-bar hud-xp' }, xpFill), hpText),
+      bitsEl,
       items));
 
   // ── topo centro: barra hackeada + timer + missão
@@ -125,6 +127,7 @@ export function mountHud(root: HTMLElement, evolveKey: () => string = () => 'E /
       }
       setText(name, f.name); setText(lv, `Nv ${p.level}`);
       setW(hpFill, c.hp / c.maxHp); setText(hpText, `${Math.max(0, Math.ceil(c.hp))}/${Math.ceil(c.maxHp)}`);
+      setText(bitsEl, `Bits ${fmtInt(run.bits)}`);
       setW(xpFill, p.xp / xpToNext(p.level));
       const key = [...p.items, '|', ...p.relics].join(',');
       if (key !== itemKey) {

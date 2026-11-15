@@ -42,6 +42,8 @@ export type RunEvent =
 
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
+  /** Bits coletados na partida (inteiro >= 0) */
+  bits: number;
   prog: PlayerProg; combat: CombatState; px: number; pz: number; moving: boolean;
   /** última direção de movimento no mundo (normalizada; o render calcula a vista relativa à câmera) */
   dirX: number;
@@ -148,7 +150,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    bits: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -285,11 +287,14 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
           const roll = lootRoll(r, bossDrops.map(d => d.ref ?? ''));
           bossDrops.push(roll); spawnPickup(r, e.x + k * 1.2, e.z, roll);
         }
+        r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z + 1.2, kind: 'bits', value: T.BITS.BOSS_PER_PHASE * r.phase.phase });
         continue;
       }
       if (e.miniboss && !r.zone) { killedMiniboss = true; r.stats.guardians++; openPortal(r, e, ev); }
       if (e.miniboss) { spawnPickup(r, e.x, e.z, rollChest(r.partnerId, r.save, r.prog.items, r.phase.phase, r.rng, maxedCards(r.prog))); }
+      if (e.miniboss) r.pickups.push({ id: r.nextPickupId++, x: e.x + 1.2, z: e.z, kind: 'bits', value: T.BITS.GUARDIAN_PER_PHASE * r.phase.phase });
       const drop = dropOnKill(e, r.rng);
+      if (!e.miniboss && r.rng.next() < T.BITS.DROP_CHANCE) r.pickups.push({ id: r.nextPickupId++, x: e.x - 0.6, z: e.z, kind: 'bits', value: T.BITS.PER_PHASE * r.phase.phase });
       if (drop.xp > 0) r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z, kind: 'xp', value: drop.xp });
       if (drop.extra === 'heal') spawnPickup(r, e.x + 0.6, e.z, { kind: 'heal' });
       if (drop.extra === 'card') {
@@ -306,6 +311,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   for (const p of collect(r.pickups, r.px, r.pz, 1.5 * stats.pickupMul)) {
     if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul * (1 + r.corruption * T.ALTARS.CORRUPTION_XP));
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
+    else if (p.kind === 'bits') r.bits += p.value;
     else if (p.kind === 'fragment') collectedFragment = true;
     else if (p.kind === 'digidata') collectDigiData(r, ev);
     else if (p.kind === 'card' && p.ref) {

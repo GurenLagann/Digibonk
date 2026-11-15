@@ -6,7 +6,7 @@ import { T } from '../data/tuning';
 import type { CardDef, ItemDef } from '../data/types';
 import type { Enemy } from './director';
 
-export interface Pickup { id: number; x: number; z: number; kind: 'xp' | 'card' | 'item' | 'heal' | 'fragment' | 'digidata'; value: number; ref?: string;
+export interface Pickup { id: number; x: number; z: number; kind: 'xp' | 'card' | 'item' | 'heal' | 'fragment' | 'digidata' | 'bits'; value: number; ref?: string;
   /** velocidade do ímã (u/s) depois que o item foi puxado; ausente = parado no chão */
   pull?: number }
 export interface Chest { id: number; x: number; z: number; opened: boolean }

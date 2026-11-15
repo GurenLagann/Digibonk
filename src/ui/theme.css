@@ -346,6 +346,8 @@
 .hud-hprow { display: flex; align-items: center; gap: calc(6 * var(--u)); }
 .hud .hud-xp { flex: 1; height: calc(5 * var(--u)); border: 0; }
 .hud-hptext { flex: none; font: 700 calc(10 * var(--u))/1 var(--b2-mono); color: var(--b2-text-dim); }
+/* moeda da partida, sob a barra de vida */
+.hud-bits { font: 700 calc(10 * var(--u))/1 var(--b2-mono); color: #ffc23a; }
 .hud-items { display: flex; flex-wrap: wrap; gap: calc(3 * var(--u)); }
 .hud-items:empty { display: none; }
 .hud-item { padding: 0 calc(6 * var(--u)); border-radius: 999px; font-size: calc(10 * var(--u)); font-weight: 800; color: #2a1a00; background: #ffd84a; text-shadow: none; }
