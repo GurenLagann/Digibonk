@@ -61,6 +61,8 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
 
   target.addEventListener('keydown', e => {
     if (capture) { const c = capture; capture = null; c(e.code); return; }
+    // auto-repeat não é um novo pressionar: depois de um blur (held limpo) ele geraria uma borda nova a cada repetição
+    if (e.repeat) return;
     held.add(e.code); tapped.add(e.code);
   });
   target.addEventListener('keyup', e => { held.delete(e.code); });

@@ -104,3 +104,16 @@ test('captureAxis sem controle no início: a base vem do primeiro poll com contr
   pads.current = [pad([0, 0, -1, -0.8])]; input.poll(); await Promise.resolve();
   expect(got).toBe(3);
 });
+
+test('auto-repeat do teclado (mesmo após blur) não vira um novo pressionar', () => {
+  const handlers: Record<string, ((e: unknown) => void)[]> = {};
+  const target = { addEventListener: (t: string, h: never) => { (handlers[t] ??= []).push(h); } } as never;
+  const input = createInput(target, () => [], {});
+  const fire = (t: string, e: object = {}) => handlers[t]?.forEach(h => h(e));
+  fire('keydown', { code: 'Enter', repeat: false }); input.poll();
+  expect(input.pressed('confirm')).toBe(true);
+  fire('blur'); input.poll(); fire('keydown', { code: 'Enter', repeat: true }); input.poll();
+  expect(input.pressed('confirm')).toBe(false);
+  fire('keydown', { code: 'Enter', repeat: true }); input.poll();
+  expect(input.pressed('confirm')).toBe(false);
+});
