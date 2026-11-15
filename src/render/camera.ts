@@ -1,0 +1,38 @@
+import type * as THREE from 'three';
+import { T } from '../data/tuning';
+
+const C = T.CAMERA;
+
+/**
+ * Câmera orbital em volta do parceiro (estilo PokéBonk).
+ * yaw 0 = atrás em +z olhando para -z; yaw cresce levando a câmera para +x (mesma convenção de core/view).
+ * pitch = elevação da câmera acima do alvo; pitch maior = câmera mais alta, olhando mais para baixo.
+ */
+export class OrbitCamera {
+  yaw = 0;
+  pitch: number = C.PITCH;
+
+  constructor(readonly camera: THREE.PerspectiveCamera) {}
+
+  /** dx soma no yaw; dy soma no pitch (dy > 0 = olhar mais para baixo, como o mouse descendo) */
+  turn(dx: number, dy: number): void {
+    this.yaw += dx;
+    this.pitch = Math.min(C.PITCH_MAX, Math.max(C.PITCH_MIN, this.pitch + dy));
+  }
+
+  follow(x: number, z: number): void {
+    const h = Math.cos(this.pitch) * C.DIST;
+    this.camera.position.set(x + Math.sin(this.yaw) * h, C.LOOK_HEIGHT + Math.sin(this.pitch) * C.DIST, z + Math.cos(this.yaw) * h);
+    this.camera.lookAt(x, C.LOOK_HEIGHT, z);
+  }
+
+  reset(): void {
+    this.yaw = 0;
+    this.pitch = C.PITCH;
+  }
+
+  /** metade do FOV horizontal (rad) */
+  horizontalHalfFov(): number {
+    return Math.atan(Math.tan((C.FOV / 2) * (Math.PI / 180)) * this.camera.aspect);
+  }
+}

@@ -313,3 +313,9 @@ describe('efeitos de relíquia na partida', () => {
     expect(r.ended).toBe('defeat');
   });
 });
+
+test('câmera: camYaw começa em 0 e camHalf em π (sem restrição)', () => {
+  const r = createRun(opts());
+  expect(r.camYaw).toBe(0);
+  expect(r.camHalf).toBe(Math.PI);
+});

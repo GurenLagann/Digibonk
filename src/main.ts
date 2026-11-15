@@ -12,7 +12,9 @@ import { ITEM_LIST, ITEMS } from './data/items';
 import { T } from './data/tuning';
 import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
-import { createScene, follow } from './render/scene';
+import { createScene } from './render/scene';
+import { OrbitCamera } from './render/camera';
+import { rotateByYaw } from './core/view';
 import { Vfx } from './render/vfx';
 import { deathDuration, missingAnimations, SpriteLibrary } from './render/sprites';
 import { abandonRun, createRun, stepRun, type RunEvent, type RunState } from './sim/run';
@@ -40,7 +42,9 @@ const { renderer, scene, camera, resize } = createScene(canvas);
 addEventListener('resize', resize);
 const save = loadSave();
 sanitizeDiscovery(save); // descarta evoluções/pistas que não existem mais nos dados
-const input = createInput(window, () => (navigator.getGamepads ? [...navigator.getGamepads()] : []), save.bindings);
+const input = createInput(window, () => (navigator.getGamepads ? [...navigator.getGamepads()] : []), save.bindings, () => document.pointerLockElement === canvas);
+input.setCamera(save.camera);
+const orbit = new OrbitCamera(camera);
 const debug = import.meta.env.DEV ? new URLSearchParams(location.search).get('debug')?.split(',') ?? [] : [];
 
 const map = new MapView(scene);
@@ -56,6 +60,20 @@ let run: RunState | null = null;
 let lastPartner = save.lastPartner || 'agumon';
 let events: RunEvent[] = [];
 let resultsAt = 0;
+
+// Pointer Lock: preso só durante o jogo sem modal; soltar em jogo pausa
+const inPlay = () => !!run && !run.ended && !run.paused && app.screen() === 'run' && !activeModal();
+function lockPointer() {
+  if (!inPlay() || document.pointerLockElement === canvas) return;
+  try {
+    // no Chrome devolve Promise; sem gesto do usuário rejeita — ignora (o clique no canvas tenta de novo)
+    const p = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
+    p?.catch?.(() => {});
+  } catch { /* sem suporte ou sem gesto */ }
+}
+function unlockPointer() { if (document.pointerLockElement) document.exitPointerLock(); }
+canvas.addEventListener('click', lockPointer);
+document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== canvas && inPlay()) pause(); });
 
 const app = createApp({ save, storage: null, startRun });
 const toTitle = () => {
@@ -75,18 +93,20 @@ function startRun(partnerId: string) {
   save.lastPartner = partnerId; storeSave(save);
   run = createRun({ partnerId, seed: (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0, save });
   resultsAt = 0;
+  orbit.reset();
   hud.el.classList.remove('hidden');
   if (import.meta.env.DEV) (window as unknown as { __run: unknown }).__run = run;
   if (debug.includes('xp10')) run.debug.xpMul = 10;
   if (debug.includes('items')) run.debug.forceItems = true;
   if (debug.includes('spawn600')) for (let i = 0; i < T.MAX_ENEMIES; i++) run.pool.spawn(ENEMIES[i % ENEMIES.length], (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 80, { hp: 50, dmg: 0 });
   app.go('run');
+  lockPointer();
 }
 
 function pause() {
   if (!run || run.ended || activeModal()) return;
   run.paused = true;
-  const resume = () => { if (run) run.paused = false; };
+  const resume = () => { if (run) run.paused = false; lockPointer(); };
   const open = () => showPause(ui, resume, () => openSettings(open), () => { if (run) abandonRun(run).forEach(announce); }, run ? damagePanel(run) : undefined);
   open();
 }
@@ -191,7 +211,12 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
       () => toast(`${FORMS[run!.prog.formId].name} chegou à Maturidade! +${Math.round(T.MATURITY_BONUS * 100)}% de vida e dano`, 'rare'));
     return;
   }
-  const ev = stepRun(run, input.move(), dt);
+  // mouse/analógico para a direita gira a vista para a direita = yaw diminui (yaw + leva a câmera para +x)
+  const look = input.look(dt);
+  orbit.turn(-look.dx, look.dy);
+  run.camYaw = orbit.yaw; run.camHalf = orbit.horizontalHalfFov();
+  const m = input.move();
+  const ev = stepRun(run, rotateByYaw(m.mx, m.mz, orbit.yaw), dt);
   ev.forEach(announce);
   const gains = ev.flatMap(e => (e.type === 'autoGain' ? [e] : []));
   if (gains.length) toast(autoGainText(gains));
@@ -199,12 +224,18 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
 });
 
 let last = performance.now();
+let hadModal = false;
 function frame(now: number) {
   const dt = (now - last) / 1000; last = now;
   loop.advance(dt);
+  // qualquer modal/menu solta o cursor; ao fechar um modal no meio do jogo, prende de novo
+  const modal = !!activeModal();
+  if (!inPlay()) unlockPointer();
+  else if (hadModal && !modal) lockPointer();
+  hadModal = modal;
   const t = now / 1000;
   if (run) {
-    follow(camera, run.px, run.pz);
+    orbit.follow(run.px, run.pz);
     map.sync(run, t);
     boards.sync(run, t);
     vfx.sync(run, events, Math.min(dt, 0.25), t);

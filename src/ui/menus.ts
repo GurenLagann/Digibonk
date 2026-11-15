@@ -23,8 +23,39 @@ export function showPause(root: HTMLElement, onResume: () => void, onSettings: (
   });
 }
 
+const SENS_STEP = 0.25, SENS_MIN = 0.25, SENS_MAX = 3;
+/** próximo passo da sensibilidade; depois do máximo volta ao mínimo */
+const nextSens = (v: number) => {
+  const n = Math.round((v + SENS_STEP) / SENS_STEP) * SENS_STEP;
+  return n > SENS_MAX + 1e-9 ? SENS_MIN : Math.max(SENS_MIN, n);
+};
+const AXIS_NEUTRAL_MS = 200;
+
+/** captureAxis que ignora analógico já segurado: só aceita depois de AXIS_NEUTRAL_MS sem nenhum eixo passar do limite */
+function captureFreshAxis(input: Input, alive: () => boolean): Promise<number> {
+  return new Promise(res => {
+    let since = Date.now();
+    const arm = () => void input.captureAxis().then(i => {
+      if (!alive()) return;
+      const now = Date.now();
+      if (now - since < AXIS_NEUTRAL_MS) { since = now; arm(); } else res(i);
+    });
+    arm();
+  });
+}
+
 export function showSettings(root: HTMLElement, input: Input, save: SaveData, storage: Storage | null | undefined, back: () => void) {
   const reopen = () => showSettings(root, input, save, storage, back);
+  const cam = save.camera;
+  const applyCamera = () => { input.setCamera(cam); storeSave(save, storage); reopen(); };
+  const axisRow = (title: string, prompt: string, key: 'padAxisX' | 'padAxisY') => ({
+    title: `${title}: eixo ${cam[key]}`,
+    onPick: () => {
+      let alive = true;
+      const wait = showChoice(root, { title: prompt, options: [], extra: { title: 'Cancelar', onPick: () => { alive = false; reopen(); } } });
+      void captureFreshAxis(input, () => alive && !wait.closed).then(i => { wait.close(); cam[key] = i; applyCamera(); });
+    },
+  });
   const m = showChoice(root, {
     title: 'Controles',
     subtitle: 'Escolha uma ação e aperte a tecla ou botão do controle novo. Analógico esquerdo sempre move.',
@@ -36,7 +67,14 @@ export function showSettings(root: HTMLElement, input: Input, save: SaveData, st
           wait.close(); input.rebind(a, code); save.bindings = input.bindings(); storeSave(save, storage); reopen();
         });
       },
-    })).concat([{ title: 'Restaurar padrão', onPick: () => { input.resetBindings(); save.bindings = {}; storeSave(save, storage); reopen(); } }]),
+    })).concat([
+      { title: `Sensibilidade do mouse: ${cam.mouseSens.toFixed(2)}`, onPick: () => { cam.mouseSens = nextSens(cam.mouseSens); applyCamera(); } },
+      { title: `Sensibilidade do controle: ${cam.padSens.toFixed(2)}`, onPick: () => { cam.padSens = nextSens(cam.padSens); applyCamera(); } },
+      { title: `Inverter vertical: ${cam.invertY ? 'sim' : 'não'}`, onPick: () => { cam.invertY = !cam.invertY; applyCamera(); } },
+      axisRow('Eixo horizontal da câmera (controle)', 'Mova o analógico da câmera para a direita', 'padAxisX'),
+      axisRow('Eixo vertical da câmera (controle)', 'Mova o analógico da câmera para cima', 'padAxisY'),
+      { title: 'Restaurar padrão', onPick: () => { input.resetBindings(); save.bindings = {}; storeSave(save, storage); reopen(); } },
+    ]),
     extra: { title: 'Voltar', onPick: back },
   });
   return m;
