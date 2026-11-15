@@ -22,6 +22,7 @@ import { clamp } from './vec';
 import { addRelic, relicEffects } from './relics';
 import { logDamage, newDamageLog, type DamageLog } from './damage';
 import { applyJogress, jogressPairs } from './jogress';
+import { crystalsFor } from '../core/crystals';
 import { medalFor, MEDAL_ORDER, type Medal } from '../core/medals';
 import { placeAltars, rollTrades, type Altar, type AltarKind, type Trade } from './altars';
 import { clampToArena, openPortal, relicChoices, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
@@ -91,6 +92,8 @@ export interface RunState {
   newTimeRecord: boolean;
   /** medalha que subiu nesta partida (null se não subiu) */
   medalEarned: Medal | null;
+  /** Cristais ganhos ao fim desta partida (já somados em save.currency) */
+  crystalsEarned: number;
   nextPickupId: number; unlockedThisRun: string[];
   /** dev only */
   debug: { xpMul: number; forceItems: boolean; god: boolean; doubleSpeed: boolean; speedBonus: number };
@@ -156,7 +159,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, ambush: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
-    stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
+    stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, crystalsEarned: 0, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);
@@ -184,6 +187,8 @@ function finish(r: RunState, result: 'victory' | 'defeat', ev: RunEvent[]) {
   }
   r.newRecord = best > pr.bestPhase;
   pr.bestPhase = Math.max(pr.bestPhase, best);
+  r.crystalsEarned = crystalsFor({ phase: best, kills: r.prog.kills, bosses: r.stats.bosses, guardians: r.stats.guardians, won: result === 'victory', medal: result === 'victory' ? medalFor(pr.bestTime) : null });
+  r.save.currency += r.crystalsEarned;
   persist(r);
   ev.push({ type: result });
 }

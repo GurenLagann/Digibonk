@@ -45,6 +45,8 @@ export const T = {
   /** ímã dos coletáveis: raio de atração (× pickupMul), velocidade inicial e aceleração (u/s, u/s²) */
   /** medalhas de vitória por tempo total (s): menor que o corte ganha; bronze = qualquer vitória */
   MEDALS: { silver: 2100, gold: 1500, champion: 1080 },
+  /** Cristais ao fim da partida: por fase alcançada, a cada N abates, por chefe/guardião, vitória e medalha */
+  CRYSTALS: { PER_PHASE: 20, KILLS_PER: 200, BOSS: 15, GUARDIAN: 10, WIN: 20, MEDAL: { silver: 40, gold: 70, champion: 100 } },
   /** Bits: moeda da partida (valor do pickup = X × fase) */
   BITS: { DROP_CHANCE: 0.05, PER_PHASE: 1, GUARDIAN_PER_PHASE: 25, BOSS_PER_PHASE: 60 },
   /** baús do mapa: 2 grátis + 6 pagos (preço sobe a cada compra) + 1 amaldiçoado */

@@ -358,3 +358,37 @@ test('defeat records most kills but no time or medal', () => {
   expect(save.partnerRecords.agumon.bestKills).toBe(300); expect(save.partnerRecords.agumon.bestTime).toBeUndefined();
   expect(save.records.bestTime).toBeUndefined(); expect(r.medalEarned).toBeNull(); expect(r.newTimeRecord).toBe(false);
 });
+
+test('Cristais: a vitória soma em save.currency, grava e não repete ao continuar o passo', () => {
+  const storage = fakeStorage({}); const save = defaultSave();
+  const r = createRun({ ...opts({ storage }), save }); r.time = 1400; r.prog.kills = 400; r.stats.bosses = 2; r.stats.guardians = 1; winNow(r);
+  // fase 5 (100) + 2 abates/200 (2×1... 400/200=2) + 2 chefes (30) + 1 guardião (10) + ouro (70, substitui o bônus de vitória)
+  const esperado = 100 + 2 + 30 + 10 + 70;
+  expect(r.crystalsEarned).toBe(esperado); expect(save.currency).toBe(esperado);
+  expect(loadSave(storage).currency).toBe(esperado);
+  for (let i = 0; i < 5; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  abandonRun(r);
+  expect(save.currency).toBe(esperado);
+});
+test('Cristais: vitória com relicOffer pendente soma uma única vez', () => {
+  const save = defaultSave();
+  const r = createRun({ ...opts(), save }); r.time = 1400; winNow(r);
+  const antes = save.currency; r.relicOffer = ['x'] as never;
+  for (let i = 0; i < 5; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(save.currency).toBe(antes); expect(antes).toBeGreaterThan(0);
+});
+test('Cristais: derrota dentro da Zona Digital soma uma única vez', () => {
+  const save = defaultSave();
+  const r = createRun({ ...opts(), save }); r.prog.kills = 200;
+  const g = MINIBOSSES[0];
+  r.portals.push({ x: r.px, z: r.pz, attr: g.attribute, guardian: g.id, t: T.ZONE.PORTAL_SECONDS });
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(r.zone).not.toBeNull();
+  r.combat.hp = 0; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  expect(r.ended).toBe('defeat');
+  const esperado = 20 + 1; // fase 1 + 1 abate-bloco
+  expect(save.currency).toBe(esperado); expect(r.crystalsEarned).toBe(esperado);
+  for (let i = 0; i < 5; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+  abandonRun(r);
+  expect(save.currency).toBe(esperado);
+});
