@@ -12,7 +12,7 @@ const memStorage = () => {
 const target = () => ({ addEventListener: () => {} });
 const button = (root: HTMLElement, text: string) => [...root.querySelectorAll('button')].find(b => b.textContent!.includes(text)) as HTMLButtonElement;
 
-afterEach(() => { activeModal()?.close(); vi.useRealTimers(); });
+afterEach(() => { activeModal()?.close(); });
 
 test('clicar em "Inverter vertical" alterna save.camera.invertY, grava e aplica no input', () => {
   const root = document.createElement('div');
@@ -45,26 +45,23 @@ test('sensibilidade do mouse sobe de 0.25 em 0.25 e volta para 0.25 depois de 3'
   expect(save.camera.padSens).toBe(1.25);
 });
 
-test('eixo horizontal: ignora analógico já segurado e grava o eixo movido depois do neutro', () => {
-  vi.useFakeTimers();
+test('eixo horizontal: ignora gatilho em -1 e analógico já segurado; grava o eixo que se mexe', async () => {
   const root = document.createElement('div');
-  let axes = [0, 0, 0, 0, 0.9]; // eixo 4 já segurado ao abrir a captura
+  let axes = [0, 0, -1, 0, 0.9]; // eixo 2 = gatilho em repouso, eixo 4 já segurado ao abrir a captura
   const pad = () => ({ connected: true, axes, buttons: [] } as unknown as Gamepad);
   const input = createInput(target(), () => [pad()], {});
   const save = defaultSave();
   showSettings(root, input, save, memStorage(), () => {});
   button(root, 'Eixo horizontal').click();
   expect(root.textContent).toContain('Mova o analógico da câmera para a direita');
-  const tick = async () => { vi.advanceTimersByTime(16); input.poll(); await Promise.resolve(); await Promise.resolve(); };
-  return (async () => {
-    for (let i = 0; i < 20; i++) await tick();
-    expect(save.camera.padAxisX).toBe(2); // ainda não aceitou o eixo 4 segurado
-    axes = [0, 0, 0, 0, 0];
-    for (let i = 0; i < 20; i++) await tick();
-    axes = [0, 0, 0, 0.95, 0];
-    for (let i = 0; i < 3; i++) await tick();
-    expect(save.camera.padAxisX).toBe(3);
-  })();
+  const tick = async () => { input.poll(); await Promise.resolve(); await Promise.resolve(); };
+  for (let i = 0; i < 10; i++) await tick();
+  expect(save.camera.padAxisX).toBe(2); // padrão; nada aceito ainda
+  expect(root.textContent).toContain('Mova o analógico da câmera para a direita');
+  axes = [0, 0, -1, 0.95, 0.9];
+  await tick();
+  expect(save.camera.padAxisX).toBe(3);
+  expect(button(root, 'Eixo horizontal').textContent).toContain('eixo 3');
 });
 
 test('captura de eixo pode ser cancelada sem controle', () => {

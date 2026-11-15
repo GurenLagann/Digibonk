@@ -29,21 +29,6 @@ const nextSens = (v: number) => {
   const n = Math.round((v + SENS_STEP) / SENS_STEP) * SENS_STEP;
   return n > SENS_MAX + 1e-9 ? SENS_MIN : Math.max(SENS_MIN, n);
 };
-const AXIS_NEUTRAL_MS = 200;
-
-/** captureAxis que ignora analógico já segurado: só aceita depois de AXIS_NEUTRAL_MS sem nenhum eixo passar do limite */
-function captureFreshAxis(input: Input, alive: () => boolean): Promise<number> {
-  return new Promise(res => {
-    let since = Date.now();
-    const arm = () => void input.captureAxis().then(i => {
-      if (!alive()) return;
-      const now = Date.now();
-      if (now - since < AXIS_NEUTRAL_MS) { since = now; arm(); } else res(i);
-    });
-    arm();
-  });
-}
-
 export function showSettings(root: HTMLElement, input: Input, save: SaveData, storage: Storage | null | undefined, back: () => void) {
   const reopen = () => showSettings(root, input, save, storage, back);
   const cam = save.camera;
@@ -53,7 +38,7 @@ export function showSettings(root: HTMLElement, input: Input, save: SaveData, st
     onPick: () => {
       let alive = true;
       const wait = showChoice(root, { title: prompt, options: [], extra: { title: 'Cancelar', onPick: () => { alive = false; reopen(); } } });
-      void captureFreshAxis(input, () => alive && !wait.closed).then(i => { wait.close(); cam[key] = i; applyCamera(); });
+      void input.captureAxis().then(i => { if (!alive || wait.closed) return; wait.close(); cam[key] = i; applyCamera(); });
     },
   });
   const m = showChoice(root, {

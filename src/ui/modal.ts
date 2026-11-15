@@ -1,4 +1,4 @@
-import type { Input } from '../core/input';
+import type { Action, Input } from '../core/input';
 import { h } from './dom';
 
 export interface ChoiceOption { title: string; body?: string; tag?: string; onPick: () => void }
@@ -57,5 +57,17 @@ export function showChoice(root: HTMLElement, spec: ChoiceSpec): Modal {
     },
   };
   current = m;
+  return m;
+}
+
+/** nos primeiros `ticks` handle(), ignora pause/cancelar (ex.: Esc que soltou o Pointer Lock e chegou à página) */
+export function ignoreBackFor(m: Modal, ticks: number): Modal {
+  const handle = m.handle.bind(m);
+  let left = ticks;
+  m.handle = input => {
+    if (left <= 0) return handle(input);
+    left--;
+    handle({ ...input, pressed: (a: Action) => a !== 'pause' && a !== 'cancel' && input.pressed(a) } as Input);
+  };
   return m;
 }

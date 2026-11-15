@@ -54,3 +54,25 @@ test('arrows move the selection and confirm picks it; mouse click picks too', ()
   (root.querySelector('.cm-opt') as HTMLElement).click();
   expect(a).toHaveBeenCalledOnce(); expect(m2.closed).toBe(true);
 });
+
+test('ignoreBackFor: Esc/cancelar logo após abrir não fecham; depois dos ticks voltam a funcionar', async () => {
+  const { ignoreBackFor } = await import('../../src/ui/modal');
+  const root = document.createElement('div');
+  const onPick = vi.fn(), other = vi.fn();
+  const m = ignoreBackFor(showChoice(root, { title: 'Pausado', options: [{ title: 'A', onPick: other }], extra: { title: 'Continuar', onPick } }), 3);
+  for (let i = 0; i < 3; i++) m.handle(fakeInput(['pause', 'cancel']));
+  expect(onPick).not.toHaveBeenCalled();
+  expect(m.closed).toBe(false);
+  m.handle(fakeInput(['pause']));
+  expect(onPick).toHaveBeenCalledOnce();
+  expect(m.closed).toBe(true);
+});
+
+test('ignoreBackFor não bloqueia confirmar nos primeiros ticks', async () => {
+  const { ignoreBackFor } = await import('../../src/ui/modal');
+  const root = document.createElement('div');
+  const other = vi.fn();
+  const m = ignoreBackFor(showChoice(root, { title: 'T', options: [{ title: 'A', onPick: other }], extra: { title: 'V', onPick: () => {} } }), 3);
+  m.handle(fakeInput(['confirm']));
+  expect(other).toHaveBeenCalledOnce();
+});

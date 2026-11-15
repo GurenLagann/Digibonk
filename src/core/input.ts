@@ -36,7 +36,7 @@ export interface Input {
   /** yaw/pitch (rad) deste quadro: mouse acumulado até o último poll() + analógico direito do último poll() */
   look(dt: number): { dx: number; dy: number };
   setCamera(s: CameraSettings): void;
-  /** resolve com o índice do eixo do gamepad que passar de 0.6 (em módulo) no próximo poll() */
+  /** resolve com o índice do primeiro eixo que se afastar mais de 0.6 do valor que tinha ao chamar (gatilhos em -1 e analógico já segurado não contam) */
   captureAxis(): Promise<number>;
 }
 
@@ -53,6 +53,7 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
   let padOn = false;
   let capture: ((c: string) => void) | null = null;
   let axisCapture: ((i: number) => void) | null = null;
+  let axisBase: readonly number[] | null = null;
   let cam = defaultCamera();
   // regra: o mouse acumula entre polls (acc) e é consumido no poll (mouse); o look() lê só o snapshot do último poll
   let acc = { x: 0, y: 0 }, mouse = { x: 0, y: 0 };
@@ -92,9 +93,12 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
       stick = { x: 0, y: 0 };
       mouse = acc; acc = { x: 0, y: 0 };
       axes = p ? [...p.axes] : [];
-      if (axisCapture) {
-        const i = axes.findIndex(v => Math.abs(v) > 0.6);
-        if (i >= 0) { const c = axisCapture; axisCapture = null; c(i); }
+      if (axisCapture && p) {
+        // sem controle ao chamar captureAxis: a base é o primeiro poll com controle
+        if (!axisBase) axisBase = axes;
+        const base = axisBase;
+        const i = axes.findIndex((v, j) => Math.abs(v - (base[j] ?? 0)) > 0.6);
+        if (i >= 0) { const c = axisCapture; axisCapture = null; axisBase = null; c(i); }
       }
       if (p) {
         p.buttons.forEach((b, i) => { if (b.pressed) active.add(`pad:b${i}`); });
@@ -134,6 +138,10 @@ export function createInput(target: KeyTarget, getPads: () => (Gamepad | null)[]
       return { dx, dy: cam.invertY ? -dy : dy };
     },
     setCamera(s) { cam = { ...s }; },
-    captureAxis() { return new Promise<number>(res => { axisCapture = res; }); },
+    captureAxis() {
+      const p = readPad();
+      axisBase = p ? [...p.axes] : null;
+      return new Promise<number>(res => { axisCapture = res; });
+    },
   };
 }

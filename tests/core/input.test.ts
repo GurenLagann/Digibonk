@@ -76,3 +76,31 @@ test('captureAxis resolve com o eixo movido', async () => {
   const pads = { current: [pad([0, 0, 0, 0])] }; const { input } = make(pads);
   const p = input.captureAxis(); pads.current = [pad([0, 0, 0, -0.9])]; input.poll(); await expect(p).resolves.toBe(3);
 });
+test('captureAxis: eixo em repouso em -1 (gatilho) não resolve; analógico de 0 para 0.9 resolve', async () => {
+  const pads = { current: [pad([0, 0, -1, 0, -1])] }; const { input } = make(pads);
+  let got: number | null = null;
+  void input.captureAxis().then(i => { got = i; });
+  for (let k = 0; k < 5; k++) { input.poll(); await Promise.resolve(); }
+  expect(got).toBeNull();
+  pads.current = [pad([0, 0, -1, 0.9, -1])]; input.poll(); await Promise.resolve();
+  expect(got).toBe(3);
+});
+test('captureAxis: analógico já segurado em 0.9 só resolve quando muda mais de 0.6 da base', async () => {
+  const pads = { current: [pad([0, 0, 0.9, 0])] }; const { input } = make(pads);
+  let got: number | null = null;
+  void input.captureAxis().then(i => { got = i; });
+  for (let k = 0; k < 5; k++) { input.poll(); await Promise.resolve(); }
+  pads.current = [pad([0, 0, 0.4, 0])]; input.poll(); await Promise.resolve();
+  expect(got).toBeNull();
+  pads.current = [pad([0, 0, 0.2, 0])]; input.poll(); await Promise.resolve();
+  expect(got).toBe(2);
+});
+test('captureAxis sem controle no início: a base vem do primeiro poll com controle', async () => {
+  const pads = { current: [] as (Gamepad | null)[] }; const { input } = make(pads);
+  let got: number | null = null;
+  void input.captureAxis().then(i => { got = i; });
+  input.poll(); pads.current = [pad([0, 0, -1, 0])]; input.poll(); await Promise.resolve();
+  expect(got).toBeNull();
+  pads.current = [pad([0, 0, -1, -0.8])]; input.poll(); await Promise.resolve();
+  expect(got).toBe(3);
+});

@@ -31,7 +31,7 @@ import { showResults } from './ui/results';
 import { showRecords } from './ui/records';
 import { showPartnerSelect } from './ui/partnerSelect';
 import { showTitle } from './ui/title';
-import { activeModal } from './ui/modal';
+import { activeModal, ignoreBackFor } from './ui/modal';
 import { mountToasts, toast } from './ui/toast';
 import { installAutoPause } from './ui/autopause';
 import { setPortraitSource } from './ui/portrait';
@@ -73,7 +73,7 @@ function lockPointer() {
 }
 function unlockPointer() { if (document.pointerLockElement) document.exitPointerLock(); }
 canvas.addEventListener('click', lockPointer);
-document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== canvas && inPlay()) pause(); });
+document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== canvas && inPlay()) pause(true); });
 
 const app = createApp({ save, storage: null, startRun });
 const toTitle = () => {
@@ -103,12 +103,14 @@ function startRun(partnerId: string) {
   lockPointer();
 }
 
-function pause() {
+/** fromLock: pausa aberta por perda do Pointer Lock (Esc); ignora Esc/cancelar por ~10 ticks para o mesmo Esc não fechar a pausa */
+function pause(fromLock = false) {
   if (!run || run.ended || activeModal()) return;
   run.paused = true;
   const resume = () => { if (run) run.paused = false; lockPointer(); };
   const open = () => showPause(ui, resume, () => openSettings(open), () => { if (run) abandonRun(run).forEach(announce); }, run ? damagePanel(run) : undefined);
-  open();
+  const m = open();
+  if (fromLock) ignoreBackFor(m, 10);
 }
 installAutoPause(document, pause, window);
 
