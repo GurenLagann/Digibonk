@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
 import { biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
+import { ALTAR_DIGIMON, ALTAR_HEIGHT, altarFrame, contentBand } from './altarSprite';
+import { readPixels } from './footPad';
+import { frameIndex, frameOffset, sheetGrid, type SpriteLibrary } from './sprites';
 
 export interface SceneLights { hemi: THREE.HemisphereLight; sun: THREE.DirectionalLight }
 
@@ -32,6 +35,7 @@ export class MapView {
   private inZone = false;
   private terminal: THREE.Group;
   private altarMeshes = new Map<number, THREE.Group>();
+  private sprites: SpriteLibrary | null = null;
   private altarKey = '';
   private altar: THREE.Group;
   private altarRing: THREE.Mesh;
@@ -119,7 +123,7 @@ export class MapView {
     const ex = run.zone?.exit;
     this.exitPortal.visible = !!ex && run.relicOffer === null;
     if (ex) { this.exitPortal.position.set(ex.x, 0, ex.z); this.exitPortal.rotation.y = time * 1.8; }
-    // altares da fase: pilar com cristal (Etemon roxo, Datamon verde, Desafio vermelho); usado fica cinza
+    // altares da fase: o Digimon (Etemon, Datamon, Ogremon no Desafio) parado no mapa como NPC; usado fica cinza e para
     const ak = run.altars.map(a => a.id).join(',');
     if (ak !== this.altarKey) {
       this.altarKey = ak;
@@ -127,20 +131,39 @@ export class MapView {
       this.altarMeshes.clear();
       for (const a of run.altars) {
         const g = new THREE.Group();
-        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 1.4, 6), new THREE.MeshLambertMaterial({ color: 0x3a3a48 }));
-        pillar.position.y = 0.7;
-        const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.6), new THREE.MeshBasicMaterial({ color: ALTAR_COLORS[a.kind] }));
-        crystal.position.y = 2.1;
-        g.add(pillar, crystal); g.position.set(a.x, 0, a.z);
+        const id = ALTAR_DIGIMON[a.kind], info = this.sprites?.info(id), tex = this.sprites?.texture(id);
+        if (info && tex) {
+          const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.1 }));
+          // desenho (não o quadro) com ALTAR_HEIGHT de altura, pés no chão: mede a margem no 1º quadro do parado
+          const img = this.sprites!.image(id), px = img ? readPixels(img) : null, gr = sheetGrid(info);
+          const band = px ? contentBand(px, frameIndex(altarFrame(0, info.frames, false), info.frames), gr.cols, gr.rows) : { top: 0, bottom: 1 };
+          const h = ALTAR_HEIGHT / (band.bottom - band.top);
+          sp.center.set(0.5, 1 - band.bottom);
+          sp.scale.set(h * info.frameW / info.frameH, h, 1);
+          g.add(sp);
+        } else {
+          // sem folha: cristal colorido
+          const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.6), new THREE.MeshBasicMaterial({ color: ALTAR_COLORS[a.kind] }));
+          crystal.position.y = 1.2;
+          g.add(crystal);
+        }
+        g.position.set(a.x, 0, a.z);
         this.scene.add(g); this.altarMeshes.set(a.id, g);
       }
     }
     for (const a of run.altars) {
       const g = this.altarMeshes.get(a.id); if (!g) continue;
       g.visible = !run.zone;
-      const crystal = g.children[1] as THREE.Mesh;
-      (crystal.material as THREE.MeshBasicMaterial).color.setHex(a.used ? 0x555560 : ALTAR_COLORS[a.kind]);
-      crystal.rotation.y = time * 1.5; crystal.position.y = 2.1 + (a.used ? 0 : Math.sin(time * 2 + a.id) * 0.15);
+      const top = g.children[0];
+      if (top instanceof THREE.Sprite) {
+        const info = this.sprites!.info(ALTAR_DIGIMON[a.kind])!;
+        const o = frameOffset(frameIndex(altarFrame(time + a.id * 0.37, info.frames, a.used), info.frames), info);
+        top.material.map!.offset.set(o.x, o.y);
+        top.material.color.setHex(a.used ? 0x6a6a72 : 0xffffff);
+      } else if (top) {
+        ((top as THREE.Mesh).material as THREE.MeshBasicMaterial).color.setHex(a.used ? 0x555560 : ALTAR_COLORS[a.kind]);
+        top.rotation.y = time * 1.5; top.position.y = 1.2 + (a.used ? 0 : Math.sin(time * 2 + a.id) * 0.15);
+      }
     }
     const js = run.jogressSpot;
     this.terminal.visible = !!js && !run.zone;
@@ -150,6 +173,9 @@ export class MapView {
     if (z !== this.inZone) { this.inZone = z; this.applySky(); }
     (this.arenaRing.material as THREE.MeshBasicMaterial).color.setHex(Math.sin(time * 3) > 0 ? 0x5ae8ff : 0x1fd6ff);
   }
+
+  /** folhas de sprite (carregadas depois do mapa): altares passam a mostrar o Digimon */
+  setSprites(lib: SpriteLibrary): void { this.sprites = lib; this.altarKey = ''; }
 
   /** ao voltar ao título (ex.: morreu na Zona Digital): sai do estado de arena e reaplica céu/nevoeiro/luz do bioma */
   resetForTitle(): void { this.inZone = false; this.applySky(); }

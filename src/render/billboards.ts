@@ -17,6 +17,8 @@ const VIS = 1.6;
 export const FLIP_SPRITES = true;
 /** altura visual dos inimigos com sprite = tamanho de colisão × ENEMY_VIS */
 const ENEMY_VIS = 1.7;
+/** ajuste só visual por sprite (a colisão continua pelo tamanho de jogo): folhas com muita margem em volta do desenho */
+export const SPRITE_SCALE: Record<string, number> = { snowgoblimon: 1.6 };
 
 /** quadro de costas/frente (simétrico, não espelha); lado e diagonais espelham com a direção */
 const verticalRole = (r: Role) => /^(walk|run|stand|death|idle)(up|down)\d*$/.test(r);
@@ -89,7 +91,7 @@ export class Billboards {
       if (g.tex) { const gr = sheetGrid({ frames: g.frames, cols: g.cols }); enableInstanceFrames(mesh, gr.cols, gr.rows); }
       this.scene.add(mesh);
       // inimigos: altura pelo tamanho de jogo (as folhas foram ripadas em escalas diferentes), +15% por estágio acima do Child
-      const height = g.tex ? size * ENEMY_VIS * enemyStageScale(d.stage) : size * VIS;
+      const height = g.tex ? size * ENEMY_VIS * enemyStageScale(d.stage) * (SPRITE_SCALE[def] ?? 1) : size * VIS;
       sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height, pads: g.pads };
       this.species.set(def, sp);
     }

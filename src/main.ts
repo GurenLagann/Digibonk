@@ -53,6 +53,7 @@ const map = new MapView(scene, lights);
 const partnerPos = new THREE.Vector3(), origin = new THREE.Vector3();
 const sprites = await SpriteLibrary.load();
 setPortraitSource(sprites);
+map.setSprites(sprites);
 if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: renderer });
 const boards = new Billboards(scene, camera, sprites);
 const vfx = new Vfx(scene);
