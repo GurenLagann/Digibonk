@@ -216,7 +216,7 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
   // mouse/analógico para a direita gira a vista para a direita = yaw diminui (yaw + leva a câmera para +x)
   const look = input.look(dt);
   orbit.turn(-look.dx, look.dy);
-  run.camYaw = orbit.yaw; run.camHalf = orbit.horizontalHalfFov();
+  run.camYaw = orbit.yaw; run.camHalf = orbit.horizontalHalfFov() + T.CAMERA.SPAWN_MARGIN;
   const m = input.move();
   const ev = stepRun(run, rotateByYaw(m.mx, m.mz, orbit.yaw), dt);
   ev.forEach(announce);

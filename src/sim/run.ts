@@ -237,7 +237,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   r.time += dt;
   movePlayer(r, input, dt);
 
-  const d = r.director; d.phase = r.phase.phase; d.t = r.phase.t; d.px = r.px; d.pz = r.pz;
+  const d = r.director; d.phase = r.phase.phase; d.t = r.phase.t; d.px = r.px; d.pz = r.pz; d.viewYaw = r.camYaw; d.viewHalf = r.camHalf;
   d.corruption = r.corruption;
   if (!r.zone) stepDirector(d, dt, r.rng); // na arena só surgem as ondas da Distorção
 

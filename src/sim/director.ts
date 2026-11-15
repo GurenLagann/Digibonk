@@ -2,6 +2,7 @@ import type { Rng } from '../core/rng';
 import { ENEMIES } from '../data/enemies';
 import { T } from '../data/tuning';
 import type { AttributeId, BossDef, ElementId, EnemyDef } from '../data/types';
+import { cameraForward } from '../core/view';
 import { clamp } from './vec';
 
 export interface Enemy {
@@ -52,7 +53,9 @@ export function difficulty(phase: number, t: number) {
 
 export interface DirectorState { pool: EnemyPool; phase: number; t: number; acc: number; px: number; pz: number;
   /** nível de Corrupção do Etemon (mais inimigos e mais fortes) */
-  corruption?: number }
+  corruption?: number;
+  /** yaw e meio-ângulo da câmera: inimigos nascem fora desse cone (viewHalf >= π = sem restrição) */
+  viewYaw?: number; viewHalf?: number }
 
 export function stepDirector(s: DirectorState, dt: number, rng: Rng): void {
   const d = difficulty(s.phase, s.t);
@@ -63,8 +66,12 @@ export function stepDirector(s: DirectorState, dt: number, rng: Rng): void {
     s.acc -= 1;
     const def = rng.weighted(eligible, e => 1 + e.minPhase * 0.75);
     let x = 0, z = 0;
+    const vh = s.viewHalf !== undefined && s.viewHalf < Math.PI ? Math.max(0, s.viewHalf) : -1;
+    let fa = 0;
+    if (vh >= 0) { const f = cameraForward(s.viewYaw ?? 0); fa = Math.atan2(f.z, f.x); }
     for (let tries = 0; tries < 6; tries++) {
-      const a = rng.next() * Math.PI * 2, r = 22 + rng.next() * 6;
+      // com cone de visão: sorteia só no arco fora dele
+      const a = vh >= 0 ? fa + vh + rng.next() * (Math.PI * 2 - 2 * vh) : rng.next() * Math.PI * 2, r = 22 + rng.next() * 6;
       x = s.px + Math.cos(a) * r; z = s.pz + Math.sin(a) * r;
       if (Math.abs(x) <= T.MAP_HALF && Math.abs(z) <= T.MAP_HALF) break;
     }

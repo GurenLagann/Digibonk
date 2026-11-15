@@ -1,3 +1,4 @@
+import { outsideView } from '../../src/core/view';
 import { difficulty, EnemyPool, stepDirector } from '../../src/sim/director';
 import { ENEMIES, BOSSES } from '../../src/data/enemies';
 import { T } from '../../src/data/tuning';
@@ -25,5 +26,17 @@ test('spawns stay in the ring and respect phase', () => {
   for (const e of alive) {
     const d = Math.hypot(e.x - 5, e.z + 3); expect(d).toBeGreaterThanOrEqual(22 - 1e-6); expect(d).toBeLessThanOrEqual(28 + 1e-6);
     expect(ENEMIES.find(x => x.id === e.def)!.minPhase).toBe(1);
+  }
+});
+test('spawns avoid the camera view cone', () => {
+  for (const yaw of [0, Math.PI / 2]) {
+    const half = Math.PI / 3;
+    const st = { pool: new EnemyPool(), phase: 1, t: 0, acc: 0, px: 0, pz: 0, viewYaw: yaw, viewHalf: half }; const r = createRng(3);
+    for (let i = 0; i < 600; i++) { st.t += 1 / 60; stepDirector(st, 1 / 60, r); }
+    const alive = st.pool.alive(); expect(alive.length).toBeGreaterThan(10);
+    for (const e of alive) {
+      expect(outsideView(e.x, e.z, yaw, half)).toBe(true);
+      const d = Math.hypot(e.x, e.z); expect(d).toBeGreaterThanOrEqual(22 - 1e-6); expect(d).toBeLessThanOrEqual(28 + 1e-6);
+    }
   }
 });
