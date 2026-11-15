@@ -14,6 +14,8 @@ export interface DebugActions {
   doubleSpeed(): boolean;
   /** marca todas as evoluções como descobertas / volta tudo a secreto (no save, sem precisar de partida) */
   revealAll(): void; forgetAll(): void;
+  /** alterna o bioma forçado e devolve o texto do botão ("Bioma: Floresta DW1") */
+  nextBiome(): string;
 }
 
 export function mountDebugPanel(root: HTMLElement, a: DebugActions): { el: HTMLElement; toggle(): void; setAnim(form: string, missing: string[]): void } {
@@ -33,7 +35,8 @@ export function mountDebugPanel(root: HTMLElement, a: DebugActions): { el: HTMLE
       b('+1 nível', () => a.levelUp()), b('Curar', () => a.heal()), b('Matar todos', () => a.killAll()), b('Morrer', () => a.die()),
       b('Invencível: não', btn => { btn.textContent = `Invencível: ${a.god() ? 'sim' : 'não'}`; }),
       b('Velocidade 2×: não', btn => { btn.textContent = `Velocidade 2×: ${a.doubleSpeed() ? 'sim' : 'não'}`; }),
-      b('Revelar todas as evoluções', () => a.revealAll()), b('Esquecer evoluções', () => a.forgetAll())),
+      b('Revelar todas as evoluções', () => a.revealAll()), b('Esquecer evoluções', () => a.forgetAll()),
+      b('Trocar bioma', btn => { btn.textContent = a.nextBiome(); })),
     section('Evoluir para', ...a.forms.map(f => b(f.name, () => a.evolve(f.id)))),
     ...[...new Set(a.summons.map(s => s.group))].map(g =>
       section(`Invocar — ${g}`, ...a.summons.filter(s => s.group === g).map(s => b(s.name, () => a.summon(s.id))))),

@@ -14,6 +14,7 @@ function actions(log: string[]): DebugActions {
     god: () => (god = !god),
     doubleSpeed: () => false,
     revealAll: () => log.push('reveal'), forgetAll: () => log.push('forget'),
+    nextBiome: () => 'Bioma: Floresta DW1',
   };
 }
 const btn = (root: HTMLElement, text: string) => [...root.querySelectorAll('button')].find(b => b.textContent === text)!;
@@ -63,4 +64,14 @@ test('Morrer e Invocar (uma seção por grupo)', () => {
   const titles = [...root.querySelectorAll('.dbg-title')].map(t => t.textContent);
   expect(titles).toContain('Invocar — inimigos');
   expect(titles).toContain('Invocar — chefes');
+});
+
+test('botão de bioma chama nextBiome e mostra o nome devolvido', () => {
+  const root = document.createElement('div'); let n = 0;
+  mountDebugPanel(root, { ...actions([]), nextBiome: () => (++n % 2 ? 'Bioma: Floresta DW3' : 'Bioma: Floresta DW1') });
+  btn(root, 'Trocar bioma').click();
+  expect(n).toBe(1);
+  expect(btn(root, 'Bioma: Floresta DW3')).toBeTruthy();
+  btn(root, 'Bioma: Floresta DW3').click();
+  expect(btn(root, 'Bioma: Floresta DW1')).toBeTruthy();
 });

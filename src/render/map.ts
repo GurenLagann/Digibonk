@@ -1,21 +1,9 @@
 import * as THREE from 'three';
 import { T } from '../data/tuning';
-import { MAP_OBSTACLES } from '../sim/map';
 import type { RunState } from '../sim/run';
+import { biomeForPhase, buildBiome, type BiomeId, type BiomeView } from './biomes';
 
-function groundTexture(): THREE.CanvasTexture {
-  const c = document.createElement('canvas'); c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  for (let y = 0; y < 64; y += 4) for (let x = 0; x < 64; x += 4) {
-    const v = 0.85 + Math.random() * 0.15 + (((x + y) / 4) % 2 ? 0.03 : 0);
-    g.fillStyle = `rgb(${Math.round(92 * v)},${Math.round(160 * v)},${Math.round(72 * v)})`;
-    g.fillRect(x, y, 4, 4);
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(50, 50);
-  t.magFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
+export interface SceneLights { hemi: THREE.HemisphereLight; sun: THREE.DirectionalLight }
 
 /** chão da Zona Digital: placas escuras com grade ciano */
 function arenaTexture(): THREE.CanvasTexture {
@@ -54,29 +42,15 @@ export class MapView {
   private phaseKey = -1;
   private lastRun: RunState | null = null;
 
-  constructor(private scene: THREE.Scene) {
-    const size = T.MAP_HALF * 2 + 40;
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshLambertMaterial({ map: groundTexture() }));
-    ground.rotation.x = -Math.PI / 2; scene.add(ground);
+  private view: BiomeView | null = null;
+  private biomeId: BiomeId = 'floresta-dw1';
+  /** bioma forçado pelo debug (null = pela fase) */
+  private biomeOverride: BiomeId | null = null;
+  private zoneColor = new THREE.Color(0x050b16);
 
-    // borda: rochedos
-    const wallMat = new THREE.MeshLambertMaterial({ color: 0x7a6a5a });
-    const wallGeo = new THREE.BoxGeometry(T.MAP_HALF * 2 + 6, 4, 3);
-    for (const [x, z, rot] of [[0, -T.MAP_HALF - 2, 0], [0, T.MAP_HALF + 2, 0], [-T.MAP_HALF - 2, 0, 1], [T.MAP_HALF + 2, 0, 1]] as const) {
-      const w = new THREE.Mesh(wallGeo, wallMat); w.position.set(x, 2, z); w.rotation.y = rot ? Math.PI / 2 : 0; scene.add(w);
-    }
-
-    const trees = MAP_OBSTACLES.filter(o => o.kind === 'tree'), rocks = MAP_OBSTACLES.filter(o => o.kind === 'rock');
-    const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 1.6, 6), new THREE.MeshLambertMaterial({ color: 0x6a4a2a }), trees.length);
-    const crown = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 2.6, 7), new THREE.MeshLambertMaterial({ color: 0x2f7a3a, flatShading: true }), trees.length);
-    const rock = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshLambertMaterial({ color: 0x8a8a92, flatShading: true }), rocks.length);
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
-    trees.forEach((o, i) => {
-      trunk.setMatrixAt(i, m.compose(p.set(o.x, 0.8, o.z), q.identity(), s.set(o.r, 1, o.r)));
-      crown.setMatrixAt(i, m.compose(p.set(o.x, 1.6 + o.r * 1.1, o.z), q.identity(), s.set(o.r * 1.3, o.r * 1.1, o.r * 1.3)));
-    });
-    rocks.forEach((o, i) => rock.setMatrixAt(i, m.compose(p.set(o.x, o.r * 0.4, o.z), q.setFromEuler(new THREE.Euler(0, o.x, 0)), s.set(o.r, o.r * 0.8, o.r))));
-    scene.add(trunk, crown, rock);
+  constructor(private scene: THREE.Scene, private lights?: SceneLights) {
+    // chão, borda e árvores/pedras dos obstáculos vêm do bioma
+    this.setBiome('floresta-dw1');
 
     this.altar = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.4, 0.12, 16), new THREE.MeshLambertMaterial({ color: 0x5a4a7a }));
@@ -173,16 +147,52 @@ export class MapView {
     if (js) { this.terminal.position.set(js.x, 0, js.z); this.terminal.rotation.y = time * 2; this.terminal.children[1].rotation.x = time * 3; }
     // dentro da arena: céu e nevoeiro escuros
     const z = !!run.zone;
-    if (z !== this.inZone) {
-      this.inZone = z;
-      const col = z ? 0x050b16 : 0x8fc8ff;
-      (this.scene.background as THREE.Color).setHex(col);
-      this.scene.fog?.color.setHex(col);
-    }
+    if (z !== this.inZone) { this.inZone = z; this.applySky(); }
     (this.arenaRing.material as THREE.MeshBasicMaterial).color.setHex(Math.sin(time * 3) > 0 ? 0x5ae8ff : 0x1fd6ff);
   }
 
+  get biome(): BiomeId { return this.biomeId; }
+
+  /** monta o bioma (troca o anterior); no mesmo bioma não faz nada */
+  setBiome(id: BiomeId): void {
+    if (this.view && id === this.biomeId) return;
+    if (this.view) { this.scene.remove(this.view.group); this.view.dispose(); }
+    this.biomeId = id;
+    this.view = buildBiome(id);
+    this.scene.add(this.view.group);
+    this.applySky();
+  }
+
+  /** debug: força o outro bioma e devolve o novo */
+  cycleBiome(): BiomeId {
+    this.biomeOverride = this.biomeId === 'floresta-dw1' ? 'floresta-dw3' : 'floresta-dw1';
+    this.setBiome(this.biomeOverride);
+    return this.biomeOverride;
+  }
+
+  /** céu, nevoeiro e luz: os do bioma, ou escuros dentro da Zona Digital */
+  private applySky() {
+    const v = this.view; if (!v) return;
+    v.group.visible = !this.inZone; // a silhueta não tem nevoeiro: esconder na arena
+    if (this.inZone) {
+      this.scene.background = this.zoneColor;
+      this.scene.fog?.color.copy(this.zoneColor);
+      return;
+    }
+    this.scene.background = v.sky.background;
+    this.scene.fog?.color.setHex(v.sky.fog);
+    const l = this.lights; if (!l) return;
+    l.hemi.color.setHex(v.light.sky); l.hemi.groundColor.setHex(v.light.ground); l.hemi.intensity = v.light.hemi;
+    l.sun.color.setHex(v.light.sun); l.sun.intensity = v.light.sunIntensity;
+  }
+
+  /** por quadro, com ou sem partida: camPos = posição da câmera, target = parceiro (para a transparência das copas) */
+  update(time: number, camPos: THREE.Vector3, target: THREE.Vector3): void {
+    if (this.view && !this.inZone) this.view.update(time, camPos, target);
+  }
+
   sync(run: RunState, time: number) {
+    this.setBiome(this.biomeOverride ?? biomeForPhase(run.phase.phase));
     this.syncPortals(run, time);
     const ph = run.phase;
     const key = ph.phase * 1000 + run.chests.length;

@@ -1,5 +1,6 @@
 import './ui/style.css';
 import './ui/theme.css';
+import * as THREE from 'three';
 import { createApp } from './app';
 import { createInput } from './core/input';
 import { createFixedLoop } from './core/loop';
@@ -12,6 +13,7 @@ import { ITEM_LIST, ITEMS } from './data/items';
 import { T } from './data/tuning';
 import { Billboards } from './render/billboards';
 import { MapView } from './render/map';
+import { BIOME_NAMES } from './render/biomes';
 import { createScene } from './render/scene';
 import { OrbitCamera } from './render/camera';
 import { rotateByYaw } from './core/view';
@@ -38,7 +40,7 @@ import { setPortraitSource } from './ui/portrait';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ui = document.getElementById('ui')!;
-const { renderer, scene, camera, resize } = createScene(canvas);
+const { renderer, scene, camera, resize, lights } = createScene(canvas);
 addEventListener('resize', resize);
 const save = loadSave();
 sanitizeDiscovery(save); // descarta evoluções/pistas que não existem mais nos dados
@@ -47,7 +49,8 @@ input.setCamera(save.camera);
 const orbit = new OrbitCamera(camera);
 const debug = import.meta.env.DEV ? new URLSearchParams(location.search).get('debug')?.split(',') ?? [] : [];
 
-const map = new MapView(scene);
+const map = new MapView(scene, lights);
+const partnerPos = new THREE.Vector3(), origin = new THREE.Vector3();
 const sprites = await SpriteLibrary.load();
 setPortraitSource(sprites);
 if (import.meta.env.DEV) Object.assign(window, { __scene: scene, __renderer: renderer });
@@ -141,6 +144,7 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
     god: () => { if (!run) return false; const on = dbg.debugToggleGod(run); toast(`Debug: invencível ${on ? 'ligado' : 'desligado'}`); return on; },
     revealAll: () => { dbg.debugRevealAll(save); toast('Debug: todas as evoluções reveladas'); },
     forgetAll: () => { dbg.debugForgetAll(save); toast('Debug: evoluções esquecidas'); },
+    nextBiome: () => `Bioma: ${BIOME_NAMES[map.cycleBiome()]}`,
     doubleSpeed: () => { if (!run) return false; const on = dbg.debugToggleDoubleSpeed(run); toast(`Debug: velocidade 2× ${on ? 'ligada' : 'desligada'}`); return on; },
   });
   addEventListener('keydown', e => { if (e.code === 'F2') { e.preventDefault(); panel.toggle(); } });
@@ -239,12 +243,14 @@ function frame(now: number) {
   if (run) {
     orbit.follow(run.px, run.pz);
     map.sync(run, t);
+    map.update(t, camera.position, partnerPos.set(run.px, 1, run.pz));
     boards.sync(run, t, orbit.yaw);
     vfx.sync(run, events, Math.min(dt, 0.25), t);
     hud.update(run);
   } else {
     camera.position.set(Math.cos(t * 0.05) * 30, 20, Math.sin(t * 0.05) * 30);
     camera.lookAt(0, 0, 0);
+    map.update(t, camera.position, origin);
   }
   events = [];
   renderer.render(scene, camera);

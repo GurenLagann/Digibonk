@@ -9,7 +9,8 @@ export function createScene(canvas: HTMLCanvasElement) {
   scene.background = new THREE.Color(0x8fc8ff);
   scene.fog = new THREE.Fog(0x8fc8ff, T.CAMERA.FOG_NEAR, T.CAMERA.FOG_FAR);
   const camera = new THREE.PerspectiveCamera(T.CAMERA.FOV, 1, 0.5, T.CAMERA.FAR);
-  scene.add(new THREE.HemisphereLight(0xdff2ff, 0x5a7a3a, 1.6));
+  const hemi = new THREE.HemisphereLight(0xdff2ff, 0x5a7a3a, 1.6);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffffff, 1.4);
   sun.position.set(20, 40, 10);
   scene.add(sun);
@@ -20,5 +21,5 @@ export function createScene(canvas: HTMLCanvasElement) {
     camera.updateProjectionMatrix();
   };
   resize();
-  return { renderer, scene, camera, resize };
+  return { renderer, scene, camera, resize, lights: { hemi, sun } };
 }
