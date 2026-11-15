@@ -93,3 +93,20 @@ test('entrar na Zona Digital com a emboscada ativa não a conclui; ao sair conti
   expect(r.ambush!.ids).toEqual(ids);
   for (const id of ids) expect(r.pool.get(id)).toBeDefined();
 });
+
+test('ambushCleared informa se há oferta de relíquia e marca a origem', () => {
+  const r = mk(); touch(r);
+  killIds(r, r.ambush!.ids);
+  const ev = step(r);
+  expect(ev).toContainEqual({ type: 'ambushCleared', relic: true });
+  expect(r.relicSource).toBe('ambush');
+});
+test('ambushCleared com relíquias cheias vem com relic: false', () => {
+  const r = mk();
+  r.prog.relics.push(...RELIC_LIST.slice(0, 3).map(x => x.id));
+  touch(r);
+  killIds(r, r.ambush!.ids);
+  const ev = step(r);
+  expect(ev).toContainEqual({ type: 'ambushCleared', relic: false });
+  expect(r.relicSource).toBeNull();
+});

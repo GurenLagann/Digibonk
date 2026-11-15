@@ -7,10 +7,10 @@ import { showTamerCards } from './tamerCards';
 const EFFECT_GLYPH: Record<string, string> = { regen: '💚', pickup: '🧲', xp: '⭐', elite: '⚔', revive: '🥚', digidata: '💾' };
 
 /** Relíquias da Distorção: escolha 1 de 3 (vale o resto da partida) ou nenhuma (Esc) */
-export function showRelicChoice(root: HTMLElement, run: RunState) {
+export function showRelicChoice(root: HTMLElement, run: RunState, title = 'Relíquias da Distorção') {
   const ids = run.relicOffer ?? [];
   return showTamerCards(root, {
-    title: 'Relíquias da Distorção',
+    title,
     subtitle: `Escolha uma para o resto da partida · ${run.prog.relics.length}/${RELIC_SLOTS} espaços`,
     cards: ids.map((id, i) => {
       const r = RELICS[id];

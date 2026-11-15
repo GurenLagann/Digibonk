@@ -38,10 +38,18 @@ test('Bits: guardião na fase 1 solta 25', () => {
   step(r);
   expect(bitsPickups(r).map(p => p.value)).toEqual([25]);
 });
-test('Bits: chefe na fase 3 solta 180', () => {
+test('Bits: chefe da fase 3 credita 180 direto em r.bits (não vira pickup)', () => {
   const r = mk(); r.phase = newPhase(3, createRng(1)); r.phase.bossActive = true;
   const b = r.pool.spawn(BOSSES[2], r.px + 1, r.pz, { hp: 1, dmg: 0 }, { boss: true })!; r.phase.bossId = b.id; b.hp = 0;
   step(r);
-  expect(bitsPickups(r).map(p => p.value)).toEqual([180]);
+  expect(r.bits).toBe(180);
+  expect(r.pickups.filter(p => p.kind === 'bits')).toHaveLength(0);
+});
+test('Bits: chefe morto fora do alcance de coleta não perde os Bits ao limpar a fase', () => {
+  const r = mk(); r.phase = newPhase(3, createRng(1)); r.phase.bossActive = true;
+  const b = r.pool.spawn(BOSSES[2], r.px + 2, r.pz, { hp: 1, dmg: 0 }, { boss: true })!; r.phase.bossId = b.id; b.hp = 0;
+  const ev = step(r);
+  expect(ev.some(e => e.type === 'phaseCleared')).toBe(true);
+  expect(r.bits).toBeGreaterThanOrEqual(T.BITS.BOSS_PER_PHASE * 3);
 });
 test('Bits: isMagnetic', () => { expect(isMagnetic('bits')).toBe(true); });

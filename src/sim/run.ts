@@ -34,7 +34,7 @@ export type RunEvent =
   | { type: 'overtime' } | { type: 'phaseCleared'; phase: number } | { type: 'victory' } | { type: 'defeat' }
   | { type: 'cardFound'; cardId: string } | { type: 'itemFound'; itemId: string } | { type: 'partnerUnlocked'; partnerId: string }
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
-  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number; kind: Chest['kind'] } | { type: 'chestLocked'; missing: number } | { type: 'ambush' } | { type: 'ambushCleared' } | { type: 'playerHit'; dmg: number }
+  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number; kind: Chest['kind'] } | { type: 'chestLocked'; missing: number } | { type: 'ambush' } | { type: 'ambushCleared'; relic: boolean } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
   | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
@@ -73,6 +73,8 @@ export interface RunState {
   reviveUsed: boolean;
   /** Zona Digital: portais abertos no mapa, a Distorção em andamento e as relíquias oferecidas ao vencer */
   portals: Portal[]; zone: ZoneState | null; relicOffer: string[] | null;
+  /** de onde veio a oferta de relíquia aberta (título da tela) */
+  relicSource: 'zone' | 'ambush' | null;
   /** emboscada do baú amaldiçoado: ids dos Bakemon vivos (no pool do mapa) */
   ambush: { ids: number[] } | null;
   /** Jogress de golpes: Terminal no mapa, pares oferecidos (espaços) e se já foi usado nesta partida */
@@ -157,7 +159,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, ambush: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, relicSource: null, ambush: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, crystalsEarned: 0, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -174,6 +176,8 @@ function finish(r: RunState, result: 'victory' | 'defeat', ev: RunEvent[]) {
   rec.runs++; if (result === 'victory') rec.wins++;
   rec.bestPhase = Math.max(rec.bestPhase, result === 'victory' ? T.PHASES : r.phase.phase);
   const best = result === 'victory' ? T.PHASES : r.phase.phase;
+  // derrota: a fase atual não foi limpa, então só conta (fase − 1) nos Cristais
+  const cleared = result === 'victory' ? T.PHASES : r.phase.phase - 1;
   const pr = r.save.partnerRecords[r.partnerId] ??= { runs: 0, wins: 0, bestPhase: 0, bestKills: 0 };
   pr.runs++; if (result === 'victory') pr.wins++;
   pr.bestKills = Math.max(pr.bestKills ?? 0, r.prog.kills);
@@ -187,7 +191,7 @@ function finish(r: RunState, result: 'victory' | 'defeat', ev: RunEvent[]) {
   }
   r.newRecord = best > pr.bestPhase;
   pr.bestPhase = Math.max(pr.bestPhase, best);
-  r.crystalsEarned = crystalsFor({ phase: best, kills: r.prog.kills, bosses: r.stats.bosses, guardians: r.stats.guardians, won: result === 'victory', medal: result === 'victory' ? medalFor(pr.bestTime) : null });
+  r.crystalsEarned = crystalsFor({ phase: cleared, kills: r.prog.kills, bosses: r.stats.bosses, guardians: r.stats.guardians, won: result === 'victory', medal: result === 'victory' ? medalFor(pr.bestTime) : null });
   r.save.currency += r.crystalsEarned;
   persist(r);
   ev.push({ type: result });
@@ -248,10 +252,10 @@ function stepAmbush(r: RunState, ev: RunEvent[]) {
   a.ids = a.ids.filter(id => r.pool.get(id)); // ids mortos saem (o pool reaproveita ids)
   if (a.ids.length) return;
   r.ambush = null;
-  ev.push({ type: 'ambushCleared' });
   r.bits += T.CURSED.BITS_PER_PHASE * r.phase.phase;
   const offer = relicChoices(r, 3);
-  if (offer.length) { r.relicOffer = offer; return; }
+  ev.push({ type: 'ambushCleared', relic: offer.length > 0 });
+  if (offer.length) { r.relicOffer = offer; r.relicSource = 'ambush'; return; }
   const rares = Object.values(CARDS).filter(c => c.kind === 'rare' && (c.forPartners ?? []).includes(r.partnerId) && !r.prog.items.includes(c.id));
   spawnPickup(r, r.px, r.pz, rares.length ? { kind: 'card', ref: r.rng.pick(rares).id } : { kind: 'heal' });
 }
@@ -328,7 +332,10 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
           const roll = lootRoll(r, bossDrops.map(d => d.ref ?? ''));
           bossDrops.push(roll); spawnPickup(r, e.x + k * 1.2, e.z, roll);
         }
-        r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z + 1.2, kind: 'bits', value: T.BITS.BOSS_PER_PHASE * r.phase.phase });
+        // chefe da fase: Bits creditados direto (o pickup se perderia no setupPhase); outros chefes soltam pickup
+        const bossBits = T.BITS.BOSS_PER_PHASE * r.phase.phase;
+        if (e.id === r.phase.bossId) r.bits += bossBits;
+        else r.pickups.push({ id: r.nextPickupId++, x: e.x, z: e.z + 1.2, kind: 'bits', value: bossBits });
         continue;
       }
       if (e.miniboss && !r.zone) { killedMiniboss = true; r.stats.guardians++; openPortal(r, e, ev); }
@@ -540,7 +547,7 @@ export function chooseRelic(r: RunState, index: number | null): void {
   const id = index === null ? undefined : r.relicOffer?.[index];
   if (!r.relicOffer) return;
   if (id) addRelic(r.prog, id);
-  r.relicOffer = null;
+  r.relicOffer = null; r.relicSource = null;
   syncHp(r);
 }
 

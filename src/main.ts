@@ -180,7 +180,7 @@ function announce(e: RunEvent) {
     case 'formDiscovered': toast(`Nova forma liberada! ${FORMS[e.formId].name}`, 'rare'); break;
     case 'chestLocked': toast(`Faltam ${e.missing} Bits`, 'warn'); break;
     case 'ambush': toast('Emboscada!', 'warn'); break;
-    case 'ambushCleared': toast('Emboscada vencida! Escolha sua recompensa', 'rare'); break;
+    case 'ambushCleared': toast(e.relic ? 'Emboscada vencida! Escolha sua recompensa' : 'Emboscada vencida!', 'rare'); break;
     case 'digiData': toast('Digi Data coletado'); break;
     case 'autoGain': break; // somados num aviso só, no loop
     case 'revived': toast('Reviveu com a relíquia!', 'rare'); break;
@@ -220,7 +220,7 @@ const loop = createFixedLoop(1 / 60, 0.25, dt => {
     return;
   }
   if (input.pressed('pause')) { pause(); return; }
-  if (run.relicOffer) { showRelicChoice(ui, run); return; }
+  if (run.relicOffer) { showRelicChoice(ui, run, run.relicSource === 'ambush' ? 'Relíquias da Emboscada' : undefined); return; }
   if (run.altarOffer) { showAltar(ui, run); return; }
   if (run.jogressOffer) { showJogressChoice(ui, run, name => toast(`Jogress! ${name}`, 'rare')); return; }
   if (run.blindChoice) { showBlindEvolve(ui, run, id => toast(`Nova forma liberada! ${FORMS[id].name}`, 'rare')); return; }

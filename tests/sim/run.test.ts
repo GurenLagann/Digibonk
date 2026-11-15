@@ -386,9 +386,21 @@ test('Cristais: derrota dentro da Zona Digital soma uma única vez', () => {
   expect(r.zone).not.toBeNull();
   r.combat.hp = 0; stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   expect(r.ended).toBe('defeat');
-  const esperado = 20 + 1; // fase 1 + 1 abate-bloco
+  const esperado = 1; // 0 fases limpas + 1 abate-bloco
   expect(save.currency).toBe(esperado); expect(r.crystalsEarned).toBe(esperado);
   for (let i = 0; i < 5; i++) stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
   abandonRun(r);
   expect(save.currency).toBe(esperado);
+});
+
+test('Cristais: derrota conta fases LIMPAS (fase alcançada − 1)', () => {
+  const save = defaultSave();
+  const r = createRun({ ...opts(), save }); r.phase = newPhase(2, createRng(1)); r.prog.kills = 4000; r.stats.bosses = 1; r.stats.guardians = 1;
+  abandonRun(r);
+  expect(r.crystalsEarned).toBe(20 + 20 + 15 + 10); expect(save.currency).toBe(65);
+});
+test('Cristais: desistir de cara na fase 1 sem abates não rende nada', () => {
+  const save = defaultSave();
+  const r = createRun({ ...opts(), save }); abandonRun(r);
+  expect(r.crystalsEarned).toBe(0); expect(save.currency).toBe(0);
 });

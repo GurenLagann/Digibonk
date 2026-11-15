@@ -121,7 +121,7 @@ export function stepZone(r: RunState, dt: number, ev: RunEvent[], reward: (extra
     if (!alpha) {
       reward(z.rare ? 1 : 0);
       const pick = relicChoices(r, z.rare ? 4 : 3);
-      if (pick.length) r.relicOffer = pick;
+      if (pick.length) { r.relicOffer = pick; r.relicSource = 'zone'; }
       finish(r, ev, true);
     } else if (z.alphaT <= 0) {
       r.pool.clearAll();

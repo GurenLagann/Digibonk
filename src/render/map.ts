@@ -209,6 +209,7 @@ export class MapView {
 
   /** preço sobre baú pago fechado (refeito quando o preço muda), "Grátis…?" no amaldiçoado; some quando aberto */
   private syncChestLabels(run: RunState, time: number) {
+    if (run.zone) { for (const l of this.chestLabels.values()) l.sprite.visible = false; return; }
     for (const c of run.chests) {
       const text = chestLabel(c.kind, run.chestsBought);
       const cur = this.chestLabels.get(c.id);
