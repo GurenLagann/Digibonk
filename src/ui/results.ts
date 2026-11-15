@@ -7,6 +7,7 @@ import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
 import type { RunState } from '../sim/run';
 import { fmtTime, h } from './dom';
+import { fmtClock, MEDAL_ICON, MEDAL_NAME } from '../core/medals';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 import { findEdge } from '../sim/discovery';
@@ -75,7 +76,9 @@ export function showResults(root: HTMLElement, run: RunState, onAgain: () => voi
           num('Nível', String(p.level)),
           num('Chefes', String(run.stats.bosses)),
           num('Guardiões', String(run.stats.guardians)),
-          num('Melhor fase', String(rec.bestPhase), run.newRecord ? h('span', { class: 'res-rec' }, 'Novo recorde!') : null)),
+          num('Melhor fase', String(rec.bestPhase), run.newRecord ? h('span', { class: 'res-rec' }, 'Novo recorde!') : null),
+          win ? num('Melhor tempo', fmtClock(rec.bestTime), run.newTimeRecord ? h('span', { class: 'res-rec' }, 'Novo recorde de tempo!') : null) : null,
+          win && run.medalEarned ? num('Medalha', `${MEDAL_ICON[run.medalEarned]} ${MEDAL_NAME[run.medalEarned]}`) : null),
         run.prog.relics.length ? h('div', { class: 'b2-panel res-relics' },
           h('div', { class: 'b2-label' }, 'Relíquias'), ...run.prog.relics.map(id => h('div', { class: 'res-dline' }, RELICS[id]?.name ?? id))) : null,
         data.length ? h('div', { class: 'b2-panel res-data' },

@@ -163,3 +163,26 @@ test('resultado mostra o dano por golpe, do maior para o menor', () => {
   expect(rows[0]).toContain('Spitfire Blast'); expect(rows[0]).toContain('75%');
   expect(rows[1]).toContain('Baby Flame');
 });
+
+describe('recorde de tempo e medalha', () => {
+  function wonRun(time: number, rec: boolean, medal: RunState['medalEarned']): RunState {
+    const r = endedRun();
+    r.ended = 'victory'; r.time = time; r.newTimeRecord = rec; r.medalEarned = medal;
+    r.save.partnerRecords.agumon.bestTime = rec ? time : 1300;
+    return r;
+  }
+  test('vitória com recorde e medalha nova', () => {
+    const { text } = show(wonRun(1400, true, 'gold'));
+    expect(text()).toContain('Novo recorde de tempo!'); expect(text()).toContain('🥇 Ouro');
+  });
+  test('vitória sem recorde mostra o melhor tempo', () => {
+    const { text } = show(wonRun(1600, false, null));
+    expect(text()).toContain('Melhor tempo'); expect(text()).toContain('21:40');
+    expect(text()).not.toContain('Novo recorde de tempo!'); expect(text()).not.toContain('Medalha');
+  });
+  test('derrota não mostra tempo-recorde nem medalha', () => {
+    const { text } = show(endedRun());
+    expect(text()).not.toContain('Melhor tempo');
+    for (const e of ['🥉', '🥈', '🥇', '🏆']) expect(text()).not.toContain(e);
+  });
+});
