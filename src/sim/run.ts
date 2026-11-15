@@ -44,7 +44,7 @@ export interface RunState {
   /** última direção de movimento no mundo (normalizada; o render calcula a vista relativa à câmera) */
   dirX: number;
   dirZ: number;
-  /** eixo dominante do último movimento (para escolher os quadros de lado/costas/frente) */
+  /** eixo dominante do último movimento, em coordenadas do MUNDO (não relativo à câmera; o render usa dirX/dirZ + yaw) */
   facing: 'side' | 'up' | 'down' | 'diagup' | 'diagdown';
   /** velocidade de movimento no início da partida (render troca para corrida quando dobra) */
   baseSpeed: number;

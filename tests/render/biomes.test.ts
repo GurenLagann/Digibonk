@@ -193,3 +193,19 @@ test('MapView.setBiome dw1 → dw3 → dw1 não deixa filhos sobrando', () => {
     expect(scene.children.length).toBe(before);
   } finally { vi.unstubAllGlobals(); }
 });
+
+test('MapView.resetForTitle: depois da Zona Digital, bioma visível e céu/nevoeiro do bioma', () => {
+  const ctx = new Proxy({}, { get: () => () => undefined, set: () => true });
+  vi.stubGlobal('document', { createElement: () => ({ width: 0, height: 0, getContext: () => ctx }) });
+  try {
+    const scene = new THREE.Scene(); scene.fog = new THREE.Fog(0x123456, 10, 100);
+    const view = new MapView(scene);
+    const priv = view as unknown as { inZone: boolean; applySky(): void; view: { group: THREE.Group; sky: { background: unknown; fog: number } } };
+    priv.inZone = true; priv.applySky();
+    expect(priv.view.group.visible).toBe(false);
+    view.resetForTitle();
+    expect(priv.view.group.visible).toBe(true);
+    expect(scene.background).toBe(priv.view.sky.background);
+    expect(scene.fog!.color.getHex()).toBe(priv.view.sky.fog);
+  } finally { vi.unstubAllGlobals(); }
+});

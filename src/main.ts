@@ -66,20 +66,27 @@ let resultsAt = 0;
 
 // Pointer Lock: preso só durante o jogo sem modal; soltar em jogo pausa
 const inPlay = () => !!run && !run.ended && !run.paused && app.screen() === 'run' && !activeModal();
+let lockPending = false; // evita dois pedidos simultâneos (resume + fechar modal)
 function lockPointer() {
-  if (!inPlay() || document.pointerLockElement === canvas) return;
+  if (!inPlay() || document.pointerLockElement === canvas || lockPending) return;
+  lockPending = true;
+  const done = () => { lockPending = false; };
   try {
-    // no Chrome devolve Promise; sem gesto do usuário rejeita — ignora (o clique no canvas tenta de novo)
+    // no Chrome devolve Promise; sem gesto do usuário rejeita — ignora (clique ou tecla tenta de novo)
     const p = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
-    p?.catch?.(() => {});
-  } catch { /* sem suporte ou sem gesto */ }
+    if (p?.then) p.then(done, done); else setTimeout(done, 300);
+  } catch { done(); /* sem suporte ou sem gesto */ }
 }
 function unlockPointer() { if (document.pointerLockElement) document.exitPointerLock(); }
 canvas.addEventListener('click', lockPointer);
-document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== canvas && inPlay()) pause(true); });
+canvas.addEventListener('mousedown', lockPointer);
+window.addEventListener('keydown', lockPointer); // sem cursor preso, qualquer tecla também devolve o controle da câmera
+document.addEventListener('pointerlockerror', () => { lockPending = false; if (inPlay()) toast('Clique ou aperte uma tecla para girar a câmera', 'warn'); });
+document.addEventListener('pointerlockchange', () => { lockPending = false; if (document.pointerLockElement !== canvas && inPlay()) pause(true); });
 
 const app = createApp({ save, storage: null, startRun });
 const toTitle = () => {
+  map.resetForTitle(); // saiu da Zona Digital por morte: restaura bioma, céu e nevoeiro
   app.go('title'); hud.el.classList.add('hidden');
   const m = showTitle(ui, app, save, {
     play: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'pick', back: toTitle }); },

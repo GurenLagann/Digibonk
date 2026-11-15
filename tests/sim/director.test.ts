@@ -1,4 +1,4 @@
-import { outsideView } from '../../src/core/view';
+import { outsideView, cameraForward } from '../../src/core/view';
 import { difficulty, EnemyPool, stepDirector } from '../../src/sim/director';
 import { ENEMIES, BOSSES } from '../../src/data/enemies';
 import { T } from '../../src/data/tuning';
@@ -38,5 +38,15 @@ test('spawns avoid the camera view cone', () => {
       expect(outsideView(e.x, e.z, yaw, half)).toBe(true);
       const d = Math.hypot(e.x, e.z); expect(d).toBeGreaterThanOrEqual(22 - 1e-6); expect(d).toBeLessThanOrEqual(28 + 1e-6);
     }
+  }
+});
+test('spawns ficam fora do cone visto da câmera (que está DIST atrás), mesmo em tela ultra-wide', () => {
+  const half = Math.atan(Math.tan(Math.PI / 6) * 2.37) + T.CAMERA.SPAWN_MARGIN;
+  for (const yaw of [0, 1.2, 4]) {
+    const st = { pool: new EnemyPool(), phase: 1, t: 0, acc: 0, px: 5, pz: -3, viewYaw: yaw, viewHalf: half }; const r = createRng(9);
+    for (let i = 0; i < 900; i++) { st.t += 1 / 60; stepDirector(st, 1 / 60, r); }
+    const alive = st.pool.alive(); expect(alive.length).toBeGreaterThan(10);
+    const f = cameraForward(yaw), cx = 5 - f.x * T.CAMERA.DIST, cz = -3 - f.z * T.CAMERA.DIST;
+    for (const e of alive) expect(outsideView(e.x - cx, e.z - cz, yaw, half - 1e-6)).toBe(true);
   }
 });

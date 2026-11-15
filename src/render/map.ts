@@ -151,6 +151,9 @@ export class MapView {
     (this.arenaRing.material as THREE.MeshBasicMaterial).color.setHex(Math.sin(time * 3) > 0 ? 0x5ae8ff : 0x1fd6ff);
   }
 
+  /** ao voltar ao título (ex.: morreu na Zona Digital): sai do estado de arena e reaplica céu/nevoeiro/luz do bioma */
+  resetForTitle(): void { this.inZone = false; this.applySky(); }
+
   get biome(): BiomeId { return this.biomeId; }
 
   /** monta o bioma (troca o anterior); no mesmo bioma não faz nada */

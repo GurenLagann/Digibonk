@@ -69,9 +69,18 @@ export function stepDirector(s: DirectorState, dt: number, rng: Rng): void {
     const vh = s.viewHalf !== undefined && s.viewHalf < Math.PI ? Math.max(0, s.viewHalf) : -1;
     let fa = 0;
     if (vh >= 0) { const f = cameraForward(s.viewYaw ?? 0); fa = Math.atan2(f.z, f.x); }
+    const D = T.CAMERA.DIST;
     for (let tries = 0; tries < 6; tries++) {
       // com cone de visão: sorteia só no arco fora dele
-      const a = vh >= 0 ? fa + vh + rng.next() * (Math.PI * 2 - 2 * vh) : rng.next() * Math.PI * 2, r = 22 + rng.next() * 6;
+      // o cone parte da câmera (D atrás do parceiro), não do parceiro: acha o menor desvio θ cujo ângulo visto da câmera é >= vh
+      const r = 22 + rng.next() * 6;
+      let t0 = 0;
+      if (vh > 0) {
+        let lo = vh, hi = Math.PI;
+        for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (Math.atan2(r * Math.sin(m), r * Math.cos(m) + D) >= vh) hi = m; else lo = m; }
+        t0 = hi;
+      }
+      const a = vh >= 0 ? fa + t0 + rng.next() * (Math.PI * 2 - 2 * t0) : rng.next() * Math.PI * 2;
       x = s.px + Math.cos(a) * r; z = s.pz + Math.sin(a) * r;
       if (Math.abs(x) <= T.MAP_HALF && Math.abs(z) <= T.MAP_HALF) break;
     }
