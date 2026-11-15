@@ -42,6 +42,8 @@ export const T = {
   CARD_OFFER_CHANCE: 0.12,
   MAP_HALF: 100,
   /** câmera orbital: distância, alturas, ângulos em rad, sensibilidades e névoa (valores iniciais, ajustáveis) */
+  /** ímã dos coletáveis: raio de atração (× pickupMul), velocidade inicial e aceleração (u/s, u/s²) */
+  PICKUP: { MAGNET: 4, PULL_START: 6, PULL_ACCEL: 40 },
   CAMERA: {
     DIST: 8, LOOK_HEIGHT: 1.4, PITCH: 0.38, PITCH_MIN: 0.15, PITCH_MAX: 0.8, FOV: 60,
     /** rad/px */ MOUSE_SENS: 0.0025, /** rad/s */ PAD_SENS: 2.6, PAD_DEADZONE: 0.25,

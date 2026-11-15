@@ -6,7 +6,9 @@ import { T } from '../data/tuning';
 import type { CardDef, ItemDef } from '../data/types';
 import type { Enemy } from './director';
 
-export interface Pickup { id: number; x: number; z: number; kind: 'xp' | 'card' | 'item' | 'heal' | 'fragment' | 'digidata'; value: number; ref?: string }
+export interface Pickup { id: number; x: number; z: number; kind: 'xp' | 'card' | 'item' | 'heal' | 'fragment' | 'digidata'; value: number; ref?: string;
+  /** velocidade do ímã (u/s) depois que o item foi puxado; ausente = parado no chão */
+  pull?: number }
 export interface Chest { id: number; x: number; z: number; opened: boolean }
 export type ChestRoll = { kind: 'card' | 'item' | 'heal'; ref?: string };
 
@@ -54,6 +56,26 @@ export function placeChests(phase: number, rng: Rng, count = 8): Chest[] {
     out.push({ id: phase * 100 + out.length, x, z, opened: false });
   }
   return out;
+}
+
+/** atraídos pelo ímã; fragmentos da missão e Digi Data ficam onde caíram (são objetivo) */
+export function isMagnetic(kind: Pickup['kind']): boolean { return kind !== 'fragment' && kind !== 'digidata'; }
+
+/**
+ * Ímã: item atraível a menos de MAGNET × pickupMul do parceiro começa a voar até ele,
+ * acelerando; depois de puxado segue o parceiro até ser coletado.
+ */
+export function attract(pickups: Pickup[], px: number, pz: number, pickupMul: number, dt: number): void {
+  const reach = T.PICKUP.MAGNET * pickupMul;
+  for (const p of pickups) {
+    if (!isMagnetic(p.kind)) continue;
+    const dx = px - p.x, dz = pz - p.z, d = Math.hypot(dx, dz);
+    if (p.pull === undefined) { if (d > reach) continue; p.pull = T.PICKUP.PULL_START; }
+    p.pull += T.PICKUP.PULL_ACCEL * dt;
+    if (d < 1e-9) continue;
+    const step = Math.min(d, p.pull * dt);
+    p.x += (dx / d) * step; p.z += (dz / d) * step;
+  }
 }
 
 export function collect(pickups: Pickup[], px: number, pz: number, radius: number): Pickup[] {

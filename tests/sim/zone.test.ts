@@ -29,6 +29,7 @@ test('derrotar um guardião abre um portal com o atributo dele, que some em 30 s
   expect(r.portals).toHaveLength(1);
   expect(r.portals[0]).toMatchObject({ attr: g.attribute, guardian: g.id });
   r.px += 40; // longe do portal
+  r.pickups.length = 0; // o ímã traria a carta do guardião, e a escolha pausaria o relógio do portal
   for (let i = 0; i < 4; i++) step(r, T.ZONE.PORTAL_SECONDS / 4 + 0.1);
   expect(r.portals).toEqual([]);
 });

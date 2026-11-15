@@ -1,4 +1,5 @@
-import { eligibleItems, eligibleCards, rollChest, placeChests, collect, dropOnKill } from '../../src/sim/loot';
+import { eligibleItems, eligibleCards, rollChest, placeChests, collect, dropOnKill, attract, isMagnetic } from '../../src/sim/loot';
+import { T } from '../../src/data/tuning';
 import { defaultSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
 
@@ -42,3 +43,45 @@ test('collect removes only near pickups', () => {
   expect(collect(ps, 0, 0, 2).map(p => p.id)).toEqual([1]); expect(ps.map(p => p.id)).toEqual([2]);
 });
 test('kills drop xp', () => expect(dropOnKill({ xp: 3 } as never, createRng(1)).xp).toBe(3));
+
+describe('ímã de coleta', () => {
+  const xp = (id: number, x: number, z = 0) => ({ id, x, z, kind: 'xp' as const, value: 1 });
+
+  test('XP, cura, carta e item são atraídos; fragmento e Digi Data não', () => {
+    expect(['xp', 'heal', 'card', 'item'].every(k => isMagnetic(k as never))).toBe(true);
+    expect(isMagnetic('fragment')).toBe(false); expect(isMagnetic('digidata')).toBe(false);
+  });
+
+  test('dentro do raio o item voa até o parceiro; fora dele fica parado', () => {
+    const near = xp(1, T.PICKUP.MAGNET - 0.5), far = xp(2, T.PICKUP.MAGNET + 2);
+    attract([near, far], 0, 0, 1, 0.1);
+    expect(near.x).toBeLessThan(T.PICKUP.MAGNET - 0.5);
+    expect(near.z).toBeCloseTo(0);
+    expect(far.x).toBe(T.PICKUP.MAGNET + 2);
+  });
+
+  test('o alcance do ímã cresce com pickupMul', () => {
+    const p = xp(1, T.PICKUP.MAGNET * 1.8);
+    attract([p], 0, 0, 1, 0.1); expect(p.x).toBe(T.PICKUP.MAGNET * 1.8);
+    attract([p], 0, 0, 2, 0.1); expect(p.x).toBeLessThan(T.PICKUP.MAGNET * 1.8);
+  });
+
+  test('depois de puxado, segue o parceiro mesmo se ele se afastar e chega mais rápido que ele anda', () => {
+    const p = xp(1, T.PICKUP.MAGNET - 1);
+    attract([p], 0, 0, 1, 1 / 60);
+    let px = 0;
+    for (let i = 0; i < 300; i++) { px -= 8 / 60; attract([p], px, 0, 1, 1 / 60); if (collect([p], px, 0, 1.5).length) return; }
+    throw new Error('não alcançou o parceiro em 5 s');
+  });
+
+  test('fragmento dentro do raio não se move', () => {
+    const f = { id: 3, x: 2, z: 0, kind: 'fragment' as const, value: 1 };
+    attract([f], 0, 0, 3, 0.5); expect(f.x).toBe(2);
+  });
+
+  test('não passa do parceiro (para em cima dele)', () => {
+    const p = xp(1, 0.5);
+    attract([p], 0, 0, 1, 10);
+    expect(Math.hypot(p.x, p.z)).toBeLessThanOrEqual(1e-9);
+  });
+});

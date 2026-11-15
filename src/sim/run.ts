@@ -11,7 +11,7 @@ import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier, mature } from './evolution';
 import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
-import { collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
+import { attract, collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
 import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, offerKey, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
@@ -284,6 +284,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
   if (r.phase.bossActive && r.phase.bossId !== null && !r.pool.get(r.phase.bossId)) bossDead = true;
 
   // pickups
+  attract(r.pickups, r.px, r.pz, stats.pickupMul, dt);
   for (const p of collect(r.pickups, r.px, r.pz, 1.5 * stats.pickupMul)) {
     if (p.kind === 'xp') addXp(r.prog, p.value * stats.xpMul * r.debug.xpMul * (1 + r.corruption * T.ALTARS.CORRUPTION_XP));
     else if (p.kind === 'heal') r.combat.hp = Math.min(r.combat.maxHp, r.combat.hp + r.combat.maxHp * 0.25);
