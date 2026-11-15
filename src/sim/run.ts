@@ -12,7 +12,7 @@ import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier, mature } from './evolution';
 import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
-import { attract, collect, dropOnKill, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
+import { attract, chestPrice, collect, dropOnKill, eggsForPartner, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
 import { addXp, applyOffer, autoGain, newPlayerProg, nothingToImprove, offerKey, rollOffers, trackNearDeath, type LevelOffer, type PlayerProg } from './progression';
@@ -33,7 +33,7 @@ export type RunEvent =
   | { type: 'overtime' } | { type: 'phaseCleared'; phase: number } | { type: 'victory' } | { type: 'defeat' }
   | { type: 'cardFound'; cardId: string } | { type: 'itemFound'; itemId: string } | { type: 'partnerUnlocked'; partnerId: string }
   | { type: 'kill'; x: number; z: number } | { type: 'hit'; x: number; z: number; dmg: number }
-  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number } | { type: 'playerHit'; dmg: number }
+  | { type: 'missionProgress' } | { type: 'minibossSpawned' } | { type: 'chestOpened'; x: number; z: number; kind: Chest['kind'] } | { type: 'chestLocked'; missing: number } | { type: 'playerHit'; dmg: number }
   | { type: 'cardLeveled'; cardId: string; level: number }
   | { type: 'formDiscovered'; formId: string } | { type: 'digiData' }
   | { type: 'autoGain'; level: number; stat: StatKey; amount: number } | { type: 'revived' }
@@ -44,6 +44,8 @@ export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
   /** Bits coletados na partida (inteiro >= 0) */
   bits: number;
+  /** baús pagos comprados na partida (define o preço do próximo) */
+  chestsBought: number;
   prog: PlayerProg; combat: CombatState; px: number; pz: number; moving: boolean;
   /** última direção de movimento no mundo (normalizada; o render calcula a vista relativa à câmera) */
   dirX: number;
@@ -150,7 +152,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
-    bits: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
+    bits: 0, chestsBought: 0, pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { reroll: T.LEVEL_TOOLS.reroll + lab.reroll, skip: T.LEVEL_TOOLS.skip + lab.skip, ban: T.LEVEL_TOOLS.ban + lab.ban }, offerCount: T.OFFERS_PER_LEVEL + lab.extraOffers, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
     stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
@@ -322,9 +324,19 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     else if (p.kind === 'item' && p.ref) handleItem(r, p.ref, ev);
   }
   for (const c of r.chests) {
-    if (c.opened || Math.hypot(c.x - r.px, c.z - r.pz) > CHEST_RADIUS) continue;
-    c.opened = true; ev.push({ type: 'chestOpened', x: c.x, z: c.z });
-    spawnPickup(r, c.x, c.z, lootRoll(r));
+    if (c.opened) continue;
+    const inside = Math.hypot(c.x - r.px, c.z - r.pz) <= CHEST_RADIUS;
+    const entered = inside && !c.near; c.near = inside;
+    if (!inside || c.kind === 'cursed') continue; // amaldiçoado: Task 6
+    if (c.kind === 'paid') {
+      const price = chestPrice(r.chestsBought);
+      if (r.bits < price) { if (entered) ev.push({ type: 'chestLocked', missing: price - r.bits }); continue; }
+      r.bits -= price; r.chestsBought++;
+    }
+    c.opened = true; ev.push({ type: 'chestOpened', x: c.x, z: c.z, kind: c.kind });
+    const eggs = c.kind === 'paid' ? eggsForPartner(r.partnerId, r.prog.items) : [];
+    if (eggs.length && r.rng.next() < T.CHESTS.EGG_CHANCE) spawnPickup(r, c.x, c.z, { kind: 'item', ref: r.rng.pick(eggs) });
+    else spawnPickup(r, c.x, c.z, lootRoll(r));
   }
 
   // Zona Digital: dentro, ondas/Alfa/saída; fora, portais

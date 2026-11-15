@@ -34,7 +34,7 @@ test('eggs are rare in chests', () => {
   expect(eggs / N).toBeLessThanOrEqual(0.025); expect(eggs).toBeGreaterThan(0);
 });
 test('chests are spread out and away from spawn', () => {
-  const cs = placeChests(1, createRng(3)); expect(cs).toHaveLength(8);
+  const cs = placeChests(1, createRng(3)); expect(cs).toHaveLength(9);
   for (const a of cs) { expect(Math.hypot(a.x, a.z)).toBeGreaterThanOrEqual(15);
     for (const b of cs) if (a !== b) expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeGreaterThanOrEqual(15); }
 });

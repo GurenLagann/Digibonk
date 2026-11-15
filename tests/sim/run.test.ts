@@ -227,7 +227,7 @@ describe('correções da revisão final', () => {
   test('evolução secreta espera a escolha de carta pendente', () => {
     const r = createRun(opts());
     r.prog.level = 9; r.prog.bonus.atk = 20;
-    r.chests = [{ id: 1, x: r.px, z: r.pz, opened: false }];
+    r.chests = [{ id: 1, x: r.px, z: r.pz, opened: false, kind: 'free' }];
     // força o baú a dar uma carta slash (pede escolha)
     r.debug.forceItems = false;
     const slash = Object.values(CARDS).find(c => c.kind === 'slash')!;
