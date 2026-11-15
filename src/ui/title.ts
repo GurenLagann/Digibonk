@@ -17,6 +17,42 @@ const NAV = {
   down: [3, 2, 4, 3, 4, 5], up: [0, 1, 1, 0, 2, 2],
 };
 
+/** volume do vídeo de fundo do menu (0–1) */
+const MENU_BG_VOLUME = 0.5;
+
+/**
+ * Fundo animado do menu: vídeo em loop; a imagem estática fica de poster/fallback.
+ * O navegador só deixa tocar sozinho se estiver mudo, então começa mudo e liga o som
+ * na primeira tecla/clique (ou já com som, se a página já teve interação antes).
+ */
+function bgVideo(): HTMLVideoElement {
+  const v = document.createElement('video');
+  v.className = 'tt-bg';
+  v.src = './ui/menu-bg.mp4';
+  v.poster = './ui/menu-bg.webp';
+  v.loop = true; v.autoplay = true; v.playsInline = true; v.volume = MENU_BG_VOLUME;
+  v.setAttribute('aria-hidden', 'true');
+
+  const unmute = () => {
+    off();
+    if (!v.isConnected) return;
+    v.muted = false;
+    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  };
+  const off = () => { window.removeEventListener('keydown', unmute, true); window.removeEventListener('pointerdown', unmute, true); };
+
+  if (navigator.userActivation?.hasBeenActive) {
+    v.muted = false;
+    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  } else {
+    v.muted = true;
+    v.play().catch(() => { /* autoplay bloqueado: fica o poster */ });
+    window.addEventListener('keydown', unmute, true);
+    window.addEventListener('pointerdown', unmute, true);
+  }
+  return v;
+}
+
 /** total de evoluções do jogo (para "Evoluções x / y") */
 const TOTAL_EVOS = Object.values(FORMS).reduce((n, f) => n + f.evolutions.length, 0);
 
@@ -81,7 +117,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
       h('span', { class: 'tt-rank-v' }, r.runs ? `Fase ${r.bestPhase} · ${r.wins}V` : 'sem partidas')))));
 
   const screen = h('div', { class: 'b2-screen tt-screen' },
-    h('img', { class: 'tt-bg', src: './ui/menu-bg.webp', alt: '', draggable: 'false' }),
+    bgVideo(),
     top,
     h('div', { class: 'tt-body' },
       h('div', { class: 'tt-main' },
@@ -99,7 +135,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
   select(0);
   const m: Modal = {
     get closed() { return closed; },
-    close() { if (!closed) { closed = true; screen.remove(); } },
+    close() { if (!closed) { closed = true; screen.querySelector('video')?.pause(); screen.remove(); } },
     handle(input) {
       if (closed) return;
       // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes (ao lado); 3 Controles | 4 Créditos | 5 DW Wiki (embaixo)
