@@ -271,6 +271,20 @@
 .rec-name { flex: 1; font-size: var(--b2-fs-lg); }
 .rec-stat { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
 .rec-stat b { font-size: var(--b2-fs-lg); }
+.rec-medals { display: flex; align-items: center; gap: var(--b2-sp-3); padding: var(--b2-sp-2) var(--b2-sp-3); }
+.rec-medals strong { font-size: var(--b2-fs-lg); letter-spacing: .02em; }
+.rec-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--b2-sp-3); flex-wrap: wrap; }
+.rec-sorts { display: flex; align-items: center; gap: var(--b2-sp-2); flex-wrap: wrap; }
+.rec-sort-btn { padding: 6px 14px; min-height: 0; }
+.rec-sort-btn.active { background: var(--b2-orange, #ff8a3d); border-color: var(--b2-orange, #ff8a3d); color: #fff; }
+.rec-medal { font-size: var(--b2-fs-xl, 1.5rem); min-width: 2ch; text-align: center; }
+@media (max-width: 820px) {
+  .rec-screen { padding: var(--b2-sp-3) 16px; }
+  .rec-totals { grid-template-columns: repeat(2, 1fr); }
+  .rec-list { grid-template-columns: 1fr; }
+  .rec-row { flex-wrap: wrap; }
+  .rec-name { flex-basis: calc(100% - 120px); }
+}
 
 /* ── escolha de parceiro (src/ui/partnerSelect.ts): escala com a janela ── */
 .ps-screen {
