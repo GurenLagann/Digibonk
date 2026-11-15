@@ -1,3 +1,5 @@
+import { LAB_UPGRADES } from '../data/lab';
+
 export const SAVE_KEY = 'digibonk.save.v1';
 export const STARTERS = ['agumon', 'veemon', 'guilmon'] as const;
 
@@ -21,12 +23,14 @@ export interface SaveData {
   records: { bestPhase: number; wins: number; runs: number; bestTime?: number };
   partnerRecords: Record<string, PartnerRecord>;
   currency: number;
+  /** níveis do Laboratório comprados com Cristais, por id de upgrade */
+  lab: Record<string, number>;
   bindings: Record<string, string>;
   camera: CameraSettings;
 }
 
 export function defaultSave(): SaveData {
-  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, bindings: {}, camera: defaultCamera() };
+  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, lab: {}, bindings: {}, camera: defaultCamera() };
 }
 
 const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x => typeof x === 'string') ? [...v] : null);
@@ -86,6 +90,13 @@ export function loadSave(storage?: Storage | null): SaveData {
   if (r.revealedReqs && typeof r.revealedReqs === 'object' && !Array.isArray(r.revealedReqs)) {
     for (const [k, v] of Object.entries(r.revealedReqs as object)) { const keys = strItems(v); if (keys) revealedReqs[k] = keys; }
   }
+  const lab: Record<string, number> = {};
+  if (r.lab && typeof r.lab === 'object' && !Array.isArray(r.lab)) {
+    for (const [k, v] of Object.entries(r.lab as object)) {
+      const def = Object.hasOwn(LAB_UPGRADES, k) ? LAB_UPGRADES[k] : undefined;
+      if (def && typeof v === 'number' && Number.isInteger(v) && v >= 1) lab[k] = Math.min(v, def.costs.length);
+    }
+  }
   return {
     version: 1,
     unlocked,
@@ -95,7 +106,8 @@ export function loadSave(storage?: Storage | null): SaveData {
     lastPartner: typeof r.lastPartner === 'string' ? r.lastPartner : d.lastPartner,
     records: withTime({ bestPhase: num(rec.bestPhase, 0), wins: num(rec.wins, 0), runs: num(rec.runs, 0) }, time(rec.bestTime)),
     partnerRecords,
-    currency: num(r.currency, 0),
+    currency: Math.max(0, num(r.currency, 0)),
+    lab,
     bindings,
     camera: loadCamera(r.camera),
   };

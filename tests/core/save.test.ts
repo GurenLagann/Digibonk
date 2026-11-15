@@ -86,3 +86,16 @@ test('records: old save gains bestKills 0 and no bestTime; junk bestTime dropped
   expect(loadSave(ok).partnerRecords.agumon).toMatchObject({ bestTime: 1400, bestKills: 900 });
   expect(partnerRecord(defaultSave(), 'x')).toEqual({ runs: 0, wins: 0, bestPhase: 0, bestKills: 0 });
 });
+
+describe('laboratório no save', () => {
+  test('sem lab carrega {}', () => {
+    expect(defaultSave().lab).toEqual({});
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify({ unlocked: ['agumon'] }) })).lab).toEqual({});
+  });
+  test('valida ids, inteiros e teto; currency nunca negativa', () => {
+    const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ lab: { lab_reroll: 9, lab_ban: -1, lab_skip: 1.5, xyz: 2 }, currency: -5 }) });
+    const d = loadSave(s);
+    expect(d.lab).toEqual({ lab_reroll: 3 });
+    expect(d.currency).toBe(0);
+  });
+});
