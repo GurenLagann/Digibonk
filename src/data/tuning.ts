@@ -43,6 +43,8 @@ export const T = {
   MAP_HALF: 100,
   /** câmera orbital: distância, alturas, ângulos em rad, sensibilidades e névoa (valores iniciais, ajustáveis) */
   /** ímã dos coletáveis: raio de atração (× pickupMul), velocidade inicial e aceleração (u/s, u/s²) */
+  /** medalhas de vitória por tempo total (s): menor que o corte ganha; bronze = qualquer vitória */
+  MEDALS: { silver: 2100, gold: 1500, champion: 1080 },
   PICKUP: { MAGNET: 4, PULL_START: 6, PULL_ACCEL: 40 },
   CAMERA: {
     DIST: 8, LOOK_HEIGHT: 1.4, PITCH: 0.38, PITCH_MIN: 0.15, PITCH_MAX: 0.8, FOV: 60,

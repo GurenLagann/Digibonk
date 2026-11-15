@@ -1,7 +1,8 @@
 export const SAVE_KEY = 'digibonk.save.v1';
 export const STARTERS = ['agumon', 'veemon', 'guilmon'] as const;
 
-export interface PartnerRecord { runs: number; wins: number; bestPhase: number }
+/** bestTime = vitória mais rápida (s), ausente sem vitória; bestKills = mais abates numa partida */
+export interface PartnerRecord { runs: number; wins: number; bestPhase: number; bestTime?: number; bestKills: number }
 
 /** opções de câmera: sensibilidades são multiplicadores (0.25–3); eixos do analógico direito (0–15) */
 export interface CameraSettings { mouseSens: number; padSens: number; invertY: boolean; padAxisX: number; padAxisY: number }
@@ -17,7 +18,7 @@ export interface SaveData {
   revealedReqs: Record<string, string[]>;
   /** parceiro da última partida (tela inicial); '' = nenhum ainda */
   lastPartner: string;
-  records: { bestPhase: number; wins: number; runs: number };
+  records: { bestPhase: number; wins: number; runs: number; bestTime?: number };
   partnerRecords: Record<string, PartnerRecord>;
   currency: number;
   bindings: Record<string, string>;
@@ -32,6 +33,9 @@ const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x =
 /** como strArr, mas descarta só os itens inválidos */
 const strItems = (v: unknown): string[] | null => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : null);
 const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+/** tempo de recorde: só número finito > 0, senão ausente */
+const time = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined);
+const withTime = <O extends object>(o: O, t: number | undefined) => (t === undefined ? o : { ...o, bestTime: t });
 
 const sens = (v: unknown) => Math.min(3, Math.max(0.25, num(v, 1)));
 const axisIdx = (v: unknown, d: number) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 15 ? v : d);
@@ -48,7 +52,7 @@ function storageOrGlobal(storage: Storage | null | undefined): Storage | null {
 }
 
 export function partnerRecord(save: SaveData, id: string): PartnerRecord {
-  return save.partnerRecords[id] ?? { runs: 0, wins: 0, bestPhase: 0 };
+  return save.partnerRecords[id] ?? { runs: 0, wins: 0, bestPhase: 0, bestKills: 0 };
 }
 
 export function loadSave(storage?: Storage | null): SaveData {
@@ -75,7 +79,7 @@ export function loadSave(storage?: Storage | null): SaveData {
     for (const [k, v] of Object.entries(r.partnerRecords as object)) {
       if (!v || typeof v !== 'object') continue;
       const pr = v as Record<string, unknown>;
-      partnerRecords[k] = { runs: num(pr.runs, 0), wins: num(pr.wins, 0), bestPhase: num(pr.bestPhase, 0) };
+      partnerRecords[k] = withTime({ runs: num(pr.runs, 0), wins: num(pr.wins, 0), bestPhase: num(pr.bestPhase, 0), bestKills: Math.max(0, num(pr.bestKills, 0)) }, time(pr.bestTime));
     }
   }
   const revealedReqs: Record<string, string[]> = {};
@@ -89,7 +93,7 @@ export function loadSave(storage?: Storage | null): SaveData {
     discoveredEvos: strItems(r.discoveredEvos) ?? d.discoveredEvos,
     revealedReqs,
     lastPartner: typeof r.lastPartner === 'string' ? r.lastPartner : d.lastPartner,
-    records: { bestPhase: num(rec.bestPhase, 0), wins: num(rec.wins, 0), runs: num(rec.runs, 0) },
+    records: withTime({ bestPhase: num(rec.bestPhase, 0), wins: num(rec.wins, 0), runs: num(rec.runs, 0) }, time(rec.bestTime)),
     partnerRecords,
     currency: num(r.currency, 0),
     bindings,

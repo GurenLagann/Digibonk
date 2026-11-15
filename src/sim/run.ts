@@ -21,6 +21,7 @@ import { clamp } from './vec';
 import { addRelic, relicEffects } from './relics';
 import { logDamage, newDamageLog, type DamageLog } from './damage';
 import { applyJogress, jogressPairs } from './jogress';
+import { medalFor, MEDAL_ORDER, type Medal } from '../core/medals';
 import { placeAltars, rollTrades, type Altar, type AltarKind, type Trade } from './altars';
 import { clampToArena, openPortal, stepPortals, stepZone, type Portal, type ZoneState } from './zone';
 import type { StatKey } from '../data/types';
@@ -77,6 +78,10 @@ export interface RunState {
   stats: { bosses: number; guardians: number };
   /** true quando `finish` superou o bestPhase deste parceiro */
   newRecord: boolean;
+  /** vitória mais rápida que a melhor do parceiro */
+  newTimeRecord: boolean;
+  /** medalha que subiu nesta partida (null se não subiu) */
+  medalEarned: Medal | null;
   nextPickupId: number; unlockedThisRun: string[];
   /** dev only */
   debug: { xpMul: number; forceItems: boolean; god: boolean; doubleSpeed: boolean; speedBonus: number };
@@ -141,7 +146,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
-    stats: { bosses: 0, guardians: 0 }, newRecord: false, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
+    stats: { bosses: 0, guardians: 0 }, newRecord: false, newTimeRecord: false, medalEarned: null, nextPickupId: 1, unlockedThisRun: [], debug: { xpMul: 1, forceItems: false, god: false, doubleSpeed: false, speedBonus: 0 },
   };
   if (!r.save.discovered.includes(partner.childForm)) r.save.discovered.push(partner.childForm);
   setupPhase(r, 1);
@@ -156,8 +161,17 @@ function finish(r: RunState, result: 'victory' | 'defeat', ev: RunEvent[]) {
   rec.runs++; if (result === 'victory') rec.wins++;
   rec.bestPhase = Math.max(rec.bestPhase, result === 'victory' ? T.PHASES : r.phase.phase);
   const best = result === 'victory' ? T.PHASES : r.phase.phase;
-  const pr = r.save.partnerRecords[r.partnerId] ??= { runs: 0, wins: 0, bestPhase: 0 };
+  const pr = r.save.partnerRecords[r.partnerId] ??= { runs: 0, wins: 0, bestPhase: 0, bestKills: 0 };
   pr.runs++; if (result === 'victory') pr.wins++;
+  pr.bestKills = Math.max(pr.bestKills ?? 0, r.prog.kills);
+  if (result === 'victory') {
+    const before = medalFor(pr.bestTime);
+    r.newTimeRecord = pr.bestTime === undefined || r.time < pr.bestTime;
+    if (r.newTimeRecord) pr.bestTime = r.time;
+    if (rec.bestTime === undefined || r.time < rec.bestTime) rec.bestTime = r.time;
+    const after = medalFor(pr.bestTime);
+    r.medalEarned = after && (!before || MEDAL_ORDER.indexOf(after) > MEDAL_ORDER.indexOf(before)) ? after : null;
+  }
   r.newRecord = best > pr.bestPhase;
   pr.bestPhase = Math.max(pr.bestPhase, best);
   persist(r);

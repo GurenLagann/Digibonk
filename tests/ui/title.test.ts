@@ -43,7 +43,7 @@ test('title registers as the active modal and closes cleanly', () => {
 test('records lists only unlocked partners with their numbers; cancel goes back', () => {
   const save = defaultSave();
   save.records = { bestPhase: 4, wins: 1, runs: 9 };
-  save.partnerRecords = { agumon: { runs: 7, wins: 1, bestPhase: 4 } };
+  save.partnerRecords = { agumon: { runs: 7, wins: 1, bestPhase: 4, bestKills: 0 } };
   const root = document.createElement('div'); let back = 0;
   const m = showRecords(root, save, () => { back++; });
   expect(root.querySelectorAll('.rec-row').length).toBe(save.unlocked.length);
@@ -76,7 +76,7 @@ describe('menu no estilo de cartões', () => {
     expect(root.querySelectorAll('.tt-tile').length).toBe(3); // Controles, Créditos e DW Wiki; Recordes fica ao lado do Jogar
   });
   test('painel "Seus parceiros" lista os liberados, do melhor resultado para o pior', () => {
-    const { root } = setup(s => { s.partnerRecords = { agumon: { runs: 3, wins: 0, bestPhase: 2 }, guilmon: { runs: 9, wins: 2, bestPhase: 5 } }; });
+    const { root } = setup(s => { s.partnerRecords = { agumon: { runs: 3, wins: 0, bestPhase: 2, bestKills: 0 }, guilmon: { runs: 9, wins: 2, bestPhase: 5, bestKills: 0 } }; });
     const rows = [...root.querySelectorAll('.tt-rank-row')].map(r => r.textContent ?? '');
     expect(rows).toHaveLength(3); // iniciais liberados
     expect(rows[0]).toContain('Guilmon');

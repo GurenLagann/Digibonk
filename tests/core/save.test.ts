@@ -27,11 +27,11 @@ test('partnerRecords: default empty, validated per field, round trip', () => {
   expect(defaultSave().partnerRecords).toEqual({});
   expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify({ ...defaultSave(), partnerRecords: undefined }) })).partnerRecords).toEqual({});
   const bad = fakeStorage({ [SAVE_KEY]: JSON.stringify({ ...defaultSave(), partnerRecords: { agumon: { runs: 'x', wins: 2 } } }) });
-  expect(loadSave(bad).partnerRecords).toEqual({ agumon: { runs: 0, wins: 2, bestPhase: 0 } });
-  const s = fakeStorage({}); const d = { ...defaultSave(), partnerRecords: { veemon: { runs: 3, wins: 1, bestPhase: 4 } } };
+  expect(loadSave(bad).partnerRecords).toEqual({ agumon: { runs: 0, wins: 2, bestPhase: 0, bestKills: 0 } });
+  const s = fakeStorage({}); const d = { ...defaultSave(), partnerRecords: { veemon: { runs: 3, wins: 1, bestPhase: 4, bestKills: 0 } } };
   storeSave(d, s); expect(loadSave(s)).toEqual(d);
   expect(partnerRecord(d, 'veemon').bestPhase).toBe(4);
-  expect(partnerRecord(d, 'nobody')).toEqual({ runs: 0, wins: 0, bestPhase: 0 });
+  expect(partnerRecord(d, 'nobody')).toEqual({ runs: 0, wins: 0, bestPhase: 0, bestKills: 0 });
 });
 describe('evoluções secretas', () => {
   test('default: nada descoberto nem revelado', () => {
@@ -71,4 +71,18 @@ test('camera: save antigo recebe o padrão; sensibilidade limitada; eixo inváli
   expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(old) })).camera).toEqual({ mouseSens: 1, padSens: 1, invertY: false, padAxisX: 2, padAxisY: 3 });
   const bad = { ...defaultSave(), camera: { mouseSens: 99, padSens: 0, invertY: 'x', padAxisX: -1, padAxisY: 1.5 } };
   expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(bad) })).camera).toEqual({ mouseSens: 3, padSens: 0.25, invertY: false, padAxisX: 2, padAxisY: 3 });
+});
+
+test('records: old save gains bestKills 0 and no bestTime; junk bestTime dropped; global bestTime kept', () => {
+  const old = fakeStorage({ [SAVE_KEY]: JSON.stringify({ version: 1, partnerRecords: { agumon: { runs: 2, wins: 1, bestPhase: 5 } } }) });
+  const a = loadSave(old).partnerRecords.agumon;
+  expect(a).toEqual({ runs: 2, wins: 1, bestPhase: 5, bestKills: 0 }); expect(a.bestTime).toBeUndefined();
+  for (const bad of ['abc', -5, 0, null]) {
+    const s = fakeStorage({ [SAVE_KEY]: JSON.stringify({ version: 1, records: { bestTime: bad }, partnerRecords: { agumon: { bestTime: bad } } }) });
+    expect(loadSave(s).partnerRecords.agumon.bestTime).toBeUndefined(); expect(loadSave(s).records.bestTime).toBeUndefined();
+  }
+  const ok = fakeStorage({ [SAVE_KEY]: JSON.stringify({ version: 1, records: { bestTime: 1800 }, partnerRecords: { agumon: { bestTime: 1400, bestKills: 900 } } }) });
+  expect(loadSave(ok).records.bestTime).toBe(1800);
+  expect(loadSave(ok).partnerRecords.agumon).toMatchObject({ bestTime: 1400, bestKills: 900 });
+  expect(partnerRecord(defaultSave(), 'x')).toEqual({ runs: 0, wins: 0, bestPhase: 0, bestKills: 0 });
 });

@@ -115,7 +115,7 @@ test('playerSpeed follows spd and the run remembers its base speed', () => {
 test('abandon updates the per-partner record and flags a new record once', () => {
   const save = defaultSave();
   const a = createRun({ ...opts(), save }); abandonRun(a);
-  expect(save.partnerRecords.agumon).toEqual({ runs: 1, wins: 0, bestPhase: 1 }); expect(a.newRecord).toBe(true);
+  expect(save.partnerRecords.agumon).toEqual({ runs: 1, wins: 0, bestPhase: 1, bestKills: 0 }); expect(a.newRecord).toBe(true);
   const b = createRun({ ...opts(), save }); abandonRun(b);
   expect(save.partnerRecords.agumon.runs).toBe(2); expect(b.newRecord).toBe(false);
 });
@@ -325,4 +325,27 @@ test('câmera: camYaw começa em 0 e camHalf em π (sem restrição)', () => {
   const r = createRun(opts());
   expect(r.camYaw).toBe(0);
   expect(r.camHalf).toBe(Math.PI);
+});
+
+/** vence a fase 5 na hora: chefe já morto */
+function winNow(r: RunState) {
+  r.phase = newPhase(5, createRng(1)); r.phase.mission.done = true; r.phase.bossUnlocked = true; r.phase.bossActive = true;
+  const b = r.pool.spawn(BOSSES[4], 50, 50, { hp: 1, dmg: 1 }, { boss: true })!; r.phase.bossId = b.id; r.pool.kill(b.id);
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60);
+}
+test('victory records best time, medal and only improves', () => {
+  const save = defaultSave();
+  const a = createRun({ ...opts(), save }); a.time = 1400; winNow(a);
+  expect(a.ended).toBe('victory');
+  expect(save.partnerRecords.agumon.bestTime).toBeCloseTo(1400, 0); expect(save.records.bestTime).toBeCloseTo(1400, 0);
+  expect(a.newTimeRecord).toBe(true); expect(a.medalEarned).toBe('gold');
+  const b = createRun({ ...opts(), save }); b.time = 1600; winNow(b);
+  expect(save.partnerRecords.agumon.bestTime).toBeCloseTo(1400, 0);
+  expect(b.newTimeRecord).toBe(false); expect(b.medalEarned).toBeNull();
+});
+test('defeat records most kills but no time or medal', () => {
+  const save = defaultSave();
+  const r = createRun({ ...opts(), save }); r.prog.kills = 300; abandonRun(r);
+  expect(save.partnerRecords.agumon.bestKills).toBe(300); expect(save.partnerRecords.agumon.bestTime).toBeUndefined();
+  expect(save.records.bestTime).toBeUndefined(); expect(r.medalEarned).toBeNull(); expect(r.newTimeRecord).toBe(false);
 });
