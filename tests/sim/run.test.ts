@@ -81,6 +81,13 @@ test('run remembers the horizontal move direction for sprite facing', () => {
   stepRun(r, { mx: -1, mz: 0.2 }, 1 / 60); expect(r.dirX).toBeLessThan(0);
 });
 
+test('run remembers the last move direction in z (dirZ) for camera-relative views', () => {
+  const r = createRun(opts()); expect(r.dirZ).toBe(0);
+  stepRun(r, { mx: 0, mz: 1 }, 1 / 60); expect(r.dirZ).toBe(1); expect(r.dirX).toBe(0);
+  stepRun(r, { mx: 0, mz: 0 }, 1 / 60); expect(r.dirZ).toBe(1); // parado mantém a última direção
+  stepRun(r, { mx: 3, mz: -4 }, 1 / 60); expect(r.dirX).toBeCloseTo(0.6); expect(r.dirZ).toBeCloseTo(-0.8);
+});
+
 test('facing follows the dominant movement axis and is kept when stopped', () => {
   const r = createRun(opts());
   expect(r.facing).toBe('side');

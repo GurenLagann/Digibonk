@@ -41,8 +41,9 @@ export type RunEvent =
 export interface RunState {
   partnerId: string; seed: number; rng: Rng; save: SaveData; storage: Storage | null | undefined;
   prog: PlayerProg; combat: CombatState; px: number; pz: number; moving: boolean;
-  /** última direção horizontal de movimento (para espelhar o sprite) */
+  /** última direção de movimento no mundo (normalizada; o render calcula a vista relativa à câmera) */
   dirX: number;
+  dirZ: number;
   /** eixo dominante do último movimento (para escolher os quadros de lado/costas/frente) */
   facing: 'side' | 'up' | 'down' | 'diagup' | 'diagdown';
   /** velocidade de movimento no início da partida (render troca para corrida quando dobra) */
@@ -136,7 +137,7 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
   const pool = new EnemyPool();
   const r: RunState = {
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
-    prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
+    prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
     pickups: [], chests: [], evo: new EvoNotifier(), paused: false, ended: null, time: 0, camYaw: 0, camHalf: Math.PI, offers: null, pendingCard: null, blindChoice: null, levelTools: { ...T.LEVEL_TOOLS }, banned: [], damage: newDamageLog(), reviveUsed: false, portals: [], zone: null, relicOffer: null, altars: [], altarOffer: null, altarAway: null, corruption: 0, challengeArmed: false, challengeGuardianId: null,
     jogressSpot: null, jogressOffer: null, jogressUsed: false, jogressArmed: true, dataRng: createRng((opts.seed ^ 0x5eedda7a) >>> 0), digiDataThisRun: [],
@@ -168,8 +169,8 @@ function movePlayer(r: RunState, input: InputState, dt: number) {
   const l = Math.hypot(mx, mz);
   if (l > 1) { mx /= l; mz /= l; }
   r.moving = l > 0.05;
-  if (Math.abs(mx) > 0.05) r.dirX = Math.sign(mx);
   if (r.moving) {
+    const n = Math.hypot(mx, mz); r.dirX = mx / n; r.dirZ = mz / n;
     // 8 direções: setores de 45° (lado, diagonais, cima/baixo); esquerda/direita vêm do dirX
     const a = Math.atan2(Math.abs(mz), Math.abs(mx));
     r.facing = a < Math.PI / 8 ? 'side' : a > (3 * Math.PI) / 8 ? (mz < 0 ? 'up' : 'down') : mz < 0 ? 'diagup' : 'diagdown';

@@ -5,7 +5,9 @@ import { T } from '../data/tuning';
 import { playerSpeed, type RunState } from '../sim/run';
 import { placeholderTexture } from './placeholder';
 import { enemyStageScale, motionPose, playerHeightFor } from './motion';
-import { deathFrame, facingFlip, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, type Role, type SpriteLibrary } from './sprites';
+import { deathFrame, frameOffset, mirrorsWithDir, frameIndex, HURT_TIME, hurtFrame, moveFrame, nextHurtStart, sheetGrid, type Role, type SpriteLibrary } from './sprites';
+import { enableInstanceFrames, setInstanceFrame } from './instanceFrames';
+import { viewFacing } from '../core/view';
 
 const DEFS = new Map<string, { name: string; color: number; stage: string }>([...ENEMIES, ...MINIBOSSES, ...BOSSES].map(d => [d.id, { name: d.name, color: d.color, stage: d.stage }]));
 const unitPlane = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
@@ -15,11 +17,14 @@ export const FLIP_SPRITES = true;
 /** altura visual dos inimigos com sprite = tamanho de colisão × ENEMY_VIS */
 const ENEMY_VIS = 1.7;
 
+/** quadro de costas/frente (simétrico, não espelha); lado e diagonais espelham com a direção */
+const verticalRole = (r: Role) => /^(walk|run|stand|death|idle)(up|down)\d*$/.test(r);
+
 function spriteMaterial(tex: THREE.Texture) {
   return new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: true, side: THREE.DoubleSide });
 }
 
-interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; cols?: number; height: number; phase: number }
+interface Species { mesh: THREE.InstancedMesh; tex: THREE.Texture | null; frames: Role[]; cols?: number; height: number }
 
 export class Billboards {
   private species = new Map<string, Species>();
@@ -62,10 +67,12 @@ export class Billboards {
       const mesh = new THREE.InstancedMesh(g.geo, mat, T.MAX_ENEMIES);
       mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(T.MAX_ENEMIES * 3).fill(1), 3);
       mesh.frustumCulled = false;
+      // quadro por instância: cada inimigo mostra a própria vista
+      if (g.tex) { const gr = sheetGrid({ frames: g.frames, cols: g.cols }); enableInstanceFrames(mesh, gr.cols, gr.rows); }
       this.scene.add(mesh);
       // inimigos: altura pelo tamanho de jogo (as folhas foram ripadas em escalas diferentes), +15% por estágio acima do Child
       const height = g.tex ? size * ENEMY_VIS * enemyStageScale(d.stage) : size * VIS;
-      sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height, phase: (this.species.size * 0.37) % 1 };
+      sp = { mesh, tex: g.tex, frames: g.frames, cols: g.cols, height };
       this.species.set(def, sp);
     }
     return sp;
@@ -82,7 +89,7 @@ export class Billboards {
     return this.qt.copy(q).multiply(this.qz.setFromAxisAngle(this.zAxis, tilt));
   }
 
-  sync(run: RunState, time: number) {
+  sync(run: RunState, time: number, yaw: number) {
     const q = this.camera.quaternion;
     this.counts.clear();
     let sh = 0;
@@ -92,8 +99,17 @@ export class Billboards {
       const i = this.counts.get(e.def) ?? 0;
       if (i >= T.MAX_ENEMIES) continue;
       this.counts.set(e.def, i + 1);
-      const flip = FLIP_SPRITES && sp.tex ? facingFlip(run.px - e.x) : 1;
-      const pose = motionPose({ t: time, phase: (e.id * 0.618) % 1, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
+      // vista relativa à câmera: o inimigo olha para o parceiro
+      const v = viewFacing(run.px - e.x, run.pz - e.z, yaw);
+      const phase = (e.id * 0.618) % 1;
+      let flip = 1;
+      if (sp.tex) {
+        const role = moveFrame(time, phase, true, sp.frames, v.facing);
+        setInstanceFrame(sp.mesh, i, frameOffset(frameIndex(role, sp.frames), { frames: sp.frames, cols: sp.cols }));
+        // sem a vista na folha o moveFrame cai no quadro de lado, que espelha
+        if (FLIP_SPRITES && v.right && (mirrorsWithDir(v.facing) || !verticalRole(role))) flip = -1;
+      }
+      const pose = motionPose({ t: time, phase, moving: true, attack: 99, hurt: e.hitFlash > 0 ? 0.5 : 0, drawnWalk: sp.frames.includes('walk1') });
       this.m.compose(this.p.set(e.x, pose.y * sp.height, e.z), this.tilted(q, pose.tilt * flip), this.s.set(sp.height * flip * pose.sx, sp.height * pose.sy, 1));
       sp.mesh.setMatrixAt(i, this.m);
       sp.mesh.setColorAt(i, e.hitFlash > 0 ? this.flash : this.white);
@@ -106,7 +122,6 @@ export class Billboards {
       sp.mesh.count = this.counts.get(def) ?? 0;
       sp.mesh.instanceMatrix.needsUpdate = true;
       if (sp.mesh.instanceColor) sp.mesh.instanceColor.needsUpdate = true;
-      this.setFrame(sp.tex, sp.frames, moveFrame(time, sp.phase, true, sp.frames), sp.cols);
     }
 
     // jogador
@@ -127,7 +142,9 @@ export class Billboards {
     if (this.deathRun !== run) { this.deathRun = run; this.deathAt = -1; }
     const dead = run.ended === 'defeat';
     if (dead && this.deathAt < 0) this.deathAt = time;
-    const death = dead ? deathFrame(time - this.deathAt, this.playerFrames, run.facing) : null;
+    // vista relativa à câmera pela última direção andada (parado, girar a câmera também muda a vista)
+    const view = viewFacing(run.dirX, run.dirZ, yaw);
+    const death = dead ? deathFrame(time - this.deathAt, this.playerFrames, view.facing) : null;
     // dano: golpe novo = invulnerabilidade subiu; conta pelo tempo da tela (não congela com modal aberto)
     if (this.hurtRun !== run) { this.hurtRun = run; this.hurtStart = -Infinity; this.prevInvuln = 0; }
     this.hurtStart = nextHurtStart(this.hurtStart, time, c.invuln > this.prevInvuln + 1e-6);
@@ -138,10 +155,10 @@ export class Billboards {
     const sideOnly = (death !== null && /^death\d/.test(death)) || (hurtRole !== null && hurtRole !== 'hurt');
     if (this.playerTex) {
       // ataque não troca a pose: o golpe sai sem o sprite virar
-      const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, run.facing, playerSpeed(run.prog) >= 2 * run.baseSpeed);
+      const role: Role = death ?? hurtRole ?? moveFrame(time, 0, run.moving, this.playerFrames, view.facing, playerSpeed(run.prog) >= 2 * run.baseSpeed);
       this.setFrame(this.playerTex, this.playerFrames, role, this.playerCols);
     }
-    const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(run.facing) || sideOnly) ? facingFlip(run.dirX) : 1;
+    const flip = FLIP_SPRITES && this.playerTex && (mirrorsWithDir(view.facing) || sideOnly) && view.right ? -1 : 1;
     const hurt = hurtRole ? 1 - (time - this.hurtStart) / HURT_TIME : 0;
     const pose = death ? { y: 0, sx: 1, sy: 1, tilt: 0 }
       : motionPose({ t: time, phase: 0, moving: run.moving, attack: 99, hurt, drawnWalk: this.playerFrames.some(f => /^walk/.test(f)), drawnIdle: this.playerFrames.some(f => /^stand/.test(f)) });

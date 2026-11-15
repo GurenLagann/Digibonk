@@ -239,7 +239,7 @@ function frame(now: number) {
   if (run) {
     orbit.follow(run.px, run.pz);
     map.sync(run, t);
-    boards.sync(run, t);
+    boards.sync(run, t, orbit.yaw);
     vfx.sync(run, events, Math.min(dt, 0.25), t);
     hud.update(run);
   } else {
