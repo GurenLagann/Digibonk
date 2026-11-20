@@ -2,19 +2,20 @@ import type { App } from '../app';
 import { partnerRecord, type SaveData } from '../core/save';
 import { FORMS } from '../data/forms';
 import { PARTNERS } from '../data/partners';
+import { analyzerData } from '../sim/analyzer';
 import { h } from './dom';
 import { setActiveModal, type Modal } from './modal';
 import { portrait } from './portrait';
 
-export interface TitleNav { play(): void; partners(): void; records(): void; lab(): void; settings(): void; credits(): void; wiki?(): void }
+export interface TitleNav { play(): void; partners(): void; records(): void; lab(): void; settings(): void; credits(): void; analyzer(): void; wiki?(): void }
 
 /** página da wiki dos Digimon World (public/dw-wiki.html) */
 export const WIKI_URL = './dw-wiki.html';
 
-/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Laboratório, 4 Controles, 5 Créditos, 6 DW Wiki) */
+/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Laboratório, 4 Controles, 5 Créditos, 6 DW Wiki, 7 Analyzer) */
 const NAV = {
-  right: [1, 1, 2, 3, 5, 6, 6], left: [0, 0, 0, 0, 4, 4, 5],
-  down: [4, 2, 3, 5, 4, 5, 6], up: [0, 1, 1, 2, 0, 3, 3],
+  right: [1, 1, 2, 3, 5, 6, 6, 7], left: [0, 0, 0, 0, 4, 4, 5, 0],
+  down: [4, 2, 3, 7, 4, 5, 6, 5], up: [0, 1, 1, 2, 0, 7, 7, 3],
 };
 
 /** volume do vídeo de fundo do menu (0–1) */
@@ -107,6 +108,10 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     tile('ⓘ', 'Créditos', 'Aviso legal', '#9a7dff', nav.credits),
     tile('📖', 'DW Wiki', 'Evoluções · DW 1–4', '#2fbf71', nav.wiki ?? (() => { window.location.href = WIKI_URL; })));
 
+  // cartão do Analyzer: criado depois dos atalhos para ficar no índice 7 sem renumerar os outros
+  const known = analyzerData(save);
+  stack.append(side('tt-analyzer', '🔬', 'Analyzer', `${known.known} / ${known.total} formas descobertas`, nav.analyzer));
+
   // painel "Seus parceiros": liberados, do melhor resultado para o pior
   const ranked = unlocked.map(p => ({ p, r: partnerRecord(save, p.id) }))
     .sort((a, b) => b.r.bestPhase - a.r.bestPhase || b.r.wins - a.r.wins || b.r.runs - a.r.runs);
@@ -139,7 +144,7 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
     close() { if (!closed) { closed = true; screen.querySelector('video')?.pause(); screen.remove(); } },
     handle(input) {
       if (closed) return;
-      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes / 3 Laboratório (ao lado); 4 Controles | 5 Créditos | 6 DW Wiki (embaixo)
+      // posição na tela: 0 Jogar | 1 Parceiros / 2 Recordes / 3 Laboratório / 7 Analyzer (ao lado); 4 Controles | 5 Créditos | 6 DW Wiki (embaixo)
       if (input.pressed('right')) select(NAV.right[sel]);
       else if (input.pressed('left')) select(NAV.left[sel]);
       else if (input.pressed('down')) select(NAV.down[sel]);

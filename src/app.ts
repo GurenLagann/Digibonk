@@ -2,7 +2,7 @@ import type { SaveData } from './core/save';
 import { PARTNERS } from './data/partners';
 import type { Season } from './data/types';
 
-export type AppScreen = 'title' | 'partner' | 'records' | 'lab' | 'run' | 'results' | 'settings' | 'credits';
+export type AppScreen = 'title' | 'partner' | 'records' | 'lab' | 'analyzer' | 'run' | 'results' | 'settings' | 'credits';
 
 const SEASON_ORDER: Season[] = ['adventure', 'adventure02', 'tamers'];
 

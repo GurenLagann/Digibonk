@@ -724,3 +724,20 @@
 .bd-step.secret { color: #9a7dff; }
 .bd-nexts { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 720px) { .bd-body { grid-template-columns: 1fr; } }
+
+/* Digimon Analyzer */
+.an-screen { display: grid; gap: var(--b2-sp-3); padding: var(--b2-sp-4); grid-template-rows: auto 1fr; max-height: 100vh; }
+.an-head { display: flex; align-items: center; gap: var(--b2-sp-3); }
+.an-head .an-count { margin-left: auto; font-size: var(--b2-fs-md); }
+.an-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--b2-sp-3); min-height: 0; }
+.an-list { overflow-y: auto; display: flex; flex-direction: column; gap: var(--b2-sp-3); }
+.an-forms { display: flex; flex-wrap: wrap; gap: 6px; }
+.an-form { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 76px; padding: var(--b2-sp-1); font-size: var(--b2-fs-xs); background: transparent; border: 1px solid transparent; border-radius: var(--b2-corner-sm); color: inherit; cursor: pointer; }
+.an-form:hover { border-color: var(--b2-orange); }
+.an-form.unknown { opacity: .6; }
+.an-card { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+.an-top { display: flex; gap: var(--b2-sp-3); align-items: center; }
+.an-stats, .an-moves { display: flex; flex-wrap: wrap; gap: var(--b2-sp-1) var(--b2-sp-3); font-size: var(--b2-fs-sm); }
+.an-edge { font-size: var(--b2-fs-sm); }
+.an-edge.secret { color: #9a7dff; }
+@media (max-width: 720px) { .an-body { grid-template-columns: 1fr; } }

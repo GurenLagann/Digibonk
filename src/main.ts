@@ -33,6 +33,7 @@ import { prettyCode, showCredits, showPause, showSettings } from './ui/menus';
 import { showResults } from './ui/results';
 import { showRecords } from './ui/records';
 import { showLab } from './ui/lab';
+import { showAnalyzer } from './ui/analyzer';
 import { showPartnerSelect } from './ui/partnerSelect';
 import { showTitle } from './ui/title';
 import { activeModal, ignoreBackFor } from './ui/modal';
@@ -96,6 +97,7 @@ const toTitle = () => {
     partners: () => { m.close(); app.go('partner'); showPartnerSelect(ui, app, save, { mode: 'view', back: toTitle }); },
     records: () => { m.close(); app.go('records'); showRecords(ui, save, toTitle); },
     lab: () => { m.close(); app.go('lab'); showLab(ui, save, toTitle); },
+    analyzer: () => { m.close(); app.go('analyzer'); showAnalyzer(ui, save, toTitle); },
     settings: () => { m.close(); app.go('settings'); openSettings(); },
     credits: () => { m.close(); app.go('credits'); showCredits(ui, toTitle); },
   }, lastPartner);
