@@ -67,7 +67,7 @@ describe('menu no estilo de cartões', () => {
     const { root } = setup(s => { s.records = { bestPhase: 2, wins: 1, runs: 5 }; s.discoveredEvos = ['agumon->greymon']; });
     const top = root.querySelector('.tt-top')!;
     expect(top.textContent).toContain('Veemon');
-    expect(top.textContent).toMatch(/Evoluções\s*1 \/ \d+/);
+    expect(top.textContent).toMatch(/Evoluções feitas\s*1 \/ \d+/);
     expect(top.textContent).toContain('Vitórias');
   });
   test('Jogar é o cartão grande; atalhos têm ícone, nome e número', () => {
@@ -81,20 +81,29 @@ describe('menu no estilo de cartões', () => {
     expect(rows).toHaveLength(3); // iniciais liberados
     expect(rows[0]).toContain('Guilmon');
   });
-  test('setas seguem a posição na tela: Jogar | Parceiros/Recordes; atalhos embaixo', () => {
+  test('setas seguem a posição na tela: Jogar | grade 2×2 (Preparar / Coleção); utilidades embaixo', () => {
     const go = (...keys: string[]) => { const t = setup(); for (const k of keys) t.m.handle(press(k)); t.m.handle(press('confirm')); return t.calls[0]; };
     expect(go('right')).toBe('partners');
-    expect(go('right', 'down')).toBe('records');
-    expect(go('down')).toBe('settings');
-    expect(go('down', 'right')).toBe('credits');
-    expect(go('right', 'down', 'down')).toBe('lab');
-    expect(go('down', 'up')).toBe('play');
-    expect(go('left')).toBe('play');
-    expect(go('right', 'down', 'down', 'down')).toBe('analyzer');
+    expect(go('right', 'right')).toBe('lab');
+    expect(go('right', 'down')).toBe('analyzer');
+    expect(go('right', 'right', 'down')).toBe('records');
+    expect(go('right', 'down', 'right')).toBe('records');
     expect(go('right', 'left')).toBe('play');
+    expect(go('right', 'down', 'left')).toBe('play');
+    expect(go('down')).toBe('settings');
+    expect(go('down', 'up')).toBe('play');
+    expect(go('down', 'right')).toBe('credits');
     expect(go('down', 'right', 'right')).toBe('wiki');
     expect(go('down', 'right', 'right', 'left')).toBe('credits');
-    expect(go('down', 'right', 'right', 'up')).toBe('analyzer');
+    expect(go('right', 'down', 'down')).toBe('credits');
+    expect(go('right', 'right', 'down', 'down')).toBe('wiki');
+    expect(go('down', 'right', 'up')).toBe('analyzer');
+    expect(go('down', 'right', 'right', 'up')).toBe('records');
+  });
+  test('cartões ao lado do Jogar ficam em dois grupos rotulados', () => {
+    const { root } = setup();
+    const groups = [...root.querySelectorAll('.tt-group')].map(g => ({ label: g.querySelector('.tt-group-label')!.textContent, cards: [...g.querySelectorAll('.tt-card b')].map(b => b.textContent) }));
+    expect(groups).toEqual([{ label: 'Preparar', cards: ['Parceiros', 'Laboratório'] }, { label: 'Coleção', cards: ['Analyzer', 'Recordes'] }]);
   });
   test('cartão Analyzer existe e abre o Analyzer', () => {
     const { root, calls } = setup();

@@ -12,10 +12,14 @@ export interface TitleNav { play(): void; partners(): void; records(): void; lab
 /** página da wiki dos Digimon World (public/dw-wiki.html) */
 export const WIKI_URL = './dw-wiki.html';
 
-/** vizinho de cada item por seta (índices: 0 Jogar, 1 Parceiros, 2 Recordes, 3 Laboratório, 4 Controles, 5 Créditos, 6 DW Wiki, 7 Analyzer) */
+/**
+ * vizinho de cada item por seta. Índices na ordem da tela:
+ * 0 Jogar | grade 2×2: 1 Parceiros, 2 Laboratório (Preparar) / 3 Analyzer, 4 Recordes (Coleção)
+ * barra de utilidades: 5 Controles, 6 Créditos, 7 DW Wiki
+ */
 const NAV = {
-  right: [1, 1, 2, 3, 5, 6, 6, 7], left: [0, 0, 0, 0, 4, 4, 5, 0],
-  down: [4, 2, 3, 7, 4, 5, 6, 5], up: [0, 1, 1, 2, 0, 7, 7, 3],
+  right: [1, 2, 2, 4, 4, 6, 7, 7], left: [0, 0, 1, 0, 3, 5, 5, 6],
+  down: [5, 3, 4, 6, 7, 5, 6, 7], up: [0, 1, 2, 1, 2, 0, 3, 4],
 };
 
 /** volume do vídeo de fundo do menu (0–1) */
@@ -86,31 +90,33 @@ export function showTitle(root: HTMLElement, app: App, save: SaveData, nav: Titl
       h('div', { class: 'tt-me-txt' }, h('b', {}, lastForm.name), h('span', { class: 'b2-label' }, 'Último parceiro'))),
     h('div', { class: 'tt-chips' },
       chip('Vitórias', String(rec.wins)), chip('Partidas', String(rec.runs)),
-      chip('Parceiros', `${unlocked.length} / ${partners.length}`), chip('Evoluções', `${evos} / ${TOTAL_EVOS}`)));
+      chip('Parceiros', `${unlocked.length} / ${partners.length}`), chip('Evoluções feitas', `${evos} / ${TOTAL_EVOS}`)));
 
   // cartão grande + cartões ao lado
   const play = item(h('button', { type: 'button', class: 'tt-card tt-play' },
     h('span', { class: 'tt-play-ico' }, '▶'),
     h('span', { class: 'tt-card-txt' }, h('b', {}, 'Jogar'), h('span', {}, `Modo clássico · melhor fase ${rec.bestPhase}`)),
     h('span', { class: 'b2-key' }, '1')), nav.play);
+  // grade 2×2 ao lado do Jogar, por função: Preparar (antes da partida) e Coleção (o que você já conquistou)
   const side = (cls: string, icon: string, title: string, sub: string, go: () => void) => item(h('button', { type: 'button', class: `tt-card tt-side ${cls}` },
     h('span', { class: 'tt-side-ico' }, icon), h('span', { class: 'tt-card-txt' }, h('b', {}, title), h('span', {}, sub))), go);
+  const known = analyzerData(save);
+  const group = (label: string, ...cards: HTMLElement[]) => h('div', { class: 'tt-group' }, h('div', { class: 'b2-label tt-group-label' }, label), h('div', { class: 'tt-group-cards' }, ...cards));
   const stack = h('div', { class: 'tt-stack' },
-    side('tt-partners', '🥚', 'Parceiros', `${unlocked.length} / ${partners.length} liberados · evoluções e golpes`, nav.partners),
-    side('tt-records', '🏆', 'Recordes', `Melhor fase ${rec.bestPhase} · ${rec.wins} vitórias`, nav.records),
-    side('tt-lab', '🧪', 'Laboratório', `${save.currency.toLocaleString('pt-BR')} 💠 · melhorias permanentes`, nav.lab));
+    group('Preparar',
+      side('tt-partners', '🥚', 'Parceiros', `${unlocked.length} / ${partners.length} liberados · builds`, nav.partners),
+      side('tt-lab', '🧪', 'Laboratório', `${save.currency.toLocaleString('pt-BR')} 💠 · melhorias`, nav.lab)),
+    group('Coleção',
+      side('tt-analyzer', '🔬', 'Analyzer', `${known.known} / ${known.total} formas descobertas`, nav.analyzer),
+      side('tt-records', '🏆', 'Recordes', `Melhor fase ${rec.bestPhase} · ${rec.wins} vitórias`, nav.records)));
 
-  // fileira de atalhos
-  const tile = (icon: string, title: string, sub: string, color: string, go: () => void) => item(h('button', { type: 'button', class: 'tt-tile', style: `--tt-c:${color}` },
+  // barra de utilidades (ações secundárias): menor e discreta; DW Wiki sai do jogo (↗)
+  const tile = (icon: string, title: string, sub: string, go: () => void, extra = '') => item(h('button', { type: 'button', class: 'tt-tile' + extra },
     h('span', { class: 'tt-tile-ico' }, icon), h('span', { class: 'tt-tile-txt' }, h('b', {}, title), h('span', { class: 'b2-label' }, sub))), go);
   const tiles = h('div', { class: 'tt-tiles' },
-    tile('⚙', 'Controles', 'Teclado · controle', '#3d9bff', nav.settings),
-    tile('ⓘ', 'Créditos', 'Aviso legal', '#9a7dff', nav.credits),
-    tile('📖', 'DW Wiki', 'Evoluções · DW 1–4', '#2fbf71', nav.wiki ?? (() => { window.location.href = WIKI_URL; })));
-
-  // cartão do Analyzer: criado depois dos atalhos para ficar no índice 7 sem renumerar os outros
-  const known = analyzerData(save);
-  stack.append(side('tt-analyzer', '🔬', 'Analyzer', `${known.known} / ${known.total} formas descobertas`, nav.analyzer));
+    tile('⚙', 'Controles', 'Teclado · controle', nav.settings),
+    tile('ⓘ', 'Créditos', 'Aviso legal', nav.credits),
+    tile('📖', 'DW Wiki ↗', 'Abre a wiki', nav.wiki ?? (() => { window.location.href = WIKI_URL; }), ' tt-ext'));
 
   // painel "Seus parceiros": liberados, do melhor resultado para o pior
   const ranked = unlocked.map(p => ({ p, r: partnerRecord(save, p.id) }))
