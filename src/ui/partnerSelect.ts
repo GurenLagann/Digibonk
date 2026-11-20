@@ -59,7 +59,7 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
       portrait(p.childForm, { size: 64, silhouette: p.locked }), h('span', { class: 'ps-name' }, name));
   });
   const detail = h('div', { class: 'b2-panel tick ps-detail' });
-  const buildBtn = btn('Build', '2', () => openBuild());
+  const buildBtn = btn('Build', '2 / E', () => openBuild());
   buildBtn.classList.add('ps-build');
   const pickBtn = opts.mode === 'pick' ? btn('Escolher parceiro!', 'Enter', () => confirm()) : null;
   const screen = h('div', { class: 'b2-screen ps-screen' },
@@ -136,7 +136,7 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
       else if (input.pressed('up') && sel - COLS >= 0) select(sel - COLS);
       else if (input.pressed('down') && sel + COLS < ps.length) select(sel + COLS);
       else if (input.pressed('confirm')) confirm();
-      else if (input.pressed('opt2')) openBuild();
+      else if ((input.pressed('opt2') || input.pressed('evolve'))) openBuild();
     },
   };
   setActiveModal(m);

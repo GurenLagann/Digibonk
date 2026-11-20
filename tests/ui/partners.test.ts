@@ -128,3 +128,14 @@ test('botão Build abre o editor do parceiro liberado e fica desabilitado no blo
   b.click();
   expect(root.querySelector('.bd-screen')).toBeTruthy();
 });
+
+test('evolve (E / Y no controle) abre o editor no parceiro liberado e não faz nada no bloqueado', () => {
+  const { root, m } = setup('view', ['agumon']);
+  expect(root.querySelector('.ps-build')!.textContent).toContain('E');
+  m.handle(press('right')); // gabumon, bloqueado
+  m.handle(press('evolve'));
+  expect(root.querySelector('.bd-screen')).toBeNull();
+  m.handle(press('left'));
+  m.handle(press('evolve'));
+  expect(root.querySelector('.bd-screen')).toBeTruthy();
+});

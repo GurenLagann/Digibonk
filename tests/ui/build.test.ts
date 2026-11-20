@@ -64,3 +64,60 @@ test('escolha secreta mostra ??? + pista e não vaza o id da forma no DOM', () =
   expect(secret.textContent).toContain('??? · ');
   expect(root.innerHTML).not.toContain('skullgreymon');
 });
+
+const selKey = (root: HTMLElement) => root.querySelector('.b2-sel')!;
+test('←/→ saltam entre grupos (golpes → cartas → caminho) e travam nas pontas', () => {
+  const save = defaultSave(); discover(save, 'agumon->greymon');
+  const { root, m } = setup(save);
+  const inGroup = () => { const e = selKey(root); return e.closest('.bd-path') ? 'path' : (e.getAttribute('data-key') ?? '').startsWith('card:') ? 'cards' : 'moves'; };
+  expect(inGroup()).toBe('moves');
+  m.handle(press('left')); expect(inGroup()).toBe('moves');
+  m.handle(press('right')); expect(inGroup()).toBe('cards');
+  expect(selKey(root)).toBe(root.querySelector('[data-key^="card:"]'));
+  m.handle(press('right')); expect(inGroup()).toBe('path');
+  m.handle(press('right')); expect(inGroup()).toBe('path');
+  m.handle(press('left')); expect(inGroup()).toBe('cards');
+  m.handle(press('left')); expect(inGroup()).toBe('moves');
+});
+test('↑/↓ pulam linhas ??? desabilitadas', () => {
+  const { root, m } = setup();
+  const locked = root.querySelectorAll('.bd-row.locked').length;
+  expect(locked).toBeGreaterThan(0);
+  const stops = root.querySelectorAll('.bd-row:not(.locked)').length;
+  for (let i = 0; i < stops + 2; i++) { m.handle(press('down')); expect(selKey(root).classList.contains('locked')).toBe(false); }
+});
+test('seleção rola para a vista', () => {
+  const { root, m } = setup();
+  const calls: unknown[] = [];
+  const proto = HTMLElement.prototype as unknown as { scrollIntoView?: unknown };
+  const old = proto.scrollIntoView;
+  proto.scrollIntoView = (o: unknown) => { calls.push(o); };
+  try { m.handle(press('down')); } finally { proto.scrollIntoView = old; }
+  expect(calls).toEqual([{ block: 'nearest' }]);
+});
+function pathSetup() {
+  const save = defaultSave();
+  discover(save, 'agumon->greymon'); discover(save, 'greymon->metalgreymon'); discover(save, 'greymon->skullgreymon');
+  save.builds.agumon = { fav: [], ban: [], path: ['agumon', 'greymon', 'metalgreymon'] };
+  return setup(save);
+}
+const goTo = (root: HTMLElement, m: { handle(i: Input): void }, sel: string) => {
+  for (let i = 0; i < 80 && !root.querySelector(sel)!.classList.contains('b2-sel'); i++) m.handle(press('down'));
+  expect(root.querySelector(sel)!.classList.contains('b2-sel')).toBe(true);
+};
+test('caminho: trocar o passo 2 por outra aresta conhecida', () => {
+  const { root, m, save } = pathSetup();
+  goTo(root, m, '[data-pos="2"]');
+  m.handle(press('confirm')); // passa a oferecer as saídas do passo 1
+  root.querySelector<HTMLElement>('[data-step="skullgreymon"]')!.click();
+  expect(save.builds.agumon.path).toEqual(['agumon', 'greymon', 'skullgreymon']);
+});
+test('caminho: X no passo 2 remove ele e os seguintes; sem passo selecionado limpa tudo', () => {
+  const { root, m, save } = pathSetup();
+  goTo(root, m, '[data-pos="2"]');
+  m.handle(press('skip'));
+  expect(save.builds.agumon.path).toEqual(['agumon', 'greymon']);
+  m.handle(press('left')); // fora do caminho
+  m.handle(press('skip'));
+  expect(save.builds.agumon.path).toEqual([]);
+});
