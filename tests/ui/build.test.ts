@@ -2,7 +2,7 @@
 import { defaultSave, SAVE_KEY } from '../../src/core/save';
 import type { Input } from '../../src/core/input';
 import { CARD_LIST } from '../../src/data/cards';
-import { discover } from '../../src/sim/discovery';
+import { discover, reveal } from '../../src/sim/discovery';
 import { lineMoves } from '../../src/sim/build';
 import { activeModal } from '../../src/ui/modal';
 import { showBuild } from '../../src/ui/build';
@@ -46,4 +46,21 @@ test('Esc salva e volta', () => {
   m.handle(press('cancel'));
   expect(back()).toBe(1);
   expect(JSON.parse(storage.getItem(SAVE_KEY)!).builds.agumon).toBeTruthy();
+});
+test('teclado: desce até o botão do passo e confirma define o caminho', () => {
+  const save = defaultSave(); discover(save, 'agumon->greymon');
+  const { root, m } = setup(save);
+  const n = root.querySelectorAll('.bd-row').length;
+  for (let i = 0; i < n; i++) m.handle(press('down'));
+  expect(root.querySelector('.bd-next')!.classList.contains('b2-sel')).toBe(true);
+  m.handle(press('confirm'));
+  expect(save.builds.agumon.path).toEqual(['agumon', 'greymon']);
+});
+test('escolha secreta mostra ??? + pista e não vaza o id da forma no DOM', () => {
+  const save = defaultSave(); discover(save, 'agumon->greymon'); reveal(save, { edge: 'greymon->skullgreymon', key: 'level' });
+  const { root } = setup(save);
+  root.querySelector<HTMLElement>('[data-step="greymon"]')!.click();
+  const secret = [...root.querySelectorAll('.bd-next')].find(e => e.textContent!.includes('???'))!;
+  expect(secret.textContent).toContain('??? · ');
+  expect(root.innerHTML).not.toContain('skullgreymon');
 });
