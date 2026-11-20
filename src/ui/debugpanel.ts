@@ -8,6 +8,8 @@ export interface DebugActions {
   summons: (DebugEntry & { group: string })[];
   evolve(id: string): void; levelUp(): void; card(id: string): void; item(id: string): void;
   heal(): void; killAll(): void; die(): void; summon(id: string): void;
+  /** abre a Distorção Digital (arena do guardião) na hora */
+  openZone(): void;
   /** alterna invencibilidade e devolve o novo estado */
   god(): boolean;
   /** alterna velocidade dobrada (para ver a corrida) e devolve o novo estado */
@@ -32,7 +34,7 @@ export function mountDebugPanel(root: HTMLElement, a: DebugActions): { el: HTMLE
     h('div', { class: 'dbg-head' }, 'DEBUG (F2)'),
     h('div', { class: 'dbg-sec' }, h('div', { class: 'dbg-title' }, 'Animações faltando (forma atual)'), anim),
     section('Geral',
-      b('+1 nível', () => a.levelUp()), b('Curar', () => a.heal()), b('Matar todos', () => a.killAll()), b('Morrer', () => a.die()),
+      b('+1 nível', () => a.levelUp()), b('Curar', () => a.heal()), b('Matar todos', () => a.killAll()), b('Morrer', () => a.die()), b('Abrir Distorção', () => a.openZone()),
       b('Invencível: não', btn => { btn.textContent = `Invencível: ${a.god() ? 'sim' : 'não'}`; }),
       b('Velocidade 2×: não', btn => { btn.textContent = `Velocidade 2×: ${a.doubleSpeed() ? 'sim' : 'não'}`; }),
       b('Revelar todas as evoluções', () => a.revealAll()), b('Esquecer evoluções', () => a.forgetAll()),

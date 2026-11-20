@@ -9,7 +9,7 @@ function actions(log: string[]): DebugActions {
     items: [{ id: 'fusion_garurumon', name: 'Dados de Fusão' }],
     evolve: id => log.push('evolve:' + id), levelUp: () => log.push('level'), card: id => log.push('card:' + id),
     item: id => log.push('item:' + id), heal: () => log.push('heal'), killAll: () => log.push('kill'),
-    die: () => log.push('die'), summon: id => log.push('summon:' + id),
+    die: () => log.push('die'), summon: id => log.push('summon:' + id), openZone: () => log.push('zone'),
     summons: [{ id: 'gazimon', name: 'Gazimon', group: 'inimigos' }, { id: 'devimon', name: 'Devimon', group: 'chefes' }],
     god: () => (god = !god),
     doubleSpeed: () => false,

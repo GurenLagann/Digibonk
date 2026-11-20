@@ -154,6 +154,7 @@ if (import.meta.env.DEV && new URLSearchParams(location.search).has('debug')) {
       ...BOSSES.map(e => ({ id: e.id, name: e.name, group: 'chefes' })),
     ],
     summon: id => withRun(r => { if (!dbg.debugSummon(r, id)) toast('Debug: limite de inimigos atingido', 'warn'); })(),
+    openZone: withRun(r => { if (!dbg.debugOpenZone(r)) toast('Debug: já está na Distorção', 'warn'); }),
     god: () => { if (!run) return false; const on = dbg.debugToggleGod(run); toast(`Debug: invencível ${on ? 'ligado' : 'desligado'}`); return on; },
     revealAll: () => { dbg.debugRevealAll(save); toast('Debug: todas as evoluções reveladas'); },
     forgetAll: () => { dbg.debugForgetAll(save); toast('Debug: evoluções esquecidas'); },

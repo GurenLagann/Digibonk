@@ -6,6 +6,7 @@ import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { applyForm } from './evolution';
 import { discover, edgeId } from './discovery';
 import { handleCard, handleItem, playerSpeed, syncHp, type RunEvent, type RunState } from './run';
+import { openPortal } from './zone';
 
 export function debugEvolve(r: RunState, formId: string): void {
   const from = r.prog.formId;
@@ -52,6 +53,14 @@ export function debugSummon(r: RunState, id: string): boolean {
   if (!def) return false;
   const a = r.rng.next() * Math.PI * 2;
   return r.pool.spawn(def, r.px + Math.cos(a) * 6, r.pz + Math.sin(a) * 6, { hp: SUMMON_HP, dmg: 1 }) !== null;
+}
+
+/** abre um portal da Distorção Digital em cima do jogador (entra no próximo passo); guardião sorteado vira o Alfa */
+export function debugOpenZone(r: RunState): boolean {
+  if (r.zone) return false;
+  const g = MINIBOSSES[Math.floor(r.rng.next() * MINIBOSSES.length)];
+  openPortal(r, { id: -1, def: g.id, x: r.px, z: r.pz, attribute: g.attribute } as never, []);
+  return true;
 }
 
 /** liga/desliga invencibilidade; devolve o novo estado */

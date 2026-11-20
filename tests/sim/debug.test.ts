@@ -1,6 +1,6 @@
 import { createRun, playerSpeed, stepRun } from '../../src/sim/run';
 import { drawPool } from '../../src/sim/discovery';
-import { debugDie, debugSummon, SUMMON_HP, debugForgetAll, debugRevealAll, debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
+import { debugOpenZone, debugDie, debugSummon, SUMMON_HP, debugForgetAll, debugRevealAll, debugEvolve, debugGiveCard, debugGiveItem, debugHeal, debugKillAll, debugLevelUp, debugToggleDoubleSpeed, debugToggleGod } from '../../src/sim/debug';
 import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
 import { BOSSES, ENEMIES } from '../../src/data/enemies';
@@ -110,4 +110,13 @@ test('debugSummon spawns the chosen enemy or boss next to the player, with extra
   expect(e.boss).toBe(false); // sem barra de chefe nem missão
   expect(e.hp).toBeCloseTo(BOSSES[0].hp * SUMMON_HP);
   expect(debugSummon(r, 'nao_existe')).toBe(false);
+});
+
+test('debugOpenZone abre um portal em cima do jogador e não reabre dentro da Distorção', () => {
+  const r = createRun({ partnerId: 'agumon', seed: 1, save: defaultSave(), storage: null });
+  expect(debugOpenZone(r)).toBe(true);
+  expect(r.portals).toHaveLength(1);
+  expect(Math.hypot(r.portals[0].x - r.px, r.portals[0].z - r.pz)).toBe(0);
+  r.zone = {} as never;
+  expect(debugOpenZone(r)).toBe(false);
 });
