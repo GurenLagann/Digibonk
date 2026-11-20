@@ -2,6 +2,7 @@ import { newPlayerProg, addXp, rollOffers, applyOffer, xpToNext, trackNearDeath,
 import { createRng } from '../../src/core/rng';
 import { T } from '../../src/data/tuning';
 import { maxedProg } from '../helpers';
+import { buildPrefs } from '../../src/sim/build';
 
 test('xp curve grows', () => expect(xpToNext(10)).toBeGreaterThan(xpToNext(1)));
 test('multiple level ups queue', () => {
@@ -111,5 +112,30 @@ describe('rollOffers com count', () => {
   });
   test('count 4 devolve 4 num prog novo', () => {
     expect(rollOffers(newPlayerProg('agumon'), createRng(1), new Set(), 4)).toHaveLength(4);
+  });
+});
+
+describe('★/✕ no sorteio', () => {
+  const roll = (seed: number, prefs?: ReturnType<typeof buildPrefs>) => { const p = newPlayerProg('agumon'); const r = createRng(seed); return Array.from({ length: 50 }, () => rollOffers(p, r, new Set(), 3, prefs)); };
+
+  test('sem prefs e com build vazia, a sequência é idêntica', () => {
+    expect(roll(42, buildPrefs({ fav: [], ban: [], path: [] }))).toEqual(roll(42));
+    expect(roll(42, undefined)).toEqual(roll(42));
+  });
+  test('✕ nunca aparece como golpe novo, melhoria ou carta', () => {
+    const prefs = buildPrefs({ fav: [], ban: ['move:sharp_claws', 'move:baby_flame', 'card:card_hyper_speed'], path: [] });
+    for (let seed = 1; seed <= 40; seed++) for (const offers of roll(seed, prefs)) for (const o of offers) {
+      if (o.kind === 'learn') expect(o.moveId).not.toBe('sharp_claws');
+      if (o.kind === 'upgrade') expect(o.slot).not.toBe(0); // slot 0 = baby_flame
+      if (o.kind === 'card') expect(o.cardId).not.toBe('card_hyper_speed');
+    }
+  });
+  test('★ aparece mais que sem marca', () => {
+    const count = (prefs?: ReturnType<typeof buildPrefs>) => { let n = 0; for (let s = 1; s <= 60; s++) for (const offers of roll(s, prefs)) n += offers.filter(o => o.kind === 'learn' && o.moveId === 'pepper_breath_rain').length; return n; };
+    expect(count(buildPrefs({ fav: ['move:pepper_breath_rain'], ban: [], path: [] }))).toBeGreaterThan(count());
+  });
+  test('com tudo do kit em ✕, status preenchem as 3 opções', () => {
+    const prefs = buildPrefs({ fav: [], ban: ['move:baby_flame', 'move:sharp_claws', 'move:spitfire_blast', 'move:pepper_breath_rain'], path: [] });
+    for (const offers of roll(7, prefs)) { expect(offers).toHaveLength(3); expect(offers.every(o => o.kind === 'stat' || o.kind === 'card')).toBe(true); }
   });
 });

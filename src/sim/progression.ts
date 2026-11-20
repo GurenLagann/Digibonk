@@ -4,6 +4,7 @@ import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import { T } from '../data/tuning';
 import type { StatKey, Stats } from '../data/types';
+import type { OfferPrefs } from './build';
 
 export interface MoveSlot {
   moveId: string; level: number; fromCard: boolean;
@@ -43,6 +44,14 @@ export function offerKey(p: PlayerProg, o: LevelOffer): string {
     case 'stat': return `stat:${o.stat}`;
     case 'card': return `card:${o.cardId}`;
   }
+}
+
+/** chave de ★/✕ de uma oferta (status não têm) */
+export function prefKey(p: PlayerProg, o: LevelOffer): string | null {
+  if (o.kind === 'learn') return `move:${o.moveId}`;
+  if (o.kind === 'upgrade') { const s = p.slots[o.slot]; return s ? `move:${s.moveId}` : null; }
+  if (o.kind === 'card') return `card:${o.cardId}`;
+  return null;
 }
 
 function rollRarity(rng: Rng): Rarity { return rng.weighted([...RARITIES], r => T.RARITY.weight[r]); }
@@ -97,7 +106,8 @@ export function autoGain(p: PlayerProg, rng: Rng): { stat: StatKey; amount: numb
 }
 
 /** sorteia as ofertas do level up; `exclude` = chaves (offerKey) banidas ou já na mesa */
-export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string> = new Set(), count: number = T.OFFERS_PER_LEVEL): LevelOffer[] {
+export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string> = new Set(), count: number = T.OFFERS_PER_LEVEL, prefs?: OfferPrefs): LevelOffer[] {
+  const w = (o: LevelOffer) => { const k = prefKey(p, o); return prefs && k ? prefs.weight(k) : 1; };
   const ok = (o: LevelOffer) => !exclude.has(offerKey(p, o));
   const f = FORMS[p.formId];
   const pool: LevelOffer[] = [];
@@ -106,13 +116,20 @@ export function rollOffers(p: PlayerProg, rng: Rng, exclude: ReadonlySet<string>
   p.slots.forEach((s, i) => { if (s && s.level < MOVES[s.moveId].maxLevel) pool.push({ kind: 'upgrade', slot: i }); });
   const out: LevelOffer[] = [];
   if (p.passives.some(c => c === null) && rng.next() < T.CARD_OFFER_CHANCE) {
-    const cards = CARD_LIST.filter(c => c.kind === 'passive' && !p.passives.includes(c.id) && !exclude.has(`card:${c.id}`));
-    if (cards.length) out.push({ kind: 'card', cardId: rng.weighted(cards, c => c.weight).id });
+    const cards = CARD_LIST.filter(c => c.kind === 'passive' && !p.passives.includes(c.id) && !exclude.has(`card:${c.id}`) && (!prefs || prefs.weight(`card:${c.id}`) > 0));
+    if (cards.length) out.push({ kind: 'card', cardId: rng.weighted(cards, c => c.weight * (prefs ? prefs.weight(`card:${c.id}`) : 1)).id });
   }
   const stats = STAT_KEYS.map(stat => ({ kind: 'stat', stat, amount: T.STAT_OFFER_AMOUNT }) as LevelOffer).filter(ok);
   // shuffle pool then fill; stats always available as candidates (lower priority)
-  const shuffled = pool.filter(ok);
-  for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+  const candidates = pool.filter(o => ok(o) && w(o) > 0);
+  let shuffled: LevelOffer[];
+  if (candidates.every(o => w(o) === 1)) {
+    shuffled = candidates;
+    for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+  } else {
+    // sorteio ponderado sem reposição (Efraimidis–Spirakis): chave u^(1/w), maior primeiro
+    shuffled = candidates.map(o => ({ o, k: rng.next() ** (1 / w(o)) })).sort((a, b) => b.k - a.k).map(x => x.o);
+  }
   const statShuffled = [...stats];
   for (let i = statShuffled.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [statShuffled[i], statShuffled[j]] = [statShuffled[j], statShuffled[i]]; }
   // one stat slot is always mixed in when pool is rich, so stat growth stays available
