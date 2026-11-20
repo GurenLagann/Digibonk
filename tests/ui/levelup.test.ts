@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import type { Input } from '../../src/core/input';
 import { defaultSave } from '../../src/core/save';
+import { discover } from '../../src/sim/discovery';
 import { MOVES } from '../../src/data/moves';
 import { createRun, type RunState } from '../../src/sim/run';
 import { moveCooldown, outgoingDamage } from '../../src/sim/stats';
@@ -132,4 +133,21 @@ describe('raridade e atualizar/pular/banir', () => {
     m.handle(fakeInput(['skip']));
     expect(r.prog.pendingLevelUps).toBe(0); expect(r.offers).toBeNull(); expect(m.closed).toBe(true);
   });
+});
+
+test('carta de status que cobre o caminho ganha "No seu plano"', () => {
+  const save = defaultSave();
+  discover(save, 'agumon->greymon');
+  save.builds.agumon = { fav: [], ban: [], path: ['agumon', 'greymon'] };
+  const r = createRun({ partnerId: 'agumon', seed: 1, save, storage: null });
+  r.prog.pendingLevelUps = 1;
+  r.offers = [
+    { kind: 'stat', stat: 'atk', amount: 3, rarity: 'common' },
+    { kind: 'stat', stat: 'def', amount: 3, rarity: 'common' },
+    { kind: 'stat', stat: 'spd', amount: 3, rarity: 'common' },
+  ];
+  const root = document.createElement('div');
+  showLevelUp(root, r);
+  const tags = [...root.querySelectorAll('.tc-tag')].map(e => e.textContent);
+  expect(tags).toEqual(['No seu plano']); // Agumon atk 10 < 14 pedido pelo Greymon
 });

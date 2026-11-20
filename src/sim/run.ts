@@ -13,7 +13,7 @@ import { difficulty, EnemyPool, stepDirector, type DirectorState } from './direc
 import { evolve, EvoNotifier, mature } from './evolution';
 import { buildPrefs, pathTarget, type OfferPrefs } from './build';
 import { FORMS } from '../data/generated/gamedata';
-import { discover, drawPool, edgeId, isDiscovered, knownAvailable, revealedKeys, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
+import { discover, drawPool, edgeId, isDiscovered, knownAvailable, revealedKeys, reveal, secretAvailable, withoutReveals, type ReqKey, type Reveal } from './discovery';
 import { attract, chestPrice, collect, dropOnKill, eggsForPartner, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
@@ -565,10 +565,11 @@ export function runPathTarget(r: RunState): string | null { return pathTarget(r.
 export function planStats(r: RunState): StatKey[] {
   const to = runPathTarget(r); if (!to) return [];
   const from = r.prog.formId, edge = FORMS[from].evolutions.find(e => e.to === to); if (!edge) return [];
-  const id = edgeId(from, to), known = isDiscovered(r.save, id), rev = revealedKeys(r.save, id);
+  const hs = hudSave(r); // sem os Digi Data revelados nesta partida
+  const id = edgeId(from, to), known = isDiscovered(hs, id), rev = revealedKeys(hs, id);
   const s = effectiveStats(r.prog);
   return (Object.entries(edge.req.minStats ?? {}) as [StatKey, number][])
-    .filter(([k, v]) => (known || rev.includes(`stat:${k}` as never)) && s[k] < v).map(([k]) => k);
+    .filter(([k, v]) => (known || rev.includes(`stat:${k}` as ReqKey)) && s[k] < v).map(([k]) => k);
 }
 
 /** Maturidade: fica na forma atual pelo resto da partida, com bônus e vida cheia */

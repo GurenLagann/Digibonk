@@ -2,7 +2,7 @@ import { CARDS, CARD_MAX_LEVEL } from '../data/cards';
 import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import type { CardStat, ElementId } from '../data/types';
-import { banOffer, chooseOffer, rerollOffers, skipOffer, type RunState } from '../sim/run';
+import { banOffer, chooseOffer, planStats, rerollOffers, skipOffer, type RunState } from '../sim/run';
 import { T } from '../data/tuning';
 import { autoGainText } from './hud';
 import { toast } from './toast';
@@ -68,7 +68,8 @@ const RARITY_NAMES: Record<Rarity, string> = { common: 'Comum', uncommon: 'Incom
 
 function offerCard(run: RunState, o: LevelOffer): TamerCardSpec {
   const spec = offerCardBase(run, o);
-  return o.rarity ? { ...spec, rarity: { id: o.rarity, label: RARITY_NAMES[o.rarity] } } : spec;
+  const withRarity = o.rarity ? { ...spec, rarity: { id: o.rarity, label: RARITY_NAMES[o.rarity] } } : spec;
+  return o.kind === 'stat' && planStats(run).includes(o.stat) ? { ...withRarity, tag: 'No seu plano' } : withRarity;
 }
 
 function offerCardBase(run: RunState, o: LevelOffer): TamerCardSpec {

@@ -3,6 +3,7 @@ import type { Input } from '../../src/core/input';
 import { defaultSave } from '../../src/core/save';
 import { FORMS } from '../../src/data/forms';
 import { createRun, type RunState } from '../../src/sim/run';
+import { applyForm } from '../../src/sim/evolution';
 import { effectiveStats } from '../../src/sim/stats';
 import { canEvolve, showBlindEvolve, showEvolve } from '../../src/ui/evolve';
 import { activeModal } from '../../src/ui/modal';
@@ -181,4 +182,15 @@ test('Veemon no Nv 5 sem evolução normal: a tela abre só com a Maturidade', (
   expect(root.querySelector('.evo-mature')).not.toBeNull();
   m.handle(press('confirm'));
   expect(r.prog.matured).toBe(true);
+});
+
+test('a evolução do caminho já vem selecionada', () => {
+  const save = discoverAll(defaultSave());
+  save.builds.agumon = { fav: [], ban: [], path: ['agumon', 'greymon', 'skullgreymon'] };
+  const r = createRun({ partnerId: 'agumon', seed: 1, save, storage: null });
+  applyForm(r.prog, 'greymon');
+  r.prog.level = 99; r.prog.bonus.atk = 999; r.prog.bonus.def = 999; r.prog.nearDeaths = 99;
+  const root = document.createElement('div');
+  showEvolve(root, r, () => {});
+  expect(root.querySelector('.evo-tab.b2-sel')!.textContent).toContain(FORMS.skullgreymon.name);
 });

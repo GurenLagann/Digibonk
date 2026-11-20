@@ -126,3 +126,14 @@ describe('Maturidade nas evoluções secretas', () => {
     expect(visibleHint(p, ctxOf(s))).toEqual({ kind: 'secret', from: 'agumon', missing: [{ kind: 'maturity' }], hidden: true });
   });
 });
+
+test('visibleHint com prefer mira a aresta preferida, descoberta ou secreta com pista', () => {
+  const s = defaultSave();
+  discover(s, 'greymon->metalgreymon'); discover(s, 'greymon->skullgreymon');
+  const p = progAt('greymon', 1);
+  expect(visibleHint(p, { save: s, phase: 1 }, 'skullgreymon')).toMatchObject({ kind: 'next', to: 'skullgreymon' });
+  const s2 = defaultSave(); discover(s2, 'greymon->metalgreymon'); reveal(s2, { edge: 'greymon->skullgreymon', key: 'level' });
+  expect(visibleHint(p, { save: s2, phase: 1 }, 'skullgreymon')).toMatchObject({ kind: 'secret', from: 'greymon' });
+  const s3 = defaultSave(); discover(s3, 'greymon->metalgreymon');
+  expect(visibleHint(p, { save: s3, phase: 1 }, 'skullgreymon')).toMatchObject({ kind: 'next', to: 'metalgreymon' }); // sem pista: comportamento atual
+});

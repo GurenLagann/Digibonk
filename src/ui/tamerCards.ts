@@ -13,6 +13,8 @@ export interface TamerCardSpec {
   pips?: { filled: number; next: boolean; max: number };
   /** raridade da oferta (golpe novo não tem): muda a moldura e mostra o selo */
   rarity?: { id: string; label: string };
+  /** selo extra, ex.: "No seu plano" */
+  tag?: string;
 }
 export interface TamerCardsSpec {
   title: string; subtitle?: string;
@@ -35,6 +37,7 @@ function cardEl(c: TamerCardSpec, key: string | null): HTMLElement {
     ...Array.from({ length: c.pips.max }, (_, i) => h('i', { class: i < c.pips!.filled ? 'f' : i === c.pips!.filled && c.pips!.next ? 'n' : '' }))) : h('span', {});
   return h('div', { class: `tc ${c.kind}${c.rarity ? ` rar-${c.rarity.id}` : ''}` },
     c.rarity ? h('span', { class: 'tc-rar' }, c.rarity.label) : null,
+    c.tag ? h('span', { class: 'tc-tag' }, c.tag) : null,
     h('div', { class: 'tc-face' },
       h('div', { class: 'tc-top' }, h('span', { class: 'tc-name' }, c.name), h('span', { class: 'tc-lv' }, c.level)),
       art,

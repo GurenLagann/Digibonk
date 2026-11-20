@@ -3,7 +3,7 @@ import { FORMS } from '../data/forms';
 import { MOVES } from '../data/moves';
 import { knownAvailable } from '../sim/discovery';
 import { canMature } from '../sim/evolution';
-import { chooseBlind, doEvolve, stayMature, type RunState } from '../sim/run';
+import { chooseBlind, doEvolve, runPathTarget, stayMature, type RunState } from '../sim/run';
 import { T } from '../data/tuning';
 import { effectiveStats } from '../sim/stats';
 import { h, STAGE_NAMES, STAT_SHORT } from './dom';
@@ -122,7 +122,8 @@ export function showEvolve(root: HTMLElement, run: RunState, onDone: (formId: st
     onDone(id);
   }
   function refuse() { if (closed) return; m.close(); onDone(null); }
-  select(0);
+  const target = runPathTarget(run);
+  select(Math.max(0, forms.indexOf(target ?? '')));
 
   const m: Modal = {
     get closed() { return closed; },

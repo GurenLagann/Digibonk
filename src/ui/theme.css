@@ -486,6 +486,7 @@
 .tc.card { --c1: #c08cff; --c2: #5b2bd6; }
 .tc.stat { --c1: #ffd43b; --c2: #c27a00; }
 /* raridade: selo no canto e moldura mais viva (golpe novo não tem raridade) */
+.tc-tag { position: absolute; z-index: 3; top: calc(6 * var(--u)); left: calc(6 * var(--u)); padding: calc(2 * var(--u)) calc(6 * var(--u)); border-radius: calc(4 * var(--u)); font-size: calc(11 * var(--u)); font-weight: 700; background: #2fbf71; color: #04130a; }
 .tc-rar { position: absolute; z-index: 3; top: calc(-9 * var(--u)); left: 50%; transform: translateX(-50%); white-space: nowrap;
   font: 900 calc(9 * var(--u))/1.6 var(--b2-font); letter-spacing: .12em; text-transform: uppercase; padding: 0 calc(8 * var(--u));
   border-radius: 999px; color: #04121f; background: #cfe3ef; box-shadow: 0 0 calc(8 * var(--u)) rgba(0, 0, 0, .5); }

@@ -73,13 +73,22 @@ const unlockedOk = (save: SaveData, req: EvoReq) => !req.unlocked || req.unlocke
  * que tem menos requisitos revelados faltando. O destino de uma secreta nunca sai daqui, e `hidden` não depende
  * de o requisito oculto estar cumprido.
  */
-export function visibleHint(p: PlayerProg, ctx: EvoContext): VisibleHint {
+export function visibleHint(p: PlayerProg, ctx: EvoContext, prefer: string | null = null): VisibleHint {
   const f = FORMS[p.formId];
   const own = p.matured ? f.evolutions.filter(e => e.req.requiresMaturity) : f.evolutions;
   if (own.length === 0) return { kind: 'final' };
   const s = effectiveStats(p);
   const edges = own.filter(e => unlockedOk(ctx.save, e.req));
   const rank = <T extends { missing: EvoMissing[] }>(xs: T[]) => xs.reduce<T | null>((b, x) => (!b || x.missing.length < b.missing.length ? x : b), null);
+
+  const pref = prefer ? edges.find(e => e.to === prefer) : undefined;
+  if (pref) {
+    const id = edgeId(p.formId, pref.to);
+    if (isDiscovered(ctx.save, id))
+      return { kind: 'next', to: pref.to, missing: reqKeys(pref.req).map(k => missingOf(p, s, ctx, pref.req, k)).filter((m): m is EvoMissing => !!m) };
+    const rev = revealedKeys(ctx.save, id);
+    if (rev.length) return { kind: 'secret', from: p.formId, missing: rev.map(k => missingOf(p, s, ctx, pref.req, k)).filter((m): m is EvoMissing => !!m), hidden: reqKeys(pref.req).some(k => !rev.includes(k)) };
+  }
 
   const known = edges.filter(e => isDiscovered(ctx.save, edgeId(p.formId, e.to)))
     .map(e => ({ to: e.to, missing: reqKeys(e.req).map(k => missingOf(p, s, ctx, e.req, k)).filter((m): m is EvoMissing => !!m) }));
