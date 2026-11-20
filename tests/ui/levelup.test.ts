@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import type { Input } from '../../src/core/input';
 import { defaultSave } from '../../src/core/save';
-import { discover } from '../../src/sim/discovery';
+import { discover, reveal } from '../../src/sim/discovery';
 import { MOVES } from '../../src/data/moves';
 import { createRun, type RunState } from '../../src/sim/run';
 import { moveCooldown, outgoingDamage } from '../../src/sim/stats';
@@ -150,4 +150,17 @@ test('carta de status que cobre o caminho ganha "No seu plano"', () => {
   showLevelUp(root, r);
   const tags = [...root.querySelectorAll('.tc-tag')].map(e => e.textContent);
   expect(tags).toEqual(['No seu plano']); // Agumon atk 10 < 14 pedido pelo Greymon
+});
+
+test('Digi Data revelado nesta partida não gera "No seu plano"', () => {
+  const save = defaultSave();
+  save.builds.agumon = { fav: [], ban: [], path: ['agumon', 'greymon'] };
+  const r = createRun({ partnerId: 'agumon', seed: 1, save, storage: null });
+  const got = { edge: 'agumon->greymon', key: 'stat:atk' } as const;
+  reveal(r.save, got); r.digiDataThisRun.push(got);
+  r.prog.pendingLevelUps = 1;
+  r.offers = [{ kind: 'stat', stat: 'atk', amount: 3, rarity: 'common' }, { kind: 'stat', stat: 'def', amount: 3, rarity: 'common' }, { kind: 'stat', stat: 'spd', amount: 3, rarity: 'common' }];
+  const root = document.createElement('div');
+  showLevelUp(root, r);
+  expect([...root.querySelectorAll('.tc-tag')].map(e => e.textContent)).toEqual([]);
 });

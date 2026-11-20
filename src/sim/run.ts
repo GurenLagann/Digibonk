@@ -12,7 +12,7 @@ import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier, mature } from './evolution';
 import { buildPrefs, pathTarget, type OfferPrefs } from './build';
-import { FORMS } from '../data/generated/gamedata';
+import { FORMS } from '../data/forms';
 import { discover, drawPool, edgeId, isDiscovered, knownAvailable, revealedKeys, reveal, secretAvailable, withoutReveals, type ReqKey, type Reveal } from './discovery';
 import { attract, chestPrice, collect, dropOnKill, eggsForPartner, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';

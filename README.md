@@ -55,8 +55,8 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
   - O **baú amaldiçoado** (escuro, "Grátis…?") invoca uma emboscada de 12 Bakemon mais fortes. Derrotar todos dá a escolha de uma relíquia e muitos Bits.
 - **Laboratório.** Ao fim de cada partida você ganha **Cristais 💠** pela fase alcançada, abates, chefes, guardiões, vitória e medalha. No Laboratório, eles compram usos extras de Atualizar, Pular e Banir e uma **4ª opção** em cada level up. Só ferramentas, sem poder bruto.
 - **Recordes.** O save guarda o melhor tempo de vitória, os abates e a melhor fase de cada parceiro. Vencer dá uma **medalha** pelo tempo: Campeão (menos de 18 min), Ouro (25 min), Prata (35 min) ou Bronze.
-- **Builds.** Na tela **Parceiros**, o botão **Build** (tecla 2) abre o editor de cada parceiro desbloqueado.
-  - Marque golpes da linha do parceiro e cartas passivas do Tamers com **★** (aparece o dobro no level up) ou **✕** (nunca aparece). Até 4 de cada. Status nunca são marcados.
+- **Builds.** Na tela **Parceiros**, o botão **Build** (tecla 2 ou E / Y no controle) abre o editor de cada parceiro desbloqueado.
+  - Marque golpes da linha do parceiro e cartas passivas do Tamers com **★** (tem o dobro de peso no sorteio do level up) ou **✕** (nunca aparece). Até 4 de cada. As ofertas de status nunca são afetadas.
   - Golpes de formas ainda não descobertas aparecem como **???** e não podem ser marcados.
   - **Caminho de digievolução:** monte, passo a passo, uma sequência a partir do Child entre as evoluções já descobertas. O último passo pode ser secreto, mostrado como "??? · pistas".
   - Numa partida, o caminho só orienta: o painel **Próx. evolução** mira a próxima forma dele, as cartas de status que cobrem um requisito que falta ganham a tag **No seu plano**, e a tela de evolução abre na forma do caminho. Sair do caminho desliga a orientação até o fim da partida.

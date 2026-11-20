@@ -3,6 +3,7 @@ import { offerKey } from '../../src/sim/progression';
 import { applyForm } from '../../src/sim/evolution';
 import { discover, reveal, visibleHint } from '../../src/sim/discovery';
 import { CARDS } from '../../src/data/cards';
+import { FORMS } from '../../src/data/forms';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
 import { createRng } from '../../src/core/rng';
@@ -439,5 +440,26 @@ describe('build na partida', () => {
     discover(r.save, 'agumon->greymon');
     r.prog.bonus.atk = 10;
     expect(planStats(r)).toEqual([]);
+  });
+  test('Digi Data revelado nesta partida não entra no planStats', () => {
+    const r = mk(['agumon', 'greymon']);
+    const got = { edge: 'agumon->greymon', key: 'stat:atk' } as const;
+    reveal(r.save, got); r.digiDataThisRun.push(got);
+    expect(planStats(r)).toEqual([]);
+  });
+  test('evoluir pelo caminho mantém pathOff falso', () => {
+    const r = mk(['agumon', 'greymon', 'metalgreymon']);
+    r.prog.level = 99; r.prog.bonus.atk = 999; r.prog.bonus.def = 999; r.prog.bonus.spd = 999;
+    discover(r.save, 'agumon->greymon');
+    doEvolve(r, 'greymon');
+    expect(r.prog.formId).toBe('greymon');
+    expect(r.pathOff).toBe(false);
+    expect(runPathTarget(r)).toBe('metalgreymon');
+  });
+  test('stayMature quando a próxima aresta não pede maturidade desliga o caminho', () => {
+    const r = mk(['agumon', 'greymon']);
+    expect(FORMS.agumon.evolutions.find(e => e.to === 'greymon')!.req.requiresMaturity).toBeFalsy();
+    stayMature(r);
+    expect(r.pathOff).toBe(true);
   });
 });
