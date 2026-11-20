@@ -1,6 +1,6 @@
 import { createRng, type Rng } from '../core/rng';
 import { labBonuses } from '../core/lab';
-import { storeSave, type SaveData } from '../core/save';
+import { storeSave, type PartnerBuild, type SaveData } from '../core/save';
 import { CARDS } from '../data/cards';
 import { BOSSES, ENEMIES, MINIBOSSES } from '../data/enemies';
 import { ITEMS } from '../data/items';
@@ -11,7 +11,9 @@ import { newCombatState, stepCombat, type CombatState } from './combat';
 import { newBossState, stepBoss } from './boss';
 import { difficulty, EnemyPool, stepDirector, type DirectorState } from './director';
 import { evolve, EvoNotifier, mature } from './evolution';
-import { discover, drawPool, edgeId, knownAvailable, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
+import { buildPrefs, pathTarget, type OfferPrefs } from './build';
+import { FORMS } from '../data/generated/gamedata';
+import { discover, drawPool, edgeId, isDiscovered, knownAvailable, revealedKeys, reveal, secretAvailable, withoutReveals, type Reveal } from './discovery';
 import { attract, chestPrice, collect, dropOnKill, eggsForPartner, eligibleCards, eligibleItems, placeChests, rollChest, type Chest, type Pickup } from './loot';
 import { MAP_OBSTACLES } from './map';
 import { newPhase, stepPhase, type PhaseState } from './phase';
@@ -60,6 +62,8 @@ export interface RunState {
   paused: boolean; ended: null | 'victory' | 'defeat'; time: number;
   /** yaw da câmera orbital e metade do FOV horizontal (rad); o main escreve antes de stepRun */
   camYaw: number; camHalf: number;
+  /** build do parceiro (cópia do save) e as preferências ★/✕ derivadas dela */
+  build: PartnerBuild; prefs: OfferPrefs; pathOff: boolean;
   offers: LevelOffer[] | null; pendingCard: string | null;
   /** 2+ evoluções secretas ao mesmo tempo: o jogador escolhe às cegas (ids de forma) */
   blindChoice: string[] | null;
@@ -155,7 +159,9 @@ export function createRun(opts: { partnerId: string; seed: number; save: SaveDat
   const prog = newPlayerProg(partner.childForm);
   const lab = labBonuses(opts.save);
   const pool = new EnemyPool();
+  const build: PartnerBuild = structuredClone(opts.save.builds[partner.id] ?? { fav: [], ban: [], path: [] });
   const r: RunState = {
+    build, prefs: buildPrefs(build), pathOff: false,
     partnerId: partner.id, seed: opts.seed, rng: createRng(opts.seed), save: opts.save, storage: opts.storage,
     prog, combat: newCombatState(prog), px: 0, pz: 0, moving: false, dirX: -1, dirZ: 0, facing: 'side', baseSpeed: playerSpeed(prog), pool, hash: new SpatialHash(4),
     director: { pool, phase: 1, t: 0, acc: 0, px: 0, pz: 0 }, phase: undefined as unknown as PhaseState,
@@ -449,7 +455,7 @@ export function stepRun(r: RunState, input: InputState, dt: number): RunEvent[] 
     const level = r.prog.level - r.prog.pendingLevelUps + 1;
     ev.push({ type: 'autoGain', level, ...autoGain(r.prog, r.rng) });
   }
-  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount); ev.push({ type: 'levelUp' }); }
+  if (r.prog.pendingLevelUps > 0 && r.offers === null) { r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount, r.prefs); ev.push({ type: 'levelUp' }); }
   syncHp(r);
   return ev;
 }
@@ -466,12 +472,13 @@ export function chooseOffer(r: RunState, index: number): void {
   applyOffer(r.prog, o);
   r.offers = null;
   // sem nada para melhorar, os níveis restantes viram ganho automático no próximo passo (stepRun)
-  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount, r.prefs);
   syncHp(r);
 }
 
 export function doEvolve(r: RunState, formId: string): void {
   const from = r.prog.formId;
+  if (!r.pathOff && r.build.path.length && runPathTarget(r) !== formId) r.pathOff = true;
   evolve(r.prog, formId, { save: r.save, phase: r.phase.phase });
   discover(r.save, edgeId(from, formId));
   if (!r.save.discovered.includes(formId)) r.save.discovered.push(formId);
@@ -551,9 +558,24 @@ export function chooseRelic(r: RunState, index: number | null): void {
   syncHp(r);
 }
 
+/** próxima forma do caminho da build, enquanto a partida segue nele */
+export function runPathTarget(r: RunState): string | null { return pathTarget(r.build.path, r.prog.formId, r.pathOff); }
+
+/** status que faltam para a aresta do caminho e que o jogador conhece (aresta descoberta ou pista revelada) */
+export function planStats(r: RunState): StatKey[] {
+  const to = runPathTarget(r); if (!to) return [];
+  const from = r.prog.formId, edge = FORMS[from].evolutions.find(e => e.to === to); if (!edge) return [];
+  const id = edgeId(from, to), known = isDiscovered(r.save, id), rev = revealedKeys(r.save, id);
+  const s = effectiveStats(r.prog);
+  return (Object.entries(edge.req.minStats ?? {}) as [StatKey, number][])
+    .filter(([k, v]) => (known || rev.includes(`stat:${k}` as never)) && s[k] < v).map(([k]) => k);
+}
+
 /** Maturidade: fica na forma atual pelo resto da partida, com bônus e vida cheia */
 export function stayMature(r: RunState): void {
   mature(r.prog);
+  const t = runPathTarget(r);
+  if (t && !FORMS[r.prog.formId].evolutions.find(e => e.to === t)?.req.requiresMaturity) r.pathOff = true;
   r.evo.reset();
   syncHp(r);
   r.combat.hp = r.combat.maxHp;
@@ -563,7 +585,7 @@ export function stayMature(r: RunState): void {
 export function rerollOffers(r: RunState): boolean {
   if (!r.offers || r.levelTools.reroll <= 0) return false;
   r.levelTools.reroll--;
-  r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
+  r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount, r.prefs);
   return true;
 }
 
@@ -574,7 +596,7 @@ export function skipOffer(r: RunState): { level: number; stat: StatKey; amount: 
   const level = r.prog.level - r.prog.pendingLevelUps + 1;
   const g = autoGain(r.prog, r.rng);
   r.offers = null;
-  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount);
+  if (r.prog.pendingLevelUps > 0 && !nothingToImprove(r.prog)) r.offers = rollOffers(r.prog, r.rng, new Set(r.banned), r.offerCount, r.prefs);
   syncHp(r);
   return { level, ...g };
 }
@@ -586,7 +608,7 @@ export function banOffer(r: RunState, index: number): boolean {
   r.levelTools.ban--;
   r.banned.push(offerKey(r.prog, o));
   const onTable = new Set([...r.banned, ...r.offers.map(x => offerKey(r.prog, x))]);
-  const repl = rollOffers(r.prog, r.rng, onTable, r.offerCount)[0];
+  const repl = rollOffers(r.prog, r.rng, onTable, r.offerCount, r.prefs)[0];
   r.offers = repl ? r.offers.map((x, i) => (i === index ? repl : x)) : r.offers.filter((_, i) => i !== index);
   return true;
 }

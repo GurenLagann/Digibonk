@@ -1,6 +1,7 @@
-import { createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, rerollOffers, skipOffer, banOffer, stayMature, type RunState } from '../../src/sim/run';
+import { planStats, runPathTarget, createRun, stepRun, doEvolve, abandonRun, playerSpeed, chooseBlind, chooseOffer, hudSave, rerollOffers, skipOffer, banOffer, stayMature, type RunState } from '../../src/sim/run';
 import { offerKey } from '../../src/sim/progression';
-import { visibleHint } from '../../src/sim/discovery';
+import { applyForm } from '../../src/sim/evolution';
+import { discover, reveal, visibleHint } from '../../src/sim/discovery';
 import { CARDS } from '../../src/data/cards';
 import { newPhase } from '../../src/sim/phase';
 import { defaultSave, loadSave } from '../../src/core/save';
@@ -403,4 +404,40 @@ test('Cristais: desistir de cara na fase 1 sem abates não rende nada', () => {
   const save = defaultSave();
   const r = createRun({ ...opts(), save }); abandonRun(r);
   expect(r.crystalsEarned).toBe(0); expect(save.currency).toBe(0);
+});
+
+describe('build na partida', () => {
+  const mk = (path: string[]) => {
+    const save = defaultSave();
+    save.builds.agumon = { fav: [], ban: ['move:sharp_claws'], path };
+    return createRun({ partnerId: 'agumon', seed: 1, save, storage: null });
+  };
+  test('a partida copia a build e o caminho mira a próxima forma', () => {
+    const r = mk(['agumon', 'greymon', 'metalgreymon']);
+    expect(r.build.ban).toEqual(['move:sharp_claws']);
+    expect(runPathTarget(r)).toBe('greymon');
+  });
+  test('✕ da build vale nas ofertas da partida', () => {
+    const r = mk([]);
+    r.prog.pendingLevelUps = 1; r.levelTools.reroll = 99; r.offers = [];
+    for (let i = 0; i < 30; i++) { rerollOffers(r); for (const o of r.offers!) if (o.kind === 'learn') expect(o.moveId).not.toBe('sharp_claws'); }
+  });
+  test('evoluir fora do caminho desliga a orientação', () => {
+    const r = mk(['agumon', 'greymon', 'metalgreymon']);
+    applyForm(r.prog, 'greymon'); expect(runPathTarget(r)).toBe('metalgreymon');
+    r.prog.level = 99; r.prog.nearDeaths = 99; r.prog.bonus.atk = 999; r.prog.bonus.def = 999;
+    discover(r.save, 'greymon->skullgreymon');
+    doEvolve(r, 'skullgreymon');
+    expect(r.pathOff).toBe(true);
+    expect(runPathTarget(r)).toBeNull();
+  });
+  test('planStats: só status conhecidos que faltam na aresta alvo', () => {
+    const r = mk(['agumon', 'greymon']);
+    expect(planStats(r)).toEqual([]);
+    reveal(r.save, { edge: 'agumon->greymon', key: 'stat:atk' });
+    expect(planStats(r)).toEqual(['atk']);
+    discover(r.save, 'agumon->greymon');
+    r.prog.bonus.atk = 10;
+    expect(planStats(r)).toEqual([]);
+  });
 });
