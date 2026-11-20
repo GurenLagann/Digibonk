@@ -1,3 +1,4 @@
+import { CARD_LIST } from '../../src/data/cards';
 import { loadSave, storeSave, defaultSave, partnerRecord, SAVE_KEY } from '../../src/core/save';
 import { fakeStorage } from '../helpers';
 
@@ -97,5 +98,38 @@ describe('laboratório no save', () => {
     const d = loadSave(s);
     expect(d.lab).toEqual({ lab_reroll: 3 });
     expect(d.currency).toBe(0);
+  });
+});
+
+describe('builds no save', () => {
+  const load = (builds: unknown) => loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify({ ...defaultSave(), builds }) }));
+
+  test('save sem builds carrega com {}', () => {
+    const { builds, ...old } = defaultSave();
+    expect(loadSave(fakeStorage({ [SAVE_KEY]: JSON.stringify(old) })).builds).toEqual({});
+  });
+  test('mantém marcas válidas e caminho válido', () => {
+    const s = load({ agumon: { fav: ['move:sharp_claws', 'card:card_hyper_speed'], ban: ['move:tail_whip'], path: ['agumon', 'greymon', 'metalgreymon'] } });
+    expect(s.builds.agumon).toEqual({ fav: ['move:sharp_claws', 'card:card_hyper_speed'], ban: ['move:tail_whip'], path: ['agumon', 'greymon', 'metalgreymon'] });
+  });
+  test('descarta chaves inválidas, duplicatas e ✕ que também é ★', () => {
+    const s = load({ agumon: { fav: ['move:sharp_claws', 'move:sharp_claws', 'move:nao_existe', 'stat:atk', 7], ban: ['move:sharp_claws', 'card:nao_existe'], path: [] } });
+    expect(s.builds.agumon).toEqual({ fav: ['move:sharp_claws'], ban: [], path: [] });
+  });
+  test('carta rara (Slash) não pode ser marcada', () => {
+    const slash = CARD_LIST.find(c => c.kind !== 'passive')!;
+    expect(load({ agumon: { fav: [`card:${slash.id}`], ban: [], path: [] } }).builds.agumon.fav).toEqual([]);
+  });
+  test('corta em 4 ★ e 4 ✕', () => {
+    const moves = ['sharp_claws', 'spitfire_blast', 'pepper_breath_rain', 'horn_strike', 'tail_whip'].map(m => `move:${m}`);
+    const s = load({ agumon: { fav: moves, ban: [], path: [] } });
+    expect(s.builds.agumon.fav).toHaveLength(4);
+  });
+  test('caminho que não sai do Child do parceiro ou pula aresta vira []', () => {
+    expect(load({ agumon: { fav: [], ban: [], path: ['greymon', 'metalgreymon'] } }).builds.agumon.path).toEqual([]);
+    expect(load({ agumon: { fav: [], ban: [], path: ['agumon', 'metalgreymon'] } }).builds.agumon.path).toEqual([]);
+  });
+  test('parceiro desconhecido é descartado', () => {
+    expect(load({ naoexiste: { fav: [], ban: [], path: [] } }).builds).toEqual({});
   });
 });

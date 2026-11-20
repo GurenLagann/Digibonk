@@ -1,7 +1,15 @@
+import { CARDS } from '../data/cards';
+import { FORMS } from '../data/forms';
 import { LAB_UPGRADES } from '../data/lab';
+import { MOVES } from '../data/moves';
+import { PARTNERS } from '../data/partners';
+import { T } from '../data/tuning';
 
 export const SAVE_KEY = 'digibonk.save.v1';
 export const STARTERS = ['agumon', 'veemon', 'guilmon'] as const;
+
+/** build de um parceiro: marcas `move:<id>`/`card:<id>` e caminho de formas a partir do Child */
+export interface PartnerBuild { fav: string[]; ban: string[]; path: string[] }
 
 /** bestTime = vitória mais rápida (s), ausente sem vitória; bestKills = mais abates numa partida */
 export interface PartnerRecord { runs: number; wins: number; bestPhase: number; bestTime?: number; bestKills: number }
@@ -27,10 +35,12 @@ export interface SaveData {
   lab: Record<string, number>;
   bindings: Record<string, string>;
   camera: CameraSettings;
+  /** build (★/✕ e caminho) por parceiro, por id de parceiro */
+  builds: Record<string, PartnerBuild>;
 }
 
 export function defaultSave(): SaveData {
-  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, lab: {}, bindings: {}, camera: defaultCamera() };
+  return { version: 1, unlocked: [...STARTERS], discovered: [], discoveredEvos: [], revealedReqs: {}, lastPartner: '', records: { bestPhase: 0, wins: 0, runs: 0 }, partnerRecords: {}, currency: 0, lab: {}, bindings: {}, camera: defaultCamera(), builds: {} };
 }
 
 const strArr = (v: unknown): string[] | null => (Array.isArray(v) && v.every(x => typeof x === 'string') ? [...v] : null);
@@ -53,6 +63,38 @@ function loadCamera(v: unknown): CameraSettings {
 function storageOrGlobal(storage: Storage | null | undefined): Storage | null {
   if (storage !== undefined) return storage;
   try { return globalThis.localStorage ?? null; } catch { return null; }
+}
+
+/** marca válida: golpe existente ou carta passiva existente */
+export function isBuildKey(k: unknown): k is string {
+  if (typeof k !== 'string') return false;
+  if (k.startsWith('move:')) return Object.hasOwn(MOVES, k.slice(5));
+  if (k.startsWith('card:')) { const c = Object.hasOwn(CARDS, k.slice(5)) ? CARDS[k.slice(5)] : undefined; return c?.kind === 'passive'; }
+  return false;
+}
+const marks = (v: unknown, skip: ReadonlySet<string>) => {
+  const out: string[] = [];
+  for (const k of Array.isArray(v) ? v : []) if (isBuildKey(k) && !skip.has(k) && !out.includes(k) && out.length < T.BUILD.MAX) out.push(k);
+  return out;
+};
+/** caminho válido: começa no Child do parceiro e cada passo é uma aresta existente */
+function loadPath(v: unknown, child: string): string[] {
+  const p = strArr(v);
+  if (!p || p.length === 0 || p[0] !== child) return [];
+  for (let i = 1; i < p.length; i++) if (!FORMS[p[i - 1]]?.evolutions.some(e => e.to === p[i])) return [];
+  return p.length > 1 ? p : [];
+}
+function loadBuilds(v: unknown): Record<string, PartnerBuild> {
+  const out: Record<string, PartnerBuild> = {};
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return out;
+  for (const [id, b] of Object.entries(v as object)) {
+    const partner = PARTNERS.find(p => p.id === id);
+    if (!partner || !b || typeof b !== 'object') continue;
+    const r = b as Record<string, unknown>;
+    const fav = marks(r.fav, new Set());
+    out[id] = { fav, ban: marks(r.ban, new Set(fav)), path: loadPath(r.path, partner.childForm) };
+  }
+  return out;
 }
 
 export function partnerRecord(save: SaveData, id: string): PartnerRecord {
@@ -110,6 +152,7 @@ export function loadSave(storage?: Storage | null): SaveData {
     lab,
     bindings,
     camera: loadCamera(r.camera),
+    builds: loadBuilds(r.builds),
   };
 }
 

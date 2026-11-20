@@ -36,6 +36,8 @@ export const T = {
   MATURITY_BONUS: 0.12,
   /** usos por partida na tela de level up (o Laboratório vai aumentar depois) */
   LEVEL_TOOLS: { reroll: 2, skip: 2, ban: 1 },
+  /** builds por parceiro: limite de ★ e de ✕, e peso do ★ no sorteio do level up */
+  BUILD: { MAX: 4, FAV_WEIGHT: 2 },
   /** nível infinito: ganho automático por nível quando não há mais nada para melhorar (1/3 da oferta de status) */
   AUTO_GAIN: { hp: 3, atk: 1, def: 1, spd: 1, brain: 1 } as Record<StatKey, number>,
   OFFERS_PER_LEVEL: 3,
