@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    image: digibonk-dev
+    container_name: digibonk_app
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+      # node_modules da imagem, não o do host
+      - node_modules:/app/node_modules
+    ports:
+      - "127.0.0.1:5173:5173"
+    networks:
+      - traefik-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.digibonk.rule=Host(`digibonk.local`)"
+      - "traefik.http.routers.digibonk.entrypoints=web"
+      - "traefik.http.services.digibonk.loadbalancer.server.port=5173"
+
+volumes:
+  node_modules:
+
+networks:
+  traefik-net:
+    external: true
