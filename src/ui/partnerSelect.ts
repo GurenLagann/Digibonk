@@ -1,5 +1,6 @@
 import type { App } from '../app';
 import type { SaveData } from '../core/save';
+import { showBuild } from './build';
 import { partnerRecord } from '../core/save';
 import { edgeId, isDiscovered, revealedKeys } from '../sim/discovery';
 import { reqKeyText } from './evoText';
@@ -36,13 +37,19 @@ export function reqText(req: EvoReq): string {
   return parts.join(' e ');
 }
 
+function buildSummary(save: SaveData, id: string): string {
+  const b = save.builds[id]; if (!b) return 'Build vazia';
+  const path = b.path.length ? ` · Caminho: ${b.path.map((f, i) => (i && !save.discoveredEvos.includes(`${b.path[i - 1]}->${f}`) ? '???' : FORMS[f].name)).join(' → ')}` : '';
+  return `★ ${b.fav.length} · ✕ ${b.ban.length}${path}`;
+}
+
 const move = (id: string, sig = false) => {
   const mv = MOVES[id];
   return h('div', { class: 'ps-move' + (sig ? ' sig' : '') }, h('b', {}, mv?.name ?? id), mv?.description ? h('span', {}, mv.description) : null);
 };
 
 /** Escolha de parceiro: detalhe à esquerda, grade única (4 colunas, ordem de temporada) à direita. */
-export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, opts: { mode: 'pick' | 'view'; back: () => void }): Modal {
+export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, opts: { mode: 'pick' | 'view'; back: () => void; initial?: number }): Modal {
   const ps = app.partners();
   let sel = 0, closed = false;
   const cells = ps.map((p, i) => {
@@ -52,18 +59,21 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
       portrait(p.childForm, { size: 64, silhouette: p.locked }), h('span', { class: 'ps-name' }, name));
   });
   const detail = h('div', { class: 'b2-panel tick ps-detail' });
+  const buildBtn = btn('Build', '2', () => openBuild());
+  buildBtn.classList.add('ps-build');
   const pickBtn = opts.mode === 'pick' ? btn('Escolher parceiro!', 'Enter', () => confirm()) : null;
   const screen = h('div', { class: 'b2-screen ps-screen' },
     h('div', { class: 'ps-head' }, btn('Voltar', 'Esc', () => leave(), true),
       h('h1', { class: 'b2-title' }, opts.mode === 'pick' ? 'Escolha seu parceiro' : 'Parceiros')),
     detail,
     h('div', { class: 'b2-panel ps-grid' }, ...cells),
-    pickBtn && h('div', { class: 'ps-foot' }, pickBtn));
+    h('div', { class: 'ps-foot' }, buildBtn, pickBtn));
   root.append(screen);
 
   function render() {
     const p = ps[sel];
     detail.replaceChildren();
+    buildBtn.disabled = p.locked;
     if (p.locked) {
       detail.append(h('div', { class: 'ps-lock' }, portrait(p.childForm, { size: 150, silhouette: true }),
         h('div', { class: 'b2-title' }, '???'), h('p', {}, 'Encontre o ovo deste Digimon nas fases')));
@@ -95,6 +105,7 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
         h('div', { class: 'b2-label' }, 'Kit'), ...f.kit.map(k => move(k)),
         evoLines.length ? h('div', { class: 'b2-label' }, 'Evolui em') : null,
         ...evoLines,
+        h('div', { class: 'b2-label ps-buildsum' }, buildSummary(save, p.id)),
         h('div', { class: 'ps-rec' }, rec('Partidas', r.runs), rec('Vitórias', r.wins), rec('Melhor fase', r.bestPhase))));
   }
   function select(i: number) {
@@ -103,11 +114,17 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
     render();
   }
   function leave() { if (closed) return; m.close(); opts.back(); }
+  function openBuild() {
+    if (ps[sel].locked) return;
+    const at = sel;
+    m.close();
+    showBuild(root, save, ps[at].id, () => showPartnerSelect(root, app, save, { ...opts, initial: at }));
+  }
   function confirm() {
     if (closed || opts.mode !== 'pick' || ps[sel].locked) return;
     if (app.pickPartner(ps[sel].id)) m.close();
   }
-  select(0);
+  select(opts.initial ?? 0);
   const m: Modal = {
     get closed() { return closed; },
     close() { if (!closed) { closed = true; screen.remove(); } },
@@ -119,6 +136,7 @@ export function showPartnerSelect(root: HTMLElement, app: App, save: SaveData, o
       else if (input.pressed('up') && sel - COLS >= 0) select(sel - COLS);
       else if (input.pressed('down') && sel + COLS < ps.length) select(sel + COLS);
       else if (input.pressed('confirm')) confirm();
+      else if (input.pressed('opt2')) openBuild();
     },
   };
   setActiveModal(m);

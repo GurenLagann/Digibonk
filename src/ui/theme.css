@@ -704,3 +704,23 @@
   .lab-row { flex-wrap: wrap; }
   .lab-info { flex-basis: 100%; }
 }
+
+/* ── editor de build (src/ui/build.ts) + botão na tela Parceiros ── */
+.ps-foot { gap: var(--b2-sp-3); }
+.ps-foot .ps-build { min-width: min(200px, 30vw); }
+.ps-buildsum { margin-top: var(--b2-sp-2); }
+.bd-screen { display: grid; gap: var(--b2-sp-3); padding: var(--b2-sp-4); grid-template-rows: auto 1fr auto; max-height: 100vh; }
+.bd-head { display: flex; align-items: center; gap: var(--b2-sp-3); }
+.bd-head .bd-count { margin-left: auto; font-size: var(--b2-fs-sm); }
+.bd-body { display: grid; grid-template-columns: 1fr 1fr; gap: var(--b2-sp-3); min-height: 0; }
+.bd-col { display: flex; flex-direction: column; gap: var(--b2-sp-1); overflow-y: auto; }
+.bd-row { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: var(--b2-sp-2); padding: 6px var(--b2-sp-2); text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--b2-corner-sm); color: inherit; cursor: pointer; }
+.bd-row.b2-sel, .bd-row:hover { border-color: var(--b2-orange); }
+.bd-row.fav .bd-mark { color: #ffd23f; }
+.bd-row.ban .bd-mark { color: #ff5a5a; }
+.bd-row.locked { opacity: .45; cursor: default; }
+.bd-path { display: flex; flex-direction: column; gap: var(--b2-sp-2); }
+.bd-steps { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-weight: 700; }
+.bd-step.secret { color: #9a7dff; }
+.bd-nexts { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 720px) { .bd-body { grid-template-columns: 1fr; } }

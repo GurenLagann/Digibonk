@@ -120,3 +120,11 @@ describe('árvore de evoluções secreta', () => {
     expect(setup('pick', ['agumon'], s).detail()).toContain('Greymon · Nv');
   });
 });
+
+test('botão Build abre o editor do parceiro liberado e fica desabilitado no bloqueado', () => {
+  const { root } = setup('view', ['agumon']);
+  const b = root.querySelector<HTMLButtonElement>('.ps-build')!;
+  expect(b.disabled).toBe(false);
+  b.click();
+  expect(root.querySelector('.bd-screen')).toBeTruthy();
+});
