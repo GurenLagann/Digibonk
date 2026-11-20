@@ -1,5 +1,6 @@
 import { defaultSave } from '../../src/core/save';
-import { buildOf, buildPrefs, cycleMark, lineForms, lineMoves, markOf } from '../../src/sim/build';
+import { buildOf, buildPrefs, clearPathFrom, cycleMark, lineForms, lineMoves, markOf, pathChoices, pathTarget, setPathStep } from '../../src/sim/build';
+import { discover, reveal } from '../../src/sim/discovery';
 
 test('lineForms começa no Child e inclui Greymon e MetalGreymon', () => {
   const f = lineForms('agumon');
@@ -37,4 +38,40 @@ test('cycleMark respeita o limite de 4: ★ cheio pula para ✕; ✕ cheio volta
 test('buildPrefs: ★ = 2, ✕ = 0, resto = 1', () => {
   const p = buildPrefs({ fav: ['move:a'], ban: ['card:b'], path: [] });
   expect(p.weight('move:a')).toBe(2); expect(p.weight('card:b')).toBe(0); expect(p.weight('move:c')).toBe(1);
+});
+
+describe('caminho', () => {
+  test('sem descobertas nem pistas, não há passos', () => {
+    expect(pathChoices(defaultSave(), [], 'agumon')).toEqual([]);
+  });
+  test('aresta descoberta vira passo aberto; secreta só com pista', () => {
+    const s = defaultSave();
+    discover(s, 'agumon->greymon');
+    expect(pathChoices(s, [], 'agumon')).toEqual([{ to: 'greymon', secret: false, hints: [] }]);
+    const path = ['agumon', 'greymon'];
+    expect(pathChoices(s, path, 'agumon')).toEqual([]);
+    reveal(s, { edge: 'greymon->skullgreymon', key: 'level' });
+    expect(pathChoices(s, path, 'agumon')).toEqual([{ to: 'skullgreymon', secret: true, hints: ['level'] }]);
+  });
+  test('depois de uma secreta não há mais passos', () => {
+    const s = defaultSave();
+    reveal(s, { edge: 'skullgreymon->blackwargreymon', key: 'level' });
+    expect(pathChoices(s, ['agumon', 'greymon', 'skullgreymon'], 'agumon')).toEqual([]);
+  });
+  test('setPathStep corta e acrescenta; clearPathFrom limpa; caminho de 1 forma vira []', () => {
+    const b = { fav: [], ban: [], path: ['agumon', 'greymon', 'metalgreymon'] };
+    setPathStep(b, 'agumon', 2, 'skullgreymon'); expect(b.path).toEqual(['agumon', 'greymon', 'skullgreymon']);
+    clearPathFrom(b, 2); expect(b.path).toEqual(['agumon', 'greymon']);
+    clearPathFrom(b, 1); expect(b.path).toEqual([]);
+    const e = { fav: [], ban: [], path: [] as string[] };
+    setPathStep(e, 'agumon', 1, 'greymon'); expect(e.path).toEqual(['agumon', 'greymon']);
+  });
+  test('pathTarget: próxima forma enquanto no caminho e não desligado', () => {
+    const p = ['agumon', 'greymon', 'metalgreymon'];
+    expect(pathTarget(p, 'agumon', false)).toBe('greymon');
+    expect(pathTarget(p, 'greymon', false)).toBe('metalgreymon');
+    expect(pathTarget(p, 'metalgreymon', false)).toBeNull();
+    expect(pathTarget(p, 'skullgreymon', false)).toBeNull();
+    expect(pathTarget(p, 'agumon', true)).toBeNull();
+  });
 });

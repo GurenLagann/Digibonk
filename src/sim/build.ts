@@ -3,8 +3,10 @@ import type { PartnerBuild, SaveData } from '../core/save';
 import { FORMS } from '../data/forms';
 import { PARTNERS } from '../data/partners';
 import { T } from '../data/tuning';
+import { edgeId, isDiscovered, revealedKeys, type ReqKey } from './discovery';
 
 export interface OfferPrefs { weight(key: string): number }
+export interface PathChoice { to: string; secret: boolean; hints: ReqKey[] }
 
 export function lineForms(partnerId: string): string[] {
   const child = PARTNERS.find(p => p.id === partnerId)?.childForm;
@@ -52,4 +54,35 @@ export function cycleMark(b: PartnerBuild, key: string): boolean {
 
 export function buildPrefs(b: PartnerBuild): OfferPrefs {
   return { weight: key => (b.ban.includes(key) ? 0 : b.fav.includes(key) ? T.BUILD.FAV_WEIGHT : 1) };
+}
+
+const childOf = (partnerId: string) => PARTNERS.find(p => p.id === partnerId)?.childForm ?? '';
+
+/** próximos passos: arestas descobertas e secretas com pista; depois de uma secreta, nada */
+export function pathChoices(save: SaveData, path: string[], partnerId: string): PathChoice[] {
+  const steps = path.length ? path : [childOf(partnerId)];
+  for (let i = 1; i < steps.length; i++) if (!isDiscovered(save, edgeId(steps[i - 1], steps[i]))) return [];
+  const from = steps[steps.length - 1];
+  return (FORMS[from]?.evolutions ?? []).flatMap((e): PathChoice[] => {
+    const id = edgeId(from, e.to);
+    if (isDiscovered(save, id)) return [{ to: e.to, secret: false, hints: [] }];
+    const hints = revealedKeys(save, id);
+    return hints.length ? [{ to: e.to, secret: true, hints }] : [];
+  });
+}
+
+export function setPathStep(b: PartnerBuild, partnerId: string, index: number, to: string): void {
+  const base = b.path.length ? b.path.slice(0, index) : [childOf(partnerId)];
+  b.path = [...base, to];
+}
+
+export function clearPathFrom(b: PartnerBuild, index: number): void {
+  b.path = b.path.slice(0, index);
+  if (b.path.length < 2) b.path = [];
+}
+
+export function pathTarget(path: string[], formId: string, off: boolean): string | null {
+  if (off) return null;
+  const i = path.indexOf(formId);
+  return i >= 0 && i + 1 < path.length ? path[i + 1] : null;
 }
