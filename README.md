@@ -2,7 +2,7 @@
 
 Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra no mapa com um Digimon Child, enfrenta hordas cada vez maiores, sobe de nível, junta cartas e **escolhe quando digievoluir**. É **diretamente inspirado no [PokéBonk](https://pokebonk.com/)**, trazendo a mesma ideia para o universo Digimon, com as digievoluções simplificadas do Digimon World 1.
 
-![Greymon no meio de uma horda](docs/screenshot.jpg)
+![Greymon numa Distorção Digital, enfrentando uma onda de inimigos](docs/screenshot.jpg)
 
 > **Status:** protótipo jogável. O motor, as 5 fases com biomas e relevo, a câmera em terceira pessoa, as digievoluções secretas, as cartas, a Zona Digital, o Jogress, os altares, os chefes, os baús pagos, o Laboratório, os recordes, as builds e o Digimon Analyzer já funcionam. Sprites e equilíbrio ainda estão em andamento.
 >
