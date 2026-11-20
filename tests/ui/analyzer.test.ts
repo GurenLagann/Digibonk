@@ -18,7 +18,7 @@ beforeEach(() => { activeModal()?.close(); });
 
 test('contador e lista com ??? para formas não descobertas', () => {
   const { root } = setup();
-  expect(root.querySelector('.an-count')!.textContent).toMatch(/Descobertas 2\/\d+/);
+  expect(root.querySelector('.an-count')!.textContent).toMatch(/Descobertas 4\/\d+/);
   expect(root.querySelector('[data-form="metalgreymon"]')!.textContent).toContain('???');
   expect(root.textContent).not.toContain(FORMS.metalgreymon.name);
   expect(root.textContent).not.toContain(FORMS.skullgreymon.name);
@@ -35,4 +35,12 @@ test('Esc volta', () => {
   const { m, back } = setup();
   m.handle(press('cancel'));
   expect(back()).toBe(1);
+});
+
+test('seleção por teclado rola a lista (scrollIntoView nearest)', () => {
+  const { root, m } = setup();
+  const calls: unknown[] = [];
+  for (const b of root.querySelectorAll<HTMLElement>('.an-form')) b.scrollIntoView = ((o: unknown) => { calls.push(o); }) as never;
+  m.handle(press('down'));
+  expect(calls).toEqual([{ block: 'nearest' }]);
 });

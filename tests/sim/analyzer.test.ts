@@ -10,7 +10,7 @@ test('um grupo por parceiro, contagem de descobertas sobre todas as formas das l
   expect(d.groups.map(g => g.partnerId)).toEqual(expect.arrayContaining(PARTNERS.map(p => p.id)));
   const all = new Set(PARTNERS.flatMap(p => lineForms(p.id)));
   expect(d.total).toBe(all.size);
-  expect(d.known).toBe(2);
+  expect(d.known).toBe(4); // agumon, greymon + Child de Veemon e Guilmon (iniciais)
 });
 test('parceiro bloqueado: linha inteira desconhecida', () => {
   const s = defaultSave(); s.discovered = ['gabumon'];
@@ -31,4 +31,17 @@ test('forma não descoberta não traz arestas', () => {
   const s = defaultSave(); s.discovered = ['agumon'];
   const mg = analyzerData(s).groups.find(g => g.partnerId === 'agumon')!.forms.find(f => f.id === 'metalgreymon')!;
   expect(mg).toEqual({ id: 'metalgreymon', known: false, from: [], to: [] });
+});
+
+test('save novo: Child dos 3 iniciais já é conhecido; contagem os reflete', () => {
+  const d = analyzerData(defaultSave());
+  const forms = (id: string) => d.groups.find(g => g.partnerId === id)!.forms;
+  expect(forms('agumon')[0].known).toBe(true);
+  expect(d.known).toBe(3);
+});
+test('parceiro bloqueado com forma descoberta continua desconhecido e sem arestas', () => {
+  const s = defaultSave(); s.discovered = ['gabumon', 'garurumon']; discover(s, 'gabumon->garurumon');
+  const g = analyzerData(s).groups.find(x => x.partnerId === 'gabumon')!;
+  expect(g.locked).toBe(true);
+  expect(g.forms.every(f => !f.known && !f.from.length && !f.to.length)).toBe(true);
 });

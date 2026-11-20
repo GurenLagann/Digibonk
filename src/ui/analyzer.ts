@@ -54,6 +54,7 @@ export function showAnalyzer(root: HTMLElement, save: SaveData, back: () => void
   function select(i: number) {
     sel = Math.max(0, Math.min(flat.length - 1, i));
     buttons.forEach((b, j) => b.classList.toggle('b2-sel', j === sel));
+    buttons[sel]?.scrollIntoView?.({ block: 'nearest' });
     renderCard(flat[sel]);
   }
   function leave() { if (closed) return; m.close(); back(); }

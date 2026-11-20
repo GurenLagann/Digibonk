@@ -18,7 +18,7 @@ export function analyzerData(save: SaveData): AnalyzerData {
     const locked = !save.unlocked.includes(p.id);
     const forms = lineForms(p.id).map((id): AnalyzerForm => {
       total.add(id);
-      const known = !locked && save.discovered.includes(id);
+      const known = !locked && (save.discovered.includes(id) || id === p.childForm); // o Child entra em discovered só ao jogar
       if (!known) return { id, known: false, from: [], to: [] };
       knownIds.add(id);
       const from = Object.values(FORMS).flatMap(f => f.evolutions
