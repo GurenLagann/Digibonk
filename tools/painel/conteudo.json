@@ -1,5 +1,5 @@
 {
-  "atualizado": "09/11/2026",
+  "atualizado": "20/11/2026",
   "planos": [
     {
       "n": "Plano 1",
@@ -112,14 +112,58 @@
       "t": "Tela inicial em cartões",
       "p": "Menu no estilo de cartões do PokéBonk (organização, não arte): barra de progresso, Jogar grande, Parceiros e Recordes, atalhos e o painel Seus parceiros, sobre a paisagem digital. Responsivo do celular à tela grande.",
       "f": "src/ui/title.ts · public/ui/menu-bg.webp"
+    },
+    {
+      "n": "Melhoria",
+      "d": "10/11",
+      "t": "Sprites em grade",
+      "p": "Folhas em grade (andar, correr, parado, derrota) para 52 Digimon, tamanho por estágio e debug Morrer/Invocar. Linhas do Agumon e alguns inimigos redesenhadas pelo ChatGPT.",
+      "f": "public/sprites/manifest.json"
+    },
+    {
+      "n": "Extra",
+      "d": "10–15/11",
+      "t": "DW Wiki",
+      "p": "Página de consulta com DW1–DW4, Data Squad e Rumble Arena: cenários, ícones de itens, sprites e status/golpes normalizados. Atalho no menu.",
+      "f": "public/dw-wiki.html"
+    },
+    {
+      "n": "Plano 7",
+      "d": "15/11",
+      "t": "Câmera e biomas",
+      "p": "Câmera orbital estilo PokéBonk (mouse + analógico direito, Pointer Lock), movimento e vistas relativos à câmera, inimigos nascendo fora da vista. Biomas Floresta DW1/DW3 e depois Fábrica e Núcleo da Fábrica.",
+      "f": "plans/2026-11-15-digibonk-plano-7-camera-e-biomas.md"
+    },
+    {
+      "n": "Melhoria",
+      "d": "15/11",
+      "t": "Ímã de coleta e ícones",
+      "p": "XP, cura, cartas e itens voam até o parceiro; coletáveis com ícones do DRA1. Vídeo em loop no fundo do menu.",
+      "f": "src/sim/loot.ts"
+    },
+    {
+      "n": "Plano 8",
+      "d": "15/11",
+      "t": "Recordes locais",
+      "p": "Melhor tempo, abates e medalhas por parceiro no save; tela de recordes com ordenação e tempo/medalha no resultado.",
+      "f": "plans/2026-11-15-digibonk-plano-8-recordes.md"
+    },
+    {
+      "n": "Plano 9",
+      "d": "15/11",
+      "t": "Relevo",
+      "p": "Florestas com colinas e fábrica/núcleo com plataformas e rampas; personagens, efeitos, objetos e câmera seguem a altura do chão. Simulação intocada.",
+      "f": "plans/2026-11-15-digibonk-plano-9-relevo.md"
+    },
+    {
+      "n": "Plano 10",
+      "d": "15/11",
+      "t": "Laboratório, Bits e baús pagos",
+      "p": "Bits da partida, baús com preço crescente e Digiovo raro, baú amaldiçoado com emboscada que dá relíquia. Cristais ao fim da partida compram melhorias no Laboratório (atualizar, pular, banir e 4ª opção).",
+      "f": "plans/2026-11-15-digibonk-plano-10-laboratorio-baus.md"
     }
   ],
   "proximos": [
-    [
-      "Baús pagos (com moeda da partida)",
-      "P–M",
-      "Ficou para junto do Laboratório, que traz a moeda."
-    ],
     [
       "Digimon aliados",
       "G",
@@ -136,19 +180,9 @@
       "Objetivo para a partida sem facilitá-la. Decisão do usuário: não mexe no sorteio."
     ],
     [
-      "Laboratório com moeda permanente",
-      "M",
-      "Transforma atualizar, banir e 4ª opção em progressão; usa save.currency."
-    ],
-    [
       "Digimon Analyzer",
       "M",
       "Vitrine das evoluções secretas e do Digi Data."
-    ],
-    [
-      "Recordes locais por mapa e contra o relógio",
-      "P",
-      "Ranking online só quando houver servidor."
     ]
   ],
   "ajustes": [
@@ -164,8 +198,8 @@
     "Servidor para ranking online: decidido para depois (hoje é SQLite local).",
     "Teclas mostradas nos botões de atualizar/pular/banir são as padrão (F/X/Z), mesmo se o jogador trocar a tecla.",
     "Maturidade do Guilmon: decidir depois (Gallantmon Modo Carmesim pede Grani na franquia).",
-    "VictoryGreymon, Imperialdramon PM e Magnamon entraram sem sprite.",
+    "VictoryGreymon e Magnamon entraram sem sprite (Imperialdramon PM já tem, da DW Wiki).",
     "Zona Digital: só abre ao derrotar guardião (missões de guardião, fase 2+); inimigos comuns quase todos Vírus, então as ondas variam pouco de atributo.",
-    "Altar do Desafio ainda sem Digimon próprio (Etemon e Datamon definidos pelo usuário)."
+    "Altar do Desafio ainda sem Digimon próprio (Etemon e Datamon já são NPCs dos altares)."
   ]
 }
