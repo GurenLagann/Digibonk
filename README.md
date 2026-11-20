@@ -4,7 +4,7 @@ Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra 
 
 ![Greymon no meio de uma horda](docs/screenshot.jpg)
 
-> **Status:** protótipo jogável. O motor, as 5 fases, as digievoluções secretas, as cartas, a Zona Digital, o Jogress, os altares e os chefes já funcionam. Sprites e equilíbrio ainda estão em andamento.
+> **Status:** protótipo jogável. O motor, as 5 fases com biomas e relevo, a câmera em terceira pessoa, as digievoluções secretas, as cartas, a Zona Digital, o Jogress, os altares, os chefes, os baús pagos, o Laboratório, os recordes, as builds e o Digimon Analyzer já funcionam. Sprites e equilíbrio ainda estão em andamento.
 >
 > Acompanhamento para devs: o **painel** (`npm run painel` → `docs/painel/index.html`) mostra o que foi feito, o que falta e todas as linhas de evolução com os sprites.
 
@@ -12,7 +12,7 @@ Um *survivors-like* de Digimon feito por fã, em 3D com sprites 2D: você entra 
 
 O DigiBonk nasceu da vontade de ter um **[PokéBonk](https://pokebonk.com/) de Digimon**. O PokéBonk, criado por Charcher, é um fan-game de Pokémon no estilo do Megabonk. Ele é a nossa principal referência de jogabilidade e de visual:
 
-- **Visual:** sprites 2D em pé num mundo 3D, com câmera de cima.
+- **Visual:** sprites 2D em pé num mundo 3D, com câmera orbital em terceira pessoa.
 - **Combate:** automático, com espaços de ataque; você só se move.
 - **Fases:** cada fase tem uma missão que libera o chefe. Você escolhe a hora de enfrentá-lo ou continua farmando, e as hordas pioram com o tempo.
 - **Ataques substituíveis:** itens que trocam seus ataques, que aqui viraram as cartas *Slash* do Digimon Tamers.
@@ -49,12 +49,25 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
 - **Altares** (um de cada por fase): **Etemon** (Corrupção: mais inimigos e mais fortes, em troca de mais XP), **Datamon** (troca um status por outro) e **Desafio** (guardião mais forte que abre uma Distorção rara).
 - **Cartas do Digimon Tamers.** Há 3 espaços para cartas passivas, como Garras do Gatomon ou Armadura do Andromon. As cartas *Slash* substituem um dos seus ataques.
 - **5 fases de 10 minutos.** Cumpra a missão da fase para liberar o chefe (Devimon, Etemon, Myotismon, Kimeramon, Piedmon). Você pode enfrentá-lo ou continuar farmando. Se o tempo acabar, chegam as **hordas insanas**.
+- **Biomas com relevo.** As fases alternam entre Floresta DW1, Floresta DW3, Fábrica e Núcleo da Fábrica (a Factorial Town do DW1). As florestas têm colinas, e a fábrica e o núcleo têm plataformas com rampas. Os inimigos nascem fora do campo de visão da câmera.
+- **Bits e baús.** Inimigos às vezes soltam **Bits**, que só valem na partida; guardiões e chefes dão um monte. XP, cura, cartas, itens e Bits voam até o parceiro quando ele chega perto (ímã de coleta).
+  - Cada fase tem **2 baús grátis e 6 pagos**. O preço sobe a cada baú comprado na partida (20, 35, 55, 80...), e um baú pago tem uma chance pequena de dar um Digiovo que o parceiro usa e ainda não tem.
+  - O **baú amaldiçoado** (escuro, "Grátis…?") invoca uma emboscada de 12 Bakemon mais fortes. Derrotar todos dá a escolha de uma relíquia e muitos Bits.
+- **Laboratório.** Ao fim de cada partida você ganha **Cristais 💠** pela fase alcançada, abates, chefes, guardiões, vitória e medalha. No Laboratório, eles compram usos extras de Atualizar, Pular e Banir e uma **4ª opção** em cada level up. Só ferramentas, sem poder bruto.
+- **Recordes.** O save guarda o melhor tempo de vitória, os abates e a melhor fase de cada parceiro. Vencer dá uma **medalha** pelo tempo: Campeão (menos de 18 min), Ouro (25 min), Prata (35 min) ou Bronze.
+- **Builds.** Na tela **Parceiros**, o botão **Build** (tecla 2) abre o editor de cada parceiro desbloqueado.
+  - Marque golpes da linha do parceiro e cartas passivas do Tamers com **★** (aparece o dobro no level up) ou **✕** (nunca aparece). Até 4 de cada. Status nunca são marcados.
+  - Golpes de formas ainda não descobertas aparecem como **???** e não podem ser marcados.
+  - **Caminho de digievolução:** monte, passo a passo, uma sequência a partir do Child entre as evoluções já descobertas. O último passo pode ser secreto, mostrado como "??? · pistas".
+  - Numa partida, o caminho só orienta: o painel **Próx. evolução** mira a próxima forma dele, as cartas de status que cobrem um requisito que falta ganham a tag **No seu plano**, e a tela de evolução abre na forma do caminho. Sair do caminho desliga a orientação até o fim da partida.
+- **Digimon Analyzer.** Cartão 🔬 no menu inicial, com o contador **Descobertas X/Y**. As formas aparecem agrupadas por parceiro: as não descobertas, como silhueta e **???**, e as linhas de parceiros bloqueados também como **???**. A ficha de uma forma descoberta mostra estágio, atributo, elemento, status base, golpes, **Vem de** e **Evolui para** (as arestas secretas aparecem como "??? · pistas" quando há Digi Data).
 
 ## Controles
 
 | Ação | Teclado | Controle |
 |---|---|---|
-| Mover | WASD / setas | D-pad / analógico |
+| Mover (relativo à câmera) | WASD / setas | D-pad / analógico esquerdo |
+| Girar a câmera | mouse (clique no jogo para travar o cursor) | analógico direito |
 | Confirmar | Enter / Espaço | A |
 | Voltar | Backspace | B |
 | Digievoluir | E | Y |
@@ -62,7 +75,7 @@ O código do DigiBonk foi **escrito do zero** (TypeScript + Three.js). Nenhum c�
 | Opções rápidas nos menus | 1, 2, 3 | — |
 | Level up: atualizar / pular / banir | F / X / Z | X / LB / RB |
 
-Os controles podem ser remapeados no menu **Controles**.
+Os controles podem ser remapeados no menu **Controles**, que também ajusta a sensibilidade do mouse e do controle, inverte o eixo vertical e escolhe os eixos do analógico direito.
 
 ## Rodando localmente
 
@@ -80,6 +93,21 @@ npm run dev        # http://localhost:5173
 | `npm test` | testes (Vitest) |
 | `npm run sprites:vpet` | regera as tiras de sprite em `public/sprites/` |
 | `npm run painel` | gera o painel dos devs em `docs/painel/index.html` (`-- --sem-testes` para pular a contagem de testes) |
+
+O menu inicial também tem um atalho para a **DW Wiki** (`public/dw-wiki.html`), uma página de consulta com Digimon, golpes, itens e cenários dos Digimon World 1–4, Data Squad e Rumble Arena.
+
+### Com Docker
+
+O `docker-compose.yml` sobe o mesmo servidor de desenvolvimento (Vite com hot reload) num container `node:24-alpine`. O código entra por bind mount, então as alterações aparecem na hora; o `node_modules` fica num volume do container.
+
+```bash
+docker compose up -d            # sobe em http://localhost:5173
+docker compose exec app npm test
+docker compose up -d --build    # depois de mudar o package.json
+docker compose down
+```
+
+O container também entra na rede `traefik-net` e responde em **http://digibonk.local**, se houver um Traefik nessa rede e a linha `127.0.0.1 digibonk.local` no `/etc/hosts`.
 
 ### Modo debug (só em desenvolvimento)
 
@@ -140,7 +168,7 @@ src/
   core/     RNG com seed, loop de passo fixo, entrada (teclado + gamepad), save
   data/     dados do jogo (gerados do banco em data/generated) e ajustes (tuning)
   sim/      simulação pura e determinística: combate, hordas, fases, chefes, loot
-  render/   Three.js: cena, mapa, billboards com sprites, animação procedural
+  render/   Three.js: cena, câmera orbital, mapa, biomas e relevo, billboards com sprites, animação procedural
   ui/       HUD, menus, modais de escolha, painel de debug
 tools/sprites/  recorte das folhas de sprite → tiras + manifest.json
 tools/db/       executor de migrations/seeds e exportador banco → dados do jogo
@@ -196,11 +224,11 @@ O jogo assume que os sprites de lado **olham para a esquerda**.
 
 A lista completa e atualizada fica no painel dos devs (`npm run painel`). Os principais:
 
-- **Builds:** ★/✕ por parceiro (o que aparece mais ou nunca no level up) e caminho de evolução escolhido, que só orienta.
-- **Laboratório:** moeda permanente para melhorias entre partidas, com os baús pagos.
-- **Digimon Analyzer:** vitrine das evoluções descobertas e das pistas de Digi Data.
-- **Digimon aliados** e recordes locais por mapa e contra o relógio.
-- Sprites das formas que ainda usam o placeholder (BlackWarGreymon, Megidramon, VictoryGreymon, Magnamon e as linhas dos parceiros desbloqueáveis) e as diagonais que faltam.
+- **Digimon aliados**, que precisam de uma IA aliada.
+- **Laboratório maior:** por enquanto ele só tem as ferramentas do level up.
+- **Analyzer com inimigos, abates por espécie e pesquisa.**
+- **Sprites:** VictoryGreymon e Magnamon ainda não têm sprite, os Digimon fora da grade continuam com os de V-pet, e falta a animação de dano.
+- **Ranking online**, quando houver servidor; hoje os recordes ficam só no save local.
 
 ## Créditos e aviso legal
 
@@ -212,6 +240,8 @@ DigiBonk é um **projeto de fã, sem fins lucrativos e sem vínculo** com a Band
 - **Sprites do Digimon World DS** (em `assets-src/sprites/dwds`, usados nas primeiras versões; ficaram só os dos Digimon sem folha em grade): rips da comunidade no [The Spriters Resource](https://www.spriters-resource.com/).
 - **Folhas geradas no ChatGPT** a partir de descrições dos personagens (usadas até 2026-11-10, substituídas pela grade): Agumon, Greymon, MetalGreymon e WarGreymon (andar em 5 direções, dano e morte, câmera de 30°), os inimigos Gazimon, Kuwagamon e Hagurumon (mesmo formato), Garurumon (base), Omnimon, ExVeemon, Growlmon, WarGrowlmon, Gallantmon, Angemon e SkullGreymon.
 - **Arte da tela inicial** (logo, Mundo Digital e a paisagem do fundo): imagens fornecidas pelo autor do projeto.
+- **Texturas das florestas:** recortadas dos cenários de floresta do Digimon World 1 e 3 (© Bandai). A Fábrica e o Núcleo são inspirados na Factorial Town do Digimon World 1.
+- **Ícones dos coletáveis:** do Digimon Rumble Arena (© Bandai).
 - As primeiras folhas do Greymon e do MetalGreymon foram geradas com o Google Gemini e depois substituídas pelas do ChatGPT.
 - **Inspiração:** [PokéBonk](https://pokebonk.com/), de Charcher (a referência principal), Megabonk e Digimon World 1.
 
